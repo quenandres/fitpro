@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, Dumbbell, Activity, Ruler, ChevronLeft, Download, Upload, RotateCcw, Plus, Trash2, Pencil, Video } from 'lucide-react';
+import { Settings, Dumbbell, Activity, Ruler, ChevronLeft, Download, Upload, RotateCcw, Plus, Search } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { UnitManager } from '../components/admin/UnitManager';
 import { RoutineWizard } from '../components/admin/wizard/RoutineWizard';
 import { ExerciseForm } from '../components/admin/ExerciseForm';
 import { Button } from '../components/admin/common/Button';
-import { Input } from '../components/admin/common/Input';
 import { SimpleToast, useToast } from '../components/admin/common/Toast';
+import { RoutineCard } from '../components/admin/RoutineCard';
+import { AdminExerciseCard } from '../components/admin/AdminExerciseCard';
 import type { Rutina, Ejercicio } from '../types';
 
 type Tab = 'rutinas' | 'ejercicios' | 'unidades';
@@ -57,21 +58,40 @@ const ExerciseManager = () => {
     setEditingEjercicio(null);
   };
 
+  const handleDeleteExercise = (id: number) => {
+    if (window.confirm('¿Eliminar este ejercicio?')) {
+      deleteEjercicio(id);
+      showToast('Ejercicio eliminado', 'success');
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Search and Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-        <div className="flex flex-col md:flex-row gap-3">
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar ejercicios..."
-            className="flex-1"
-          />
+    <div className="space-y-6">
+      <div className="rounded-3xl border p-5" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1 group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--accent-green)] to-[var(--accent-blue)] rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity blur-sm" />
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 w-5 h-5 z-10" style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar ejercicios..."
+                className="w-full py-3.5 pl-12 pr-4 rounded-xl focus:outline-none"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '2px solid var(--border-color)' }}
+              />
+            </div>
+          </div>
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 focus:border-orange-500 focus:outline-none"
+            className="px-4 py-3 rounded-xl focus:outline-none transition-all cursor-pointer"
+            style={{ 
+              background: 'var(--bg-tertiary)', 
+              color: 'var(--text-primary)', 
+              border: '2px solid var(--border-color)'
+            }}
           >
             <option value="">Todas las categorías</option>
             {categorias.map(cat => (
@@ -84,77 +104,32 @@ const ExerciseManager = () => {
         </div>
       </div>
 
-      {/* Exercise Grid */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {filteredEjercicios.map(ej => (
-          <div key={ej.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:border-orange-300 transition-colors group">
-            <div className="flex items-start gap-3">
-              {/* Thumbnail */}
-              <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                {ej.imagen ? (
-                  <img src={ej.imagen} alt={ej.nombre} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-gray-300" />
-                  </div>
-                )}
-              </div>
-              
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-800 truncate">{ej.nombre}</h4>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  <span className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 text-xs">
-                    {ej.categoria}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 text-xs">
-                    {ej.dificultad}
-                  </span>
-                  {ej.videos && ej.videos.length > 0 && (
-                    <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-600 text-xs flex items-center gap-0.5">
-                      <Video className="w-3 h-3" /> {ej.videos.length}
-                    </span>
-                  )}
-                </div>
-                {ej.descripcion && (
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-1">{ej.descripcion}</p>
-                )}
-              </div>
+      {(searchTerm || filterCategory) && (
+        <div className="text-sm px-2" style={{ color: 'var(--text-muted)' }}>
+          Mostrando {filteredEjercicios.length} de {ejercicios.length} ejercicios
+        </div>
+      )}
 
-              {/* Actions */}
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleEditExercise(ej)}
-                  className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-all"
-                  title="Editar"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm('¿Eliminar este ejercicio?')) {
-                      deleteEjercicio(ej.id);
-                      showToast('Ejercicio eliminado', 'success');
-                    }
-                  }}
-                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all"
-                  title="Eliminar"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {filteredEjercicios.map(ej => (
+          <AdminExerciseCard
+            key={ej.id}
+            ejercicio={ej}
+            onEdit={handleEditExercise}
+            onDelete={handleDeleteExercise}
+          />
         ))}
       </div>
 
       {filteredEjercicios.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
-          <Activity className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-xl font-bold text-gray-700 mb-2">
+        <div className="text-center py-16 rounded-3xl border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+          <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[var(--accent-green)]/20 to-[var(--accent-blue)]/20 flex items-center justify-center">
+            <Activity className="w-12 h-12" style={{ color: 'var(--text-muted)' }} />
+          </div>
+          <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
             {searchTerm || filterCategory ? 'No se encontraron ejercicios' : 'No hay ejercicios'}
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
             {searchTerm || filterCategory ? 'Intenta con otros filtros' : 'Crea tu primer ejercicio'}
           </p>
           {!searchTerm && !filterCategory && (
@@ -197,6 +172,13 @@ export const Admin = () => {
     setEditingRutina(null);
   };
 
+  const handleDeleteRoutine = (id: number) => {
+    if (window.confirm('¿Eliminar esta rutina?')) {
+      useDataStore.getState().deleteRutina(id);
+      showToast('Rutina eliminada', 'success');
+    }
+  };
+
   const handleExport = () => {
     const data = exportData();
     const blob = new Blob([data], { type: 'application/json' });
@@ -232,56 +214,60 @@ export const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       <SimpleToast {...toast} />
       
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl shadow-sm border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-orange-500 transition-colors">
+      <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'rgba(var(--bg-secondary), 0.9)', borderColor: 'var(--border-color)' }}>
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/" 
+                className="flex items-center gap-2 p-2.5 rounded-xl transition-all hover:scale-105"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+              >
                 <ChevronLeft className="w-5 h-5"/>
-                <span className="text-sm">Volver</span>
               </Link>
-              <div className="w-px h-6 bg-gray-300"/>
+              <div className="w-px h-8" style={{ background: 'var(--border-color)' }}/>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/30">
-                  <Settings className="w-5 h-5 text-white"/>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent-green)] to-[var(--accent-blue)] flex items-center justify-center shadow-lg">
+                  <Settings className="w-6 h-6 text-black"/>
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold text-gray-800 tracking-wide">Panel de Administración</h1>
-                  <p className="text-xs text-orange-500">FitPro Manager</p>
+                  <h1 className="text-lg font-bold tracking-wide" style={{ color: 'var(--text-primary)' }}>Panel de Administración</h1>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--accent-green)' }}>FitPro Manager</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-200 text-xs font-medium text-gray-600">
-                <span className="text-orange-500">●</span> {rutinas.length} Rutinas
+              <div className="px-4 py-2 rounded-xl border text-sm font-semibold" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}>
+                <span className="text-orange-400">●</span> {rutinas.length} Rutinas
               </div>
-              <div className="px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-200 text-xs font-medium text-gray-600">
-                <span className="text-green-500">●</span> {ejercicios.length} Ejercicios
+              <div className="px-4 py-2 rounded-xl border text-sm font-semibold" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}>
+                <span className="text-green-400">●</span> {ejercicios.length} Ejercicios
               </div>
-              <div className="px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-200 text-xs font-medium text-gray-600">
-                <span className="text-blue-500">●</span> {unidades.length} Unidades
+              <div className="px-4 py-2 rounded-xl border text-sm font-semibold" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}>
+                <span className="text-blue-400">●</span> {unidades.length} Unidades
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 mt-6">
-        <div className="flex gap-2 p-1.5 rounded-2xl bg-white shadow-sm border border-gray-200">
+      <div className="max-w-6xl mx-auto px-4 mt-6">
+        <div className="flex gap-2 p-1.5 rounded-2xl border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`
-                flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl 
-                font-semibold text-sm transition-all duration-300
-                ${activeTab === tab.id 
-                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}
-              `}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300"
+              style={{
+                background: activeTab === tab.id 
+                  ? 'linear-gradient(135deg, var(--accent-green), var(--accent-blue))' 
+                  : 'transparent',
+                color: activeTab === tab.id ? 'black' : 'var(--text-secondary)',
+                boxShadow: activeTab === tab.id ? '0 4px 20px var(--glow-green)' : 'none'
+              }}
             >
               {tab.icon}
               <span>{tab.label}</span>
@@ -290,64 +276,31 @@ export const Admin = () => {
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6">
         {activeTab === 'rutinas' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex justify-end">
-              <Button 
-                onClick={handleNewRoutine} 
-                icon={<Plus className="w-5 h-5" />}
-              >
+              <Button onClick={handleNewRoutine} icon={<Plus className="w-5 h-5" />}>
                 Nueva Rutina
               </Button>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-5 md:grid-cols-2">
               {rutinas.map(r => (
-                <div key={r.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 hover:border-orange-300 transition-colors group">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 text-lg mb-1">{r.nombre}</h3>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-600 text-xs font-medium">
-                          {r.categoria}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-600 text-xs font-medium">
-                          {r.dificultad}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-green-100 text-green-600 text-xs font-medium">
-                          {r.duracion_min} min
-                        </span>
-                      </div>
-                      <p className="text-gray-500 text-sm">{r.ejercicios.length} ejercicios</p>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEditRoutine(r)}
-                        className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-blue-50 text-blue-500 transition-all"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (window.confirm('¿Eliminar esta rutina?')) {
-                            useDataStore.getState().deleteRutina(r.id);
-                            showToast('Rutina eliminada', 'success');
-                          }
-                        }}
-                        className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-500 transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <RoutineCard
+                  key={r.id}
+                  rutina={r}
+                  onEdit={handleEditRoutine}
+                  onDelete={handleDeleteRoutine}
+                />
               ))}
             </div>
             {rutinas.length === 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
-                <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-xl font-bold text-gray-700 mb-2">No hay rutinas</h3>
-                <p className="text-gray-500 mb-6">Crea tu primera rutina para comenzar</p>
+              <div className="text-center py-16 rounded-3xl border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+                <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[var(--accent-green)]/20 to-[var(--accent-blue)]/20 flex items-center justify-center">
+                  <Dumbbell className="w-12 h-12" style={{ color: 'var(--text-muted)' }} />
+                </div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No hay rutinas</h3>
+                <p className="mb-6" style={{ color: 'var(--text-muted)' }}>Crea tu primera rutina para comenzar</p>
                 <Button onClick={handleNewRoutine} icon={<Plus className="w-5 h-5" />}>
                   Crear Rutina
                 </Button>
@@ -363,14 +316,14 @@ export const Admin = () => {
         {activeTab === 'unidades' && <UnitManager />}
       </main>
 
-      <div className="max-w-5xl mx-auto px-4 pb-6">
+      <div className="max-w-6xl mx-auto px-4 pb-6">
         <div className="flex flex-wrap gap-3 justify-center">
           <Button variant="secondary" onClick={handleExport} icon={<Download className="w-4 h-4" />}>
             Exportar Datos
           </Button>
           <label className="cursor-pointer">
             <input type="file" accept=".json" onChange={handleImport} className="hidden"/>
-            <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm">
+            <span className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))', color: 'white', boxShadow: '0 4px 15px var(--glow-blue)' }}>
               <Upload className="w-4 h-4"/>Importar Datos
             </span>
           </label>
@@ -381,7 +334,7 @@ export const Admin = () => {
       </div>
 
       <footer className="text-center py-6">
-        <p className="text-xs text-gray-400">FitPro Admin Panel • {new Date().toISOString().split('T')[0]}</p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>FitPro Admin Panel • {new Date().toISOString().split('T')[0]}</p>
       </footer>
 
       <RoutineWizard 

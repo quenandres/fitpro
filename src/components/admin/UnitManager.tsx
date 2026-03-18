@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, X, Save, Ruler } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, Ruler, Beaker } from 'lucide-react';
 import { useDataStore } from '../../store/useDataStore';
-import { useTheme } from '../../context/ThemeContext';
 import type { Unidad } from '../../types';
 
 const emptyUnidad: Omit<Unidad, 'id'> = {
@@ -11,26 +10,25 @@ const emptyUnidad: Omit<Unidad, 'id'> = {
   descripcion: ''
 };
 
-const tipos = ['conteo', 'distancia', 'tiempo', 'peso', 'energia', 'intensidad'];
+const tipos = [
+  { value: 'conteo', label: 'Conteo', color: 'from-emerald-400 to-green-500' },
+  { value: 'distancia', label: 'Distancia', color: 'from-blue-400 to-cyan-500' },
+  { value: 'tiempo', label: 'Tiempo', color: 'from-purple-400 to-pink-500' },
+  { value: 'peso', label: 'Peso', color: 'from-orange-400 to-red-500' },
+  { value: 'energia', label: 'Energía', color: 'from-yellow-400 to-amber-500' },
+  { value: 'intensidad', label: 'Intensidad', color: 'from-rose-400 to-red-500' },
+];
+
+const getTipoStyle = (tipo: string) => {
+  const t = tipos.find(t => t.value === tipo);
+  return t || { color: 'from-gray-400 to-gray-500' };
+};
 
 export const UnitManager = () => {
   const { unidades, addUnidad, updateUnidad, deleteUnidad } = useDataStore();
-  const { isDark } = useTheme();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState<Omit<Unidad, 'id'>>(emptyUnidad);
-
-  const styles = {
-    bg: isDark ? '#1a1a1a' : '#f1f5f9',
-    bgInput: isDark ? '#0d0d0d' : '#ffffff',
-    border: isDark ? '#ff6b00' : '#f97316',
-    borderLight: isDark ? '#333' : '#e2e8f0',
-    text: isDark ? '#ffffff' : '#1e293b',
-    textMuted: isDark ? '#888' : '#64748b',
-    accent: '#ff6b00',
-    success: '#22c55e',
-    danger: '#ef4444',
-  };
 
   const handleSave = () => {
     if (!form.nombre || !form.simbolo) return;
@@ -63,66 +61,158 @@ export const UnitManager = () => {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold font-mono flex items-center gap-2" style={{ color: styles.text }}>
-          <Ruler className="w-5 h-5" style={{ color: styles.accent }}/>GESTION DE UNIDADES
-        </h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-purple)] to-[var(--accent-blue)] flex items-center justify-center">
+            <Ruler className="w-5 h-5 text-white"/>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Gestión de Unidades</h2>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{unidades.length} unidades configuradas</p>
+          </div>
+        </div>
         {!isCreating && (
-          <button onClick={() => setIsCreating(true)} className="flex items-center gap-1 px-3 py-1.5 rounded font-mono text-sm font-bold" style={{ background: `linear-gradient(180deg, ${styles.accent} 0%, #e55a00 100%)`, color: 'white' }}>
-            <Plus className="w-4 h-4"/>NUEVA
+          <button 
+            onClick={() => setIsCreating(true)} 
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105"
+            style={{ background: 'linear-gradient(135deg, var(--accent-green), var(--accent-blue))', color: 'black', boxShadow: '0 4px 15px var(--glow-green)' }}
+          >
+            <Plus className="w-4 h-4"/>Nueva Unidad
           </button>
         )}
       </div>
 
       {isCreating && (
-        <div className="mb-4 p-4 rounded-lg" style={{ background: styles.bg, border: `2px solid ${styles.border}` }}>
-          <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="rounded-3xl border p-6" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+          <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+            {editingId ? 'Editar Unidad' : 'Nueva Unidad'}
+          </h3>
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-xs font-mono block mb-1" style={{ color: styles.textMuted }}>NOMBRE *</label>
-              <input type="text" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} className="w-full px-3 py-2 rounded font-mono text-sm" style={{ background: styles.bgInput, border: `1px solid ${styles.borderLight}`, color: styles.text }}/>
+              <label className="text-xs font-semibold block mb-2" style={{ color: 'var(--text-muted)' }}>NOMBRE *</label>
+              <input 
+                type="text" 
+                value={form.nombre} 
+                onChange={e => setForm({...form, nombre: e.target.value})} 
+                className="w-full px-4 py-3 rounded-xl focus:outline-none"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '2px solid var(--border-color)' }}
+              />
             </div>
             <div>
-              <label className="text-xs font-mono block mb-1" style={{ color: styles.textMuted }}>SIMBOLO *</label>
-              <input type="text" value={form.simbolo} onChange={e => setForm({...form, simbolo: e.target.value})} className="w-full px-3 py-2 rounded font-mono text-sm" style={{ background: styles.bgInput, border: `1px solid ${styles.borderLight}`, color: styles.text }}/>
+              <label className="text-xs font-semibold block mb-2" style={{ color: 'var(--text-muted)' }}>SÍMBOLO *</label>
+              <input 
+                type="text" 
+                value={form.simbolo} 
+                onChange={e => setForm({...form, simbolo: e.target.value})} 
+                className="w-full px-4 py-3 rounded-xl focus:outline-none"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '2px solid var(--border-color)' }}
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-xs font-mono block mb-1" style={{ color: styles.textMuted }}>TIPO</label>
-              <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})} className="w-full px-3 py-2 rounded font-mono text-sm" style={{ background: styles.bgInput, border: `1px solid ${styles.borderLight}`, color: styles.text }}>
-                {tipos.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+              <label className="text-xs font-semibold block mb-2" style={{ color: 'var(--text-muted)' }}>TIPO</label>
+              <select 
+                value={form.tipo} 
+                onChange={e => setForm({...form, tipo: e.target.value})} 
+                className="w-full px-4 py-3 rounded-xl focus:outline-none cursor-pointer"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '2px solid var(--border-color)' }}
+              >
+                {tipos.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-mono block mb-1" style={{ color: styles.textMuted }}>DESCRIPCION</label>
-              <input type="text" value={form.descripcion} onChange={e => setForm({...form, descripcion: e.target.value})} className="w-full px-3 py-2 rounded font-mono text-sm" style={{ background: styles.bgInput, border: `1px solid ${styles.borderLight}`, color: styles.text }}/>
+              <label className="text-xs font-semibold block mb-2" style={{ color: 'var(--text-muted)' }}>DESCRIPCIÓN</label>
+              <input 
+                type="text" 
+                value={form.descripcion} 
+                onChange={e => setForm({...form, descripcion: e.target.value})} 
+                className="w-full px-4 py-3 rounded-xl focus:outline-none"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '2px solid var(--border-color)' }}
+              />
             </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={handleCancel} className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded font-mono text-sm" style={{ background: styles.borderLight, color: styles.text }}><X className="w-4 h-4"/>CANCELAR</button>
-            <button onClick={handleSave} className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded font-mono text-sm font-bold" style={{ background: styles.success, color: 'white' }}><Save className="w-4 h-4"/>GUARDAR</button>
+          <div className="flex gap-3">
+            <button 
+              onClick={handleCancel} 
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+              style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+            >
+              <X className="w-4 h-4"/>Cancelar
+            </button>
+            <button 
+              onClick={handleSave} 
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, var(--accent-green), var(--accent-blue))', color: 'black', boxShadow: '0 4px 15px var(--glow-green)' }}
+            >
+              <Save className="w-4 h-4"/>Guardar
+            </button>
           </div>
         </div>
       )}
 
-      <div className="space-y-2">
-        {unidades.map(u => (
-          <div key={u.id} className="flex items-center justify-between p-3 rounded-lg" style={{ background: styles.bg, border: `1px solid ${styles.borderLight}` }}>
-            <div className="flex items-center gap-3">
-              <span className="w-12 h-12 rounded flex items-center justify-center font-mono text-sm font-bold" style={{ background: styles.bgInput, border: `1px solid ${styles.accent}`, color: styles.accent }}>{u.simbolo}</span>
-              <div>
-                <p className="font-medium font-mono text-sm" style={{ color: styles.text }}>{u.nombre}</p>
-                <p className="text-xs font-mono" style={{ color: styles.textMuted }}>{u.tipo}</p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {unidades.map(u => {
+          const tipoStyle = getTipoStyle(u.tipo);
+          return (
+            <div 
+              key={u.id} 
+              className="group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+            >
+              <div className={`h-1.5 w-full bg-gradient-to-r ${tipoStyle.color}`} />
+              
+              <div className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tipoStyle.color} flex items-center justify-center text-xl font-bold text-white shadow-lg`}>
+                    {u.simbolo}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>{u.nombre}</h4>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs px-2 py-1 rounded-lg font-medium" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                        {u.tipo}
+                      </span>
+                    </div>
+                    {u.descripcion && (
+                      <p className="text-sm line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{u.descripcion}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end gap-2 mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <button 
+                    onClick={() => handleEdit(u)} 
+                    className="p-2.5 rounded-xl transition-all hover:scale-110"
+                    style={{ background: 'var(--bg-tertiary)', color: 'var(--accent-blue)' }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(u.id)} 
+                    className="p-2.5 rounded-xl transition-all hover:scale-110"
+                    style={{ background: 'var(--bg-tertiary)', color: 'var(--text-red-500)' }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex gap-1">
-              <button onClick={() => handleEdit(u)} className="p-2 rounded hover:bg-gray-700"><Pencil className="w-4 h-4" style={{ color: '#eab308' }}/></button>
-              <button onClick={() => handleDelete(u.id)} className="p-2 rounded hover:bg-gray-700"><Trash2 className="w-4 h-4" style={{ color: styles.danger }}/></button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+      
+      {unidades.length === 0 && (
+        <div className="text-center py-12 rounded-3xl border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--accent-purple)]/20 to-[var(--accent-blue)]/20 flex items-center justify-center">
+            <Beaker className="w-10 h-10" style={{ color: 'var(--text-muted)' }} />
+          </div>
+          <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Sin unidades</h3>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Crea tu primera unidad de medida</p>
+        </div>
+      )}
     </div>
   );
 };
