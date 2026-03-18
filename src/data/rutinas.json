@@ -1,0 +1,153 @@
+[
+  {
+    "id": 1,
+    "nombre": "Simulacro Hyrox",
+    "categoria": "Funcional / Resistencia",
+    "dificultad": "Avanzado",
+    "duracion_min": 60,
+    "descripcion": "Una mezcla de carrera y estaciones funcionales típicas de la competición Hyrox.",
+    "ejercicios": [
+      { "nombre": "Carrera", "series": 1, "valor": 1000, "unidad_id": 2 },
+      { "nombre": "SkiErg", "series": 1, "valor": 1000, "unidad_id": 2 },
+      { "nombre": "Empuje de Trineo", "series": 1, "valor": 50, "unidad_id": 2 },
+      { "nombre": "Tracción de Trineo", "series": 1, "valor": 50, "unidad_id": 2 },
+      { "nombre": "Burpee Broad Jumps", "series": 1, "valor": 80, "unidad_id": 2 },
+      { "nombre": "Remo", "series": 1, "valor": 1000, "unidad_id": 2 },
+      { "nombre": "Carrera de Agricultor", "series": 1, "valor": 200, "unidad_id": 2 },
+      { "nombre": "Zancadas con saco", "series": 1, "valor": 100, "unidad_id": 2 },
+      { "nombre": "Wall Balls", "series": 1, "valor": 100, "unidad_id": 1 },
+      { "nombre": "Carrera Final", "series": 1, "valor": 1000, "unidad_id": 2 }
+    ]
+  },
+  {
+    "id": 2,
+    "nombre": "Fuerza Total (Full Body)",
+    "categoria": "Fuerza",
+    "dificultad": "Intermedio",
+    "duracion_min": 45,
+    "descripcion": "Rutina clásica de gimnasio para trabajar todos los grupos musculares principales.",
+    "ejercicios": [
+      { "nombre": "Sentadilla con Barra", "series": 4, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Press de Banca", "series": 4, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Peso Muerto Rumano", "series": 3, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Dominadas", "series": 3, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Press Militar", "series": 3, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Plancha Abdominal", "series": 3, "valor": 60, "unidad_id": 5 }
+    ]
+  },
+  {
+    "id": 3,
+    "nombre": "HIIT Quema Grasa",
+    "categoria": "Cardio",
+    "dificultad": "Intermedio",
+    "duracion_min": 20,
+    "descripcion": "Entrenamiento de intervalos de alta intensidad para maximizar el gasto calórico.",
+    "ejercicios": [
+      { "nombre": "Jumping Jacks", "series": 4, "valor": 45, "unidad_id": 5 },
+      { "nombre": "Mountain Climbers", "series": 4, "valor": 45, "unidad_id": 5 },
+      { "nombre": "Burpees", "series": 4, "valor": 45, "unidad_id": 5 },
+      { "nombre": "High Knees", "series": 4, "valor": 45, "unidad_id": 5 },
+      { "nombre": "Sentadillas con Salto", "series": 4, "valor": 45, "unidad_id": 5 }
+    ]
+  },
+  {
+    "id": 4,
+    "nombre": "Core de Acero",
+    "categoria": "Abdominales",
+    "dificultad": "Todos los niveles",
+    "duracion_min": 15,
+    "descripcion": "Enfoque total en la estabilidad del núcleo y la fuerza abdominal.",
+    "ejercicios": [
+      { "nombre": "Crunches Bicicleta", "series": 3, "valor": 20, "unidad_id": 1 },
+      { "nombre": "Elevación de Piernas", "series": 3, "valor": 15, "unidad_id": 1 },
+      { "nombre": "Russian Twists", "series": 3, "valor": 30, "unidad_id": 1 },
+      { "nombre": "Plancha Lateral", "series": 3, "valor": 45, "unidad_id": 5 },
+      { "nombre": "Hollow Body Hold", "series": 3, "valor": 30, "unidad_id": 5 }
+    ]
+  },
+  {
+    "id": 5,
+    "nombre": "Piernas y Glúteos",
+    "categoria": "Fuerza",
+    "dificultad": "Intermedio",
+    "duracion_min": 50,
+    "descripcion": "Rutina hipertrofia enfocada en el tren inferior.",
+    "ejercicios": [
+      { "nombre": "Hip Thrust", "series": 4, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Zancadas", "series": 3, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Prensa de Piernas", "series": 3, "valor": 15, "unidad_id": 1 },
+      { "nombre": "Extensiones de Cuádriceps", "series": 3, "valor": 15, "unidad_id": 1 },
+      { "nombre": "Curl Femoral", "series": 3, "valor": 15, "unidad_id": 1 },
+      { "nombre": "Elevación de Talones", "series": 4, "valor": 20, "unidad_id": 1 }
+    ]
+  },
+  {
+    "id": 6,
+    "nombre": "Empuje y Tracción (Push/Pull)",
+    "categoria": "Fuerza",
+    "dificultad": "Avanzado",
+    "duracion_min": 55,
+    "descripcion": "División clásica de entrenamiento de torso.",
+    "ejercicios": [
+      { "nombre": "Press Inclinado", "series": 4, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Remo con Barra", "series": 4, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Fondos en Paralelas", "series": 3, "valor": 1, "unidad_id": 15 },
+      { "nombre": "Face Pulls", "series": 3, "valor": 15, "unidad_id": 1 },
+      { "nombre": "Curl de Bíceps", "series": 3, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Extensiones de Tríceps", "series": 3, "valor": 12, "unidad_id": 1 }
+    ]
+  },
+  {
+    "id": 7,
+    "nombre": "Calistenia en Casa",
+    "categoria": "Peso Corporal",
+    "dificultad": "Intermedio",
+    "duracion_min": 30,
+    "descripcion": "Entrenamiento efectivo sin necesidad de equipamiento.",
+    "ejercicios": [
+      { "nombre": "Flexiones", "series": 4, "valor": 20, "unidad_id": 1 },
+      { "nombre": "Sentadillas al aire", "series": 4, "valor": 25, "unidad_id": 1 },
+      { "nombre": "Dominadas", "series": 3, "valor": 1, "unidad_id": 15 },
+      { "nombre": "Zancadas estáticas", "series": 3, "valor": 12, "unidad_id": 1 },
+      { "nombre": "Superman", "series": 3, "valor": 15, "unidad_id": 1 }
+    ]
+  },
+  {
+    "id": 8,
+    "nombre": "Movilidad y Recuperación",
+    "categoria": "Movilidad",
+    "dificultad": "Bajo",
+    "duracion_min": 25,
+    "descripcion": "Rutina suave para mejorar el rango de movimiento y reducir dolor.",
+    "ejercicios": [
+      { "nombre": "Gato-Vaca", "series": 2, "valor": 10, "unidad_id": 1 },
+      { "nombre": "Rotaciones de Cadera", "series": 2, "valor": 60, "unidad_id": 5 },
+      { "nombre": "Estiramiento de Pectoral", "series": 2, "valor": 45, "unidad_id": 5 },
+      { "nombre": "Estiramiento de Isquiotibiales", "series": 2, "valor": 60, "unidad_id": 5 },
+      { "nombre": "Dislocaciones de hombro", "series": 2, "valor": 15, "unidad_id": 1 }
+    ]
+  },
+  {
+    "id": 9,
+    "nombre": "WOD Tipo CrossFit",
+    "categoria": "Metabólico",
+    "dificultad": "Avanzado",
+    "duracion_min": 15,
+    "descripcion": "Entrenamiento contra el reloj (AMRAP o For Time).",
+    "ejercicios": [
+      { "nombre": "Thrusters", "series": 5, "valor": 21, "unidad_id": 1 },
+      { "nombre": "Dominadas estrictas", "series": 5, "valor": 21, "unidad_id": 1 }
+    ]
+  },
+  {
+    "id": 10,
+    "nombre": "Cardio Steady State",
+    "categoria": "Resistencia",
+    "dificultad": "Bajo",
+    "duracion_min": 40,
+    "descripcion": "Ejercicio cardiovascular continuo a ritmo moderado para base aeróbica.",
+    "ejercicios": [
+      { "nombre": "Cinta / Elíptica", "series": 1, "valor": 40, "unidad_id": 4 }
+    ]
+  }
+]

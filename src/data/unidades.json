@@ -1,0 +1,17 @@
+[
+  { "id": 1, "nombre": "Repeticiones", "tipo": "conteo", "simbolo": "reps", "descripcion": "Número de veces que se realiza un movimiento" },
+  { "id": 2, "nombre": "Metros", "tipo": "distancia", "simbolo": "m", "descripcion": "Distancia lineal en metros" },
+  { "id": 3, "nombre": "Kilómetros", "tipo": "distancia", "simbolo": "km", "descripcion": "Distancia lineal en kilómetros" },
+  { "id": 4, "nombre": "Minutos", "tipo": "tiempo", "simbolo": "min", "descripcion": "Duración en minutos" },
+  { "id": 5, "nombre": "Segundos", "tipo": "tiempo", "simbolo": "seg", "descripcion": "Duración en segundos" },
+  { "id": 6, "nombre": "Kilogramos", "tipo": "peso", "simbolo": "kg", "descripcion": "Peso o carga en kilogramos" },
+  { "id": 7, "nombre": "Libras", "tipo": "peso", "simbolo": "lbs", "descripcion": "Peso o carga en libras" },
+  { "id": 8, "nombre": "Series", "tipo": "conteo", "simbolo": "sets", "descripcion": "Número de series a realizar" },
+  { "id": 9, "nombre": "Rondas", "tipo": "conteo", "simbolo": "rounds", "descripcion": "Número de rondas completas del circuito" },
+  { "id": 10, "nombre": "Calorías", "tipo": "energia", "simbolo": "cal", "descripcion": "Gasto energético en calorías" },
+  { "id": 11, "nombre": "Porcentaje", "tipo": "intensidad", "simbolo": "%", "descripcion": "Porcentaje de la capacidad máxima" },
+  { "id": 12, "nombre": "Frecuencia Cardíaca", "tipo": "intensidad", "simbolo": "bpm", "descripcion": "Latidos por minuto" },
+  { "id": 13, "nombre": "Pasos", "tipo": "conteo", "simbolo": "steps", "descripcion": "Número de pasos o zancadas" },
+  { "id": 14, "nombre": "Millas", "tipo": "distancia", "simbolo": "mi", "descripcion": "Distancia en millas" },
+  { "id": 15, "nombre": "Fallo", "tipo": "intensidad", "simbolo": "failure", "descripcion": "Hasta alcanzar el fallo muscular" }
+]
