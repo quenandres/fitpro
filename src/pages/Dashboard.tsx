@@ -1,101 +1,143 @@
 import { useState, useMemo } from 'react';
-import { Search, Sparkles, TrendingUp, Target } from 'lucide-react';
+import { Search, Zap, Target, Flame, Clock } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { WorkoutCard } from '../components/dashboard/WorkoutCard';
 import { Navbar, BottomNav } from '../components/layout/Navbar';
 
 export const Dashboard = () => {
   const [search, setSearch] = useState('');
-  const rutinas = useDataStore(state => state.rutinas);
+  const rutinas = useDataStore((s) => s.rutinas);
 
-  const filteredRutinas = useMemo(() => {
+  const filtered = useMemo(() => {
     if (!search.trim()) return rutinas;
     const s = search.toLowerCase();
-    return rutinas.filter(r => 
-      r.nombre.toLowerCase().includes(s) || 
-      r.categoria.toLowerCase().includes(s)
+    return rutinas.filter(
+      (r) => r.nombre.toLowerCase().includes(s) || r.categoria.toLowerCase().includes(s)
     );
   }, [search, rutinas]);
 
+  const totalEjercicios = rutinas.reduce((a, r) => a + r.ejercicios.length, 0);
+  const avgMin = Math.round(rutinas.reduce((a, r) => a + r.duracion_min, 0) / (rutinas.length || 1));
+
+  const STATS = [
+    { icon: Target, label: 'Rutinas',    value: rutinas.length, accent: '#22c55e',  bg: 'rgba(34,197,94,.12)'  },
+    { icon: Flame,  label: 'Ejercicios', value: totalEjercicios, accent: '#58a6ff', bg: 'rgba(88,166,255,.12)' },
+    { icon: Clock,  label: 'Prom. min',  value: avgMin,          accent: '#a371f7', bg: 'rgba(163,113,247,.12)'},
+  ];
+
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
       <Navbar />
       <BottomNav />
-      
-      <main className="pt-20 pb-24 px-4 max-w-md mx-auto">
-        <header className="mb-8 animate-slide-up">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--accent-green)] to-[var(--accent-blue)] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-black" />
-            </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--accent-green)' }}>
+
+      <main
+        className="max-w-md mx-auto"
+        style={{ paddingTop: 70, paddingBottom: 80, paddingLeft: 16, paddingRight: 16 }}
+      >
+
+        {/* ── Hero ─────────────────────────────────────── */}
+        <section className="animate-slide-up" style={{ paddingTop: 20, paddingBottom: 16 }}>
+          {/* Eyebrow badge */}
+          <div className="flex items-center gap-1.5 mb-2.5" style={{ marginBottom: 10 }}>
+            <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
+              <Zap size={10} style={{ marginRight: 3 }} />
               Bienvenido de vuelta
             </span>
           </div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <h1
+            className="font-sora"
+            style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, letterSpacing: '-.02em', color: 'var(--text-primary)', marginBottom: 4 }}
+          >
             Hola, <span className="text-gradient">Atleta</span> 👋
           </h1>
-          <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
-            ¿Listo para un nuevo entrenamiento?
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+            ¿Listo para entrenar hoy?
           </p>
-        </header>
+        </section>
 
-        <div className="grid grid-cols-2 gap-3 mb-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <div className="relative overflow-hidden rounded-2xl p-4 glass-effect group cursor-pointer transition-all duration-300 hover:scale-[1.02]">
-            <div className="absolute -right-2 -top-2 w-16 h-16 bg-gradient-to-br from-[var(--accent-green)]/20 to-transparent rounded-full blur-xl group-hover:scale-110 transition-transform" />
-            <Target className="w-6 h-6 mb-2" style={{ color: 'var(--accent-green)' }} />
-            <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{rutinas.length}</p>
-            <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Rutinas</p>
-          </div>
-          <div className="relative overflow-hidden rounded-2xl p-4 glass-effect group cursor-pointer transition-all duration-300 hover:scale-[1.02]">
-            <div className="absolute -right-2 -top-2 w-16 h-16 bg-gradient-to-br from-[var(--accent-blue)]/20 to-transparent rounded-full blur-xl group-hover:scale-110 transition-transform" />
-            <TrendingUp className="w-6 h-6 mb-2" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{rutinas.reduce((acc, r) => acc + r.ejercicios.length, 0)}</p>
-            <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Ejercicios</p>
-          </div>
+        {/* ── Stats ────────────────────────────────────── */}
+        <div
+          className="animate-slide-up delay-100"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 16 }}
+        >
+          {STATS.map(({ icon: Icon, label, value, accent, bg }) => (
+            <div
+              key={label}
+              className="fp-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '12px 6px', borderRadius: 14 }}
+            >
+              <div style={{ width: 30, height: 30, borderRadius: 9, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 2 }}>
+                <Icon size={14} color={accent} />
+              </div>
+              <span className="font-sora" style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {value}
+              </span>
+              <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)' }}>
+                {label}
+              </span>
+            </div>
+          ))}
         </div>
 
-        <div className="relative mb-8 group animate-slide-up" style={{ animationDelay: '200ms' }}>
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--accent-green)] to-[var(--accent-blue)] rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity blur" />
-          <div className="relative flex items-center">
-            <Search className="absolute left-4 w-5 h-5 transition-colors z-10" style={{ color: 'var(--text-muted)' }} />
-            <input 
-              type="text" 
-              placeholder="Buscar rutinas..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="w-full py-4 pl-12 pr-4 rounded-2xl text-base glass-effect focus:outline-none transition-all"
-              style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-            />
-          </div>
+        {/* ── Search ───────────────────────────────────── */}
+        <div className="animate-slide-up delay-150 relative" style={{ marginBottom: 16 }}>
+          <Search
+            size={14}
+            color="var(--text-muted)"
+            style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          />
+          <input
+            className="fp-input"
+            style={{ paddingLeft: 34 }}
+            type="text"
+            placeholder="Buscar rutinas..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
-        <div className="flex items-center justify-between mb-6 animate-slide-up" style={{ animationDelay: '300ms' }}>
-          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+        {/* ── Section header ───────────────────────────── */}
+        <div
+          className="animate-slide-up delay-200 flex items-center justify-between"
+          style={{ marginBottom: 12 }}
+        >
+          <span className="font-sora" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
             Tus Rutinas
-          </h2>
-          <span className="text-xs font-semibold px-3 py-1.5 rounded-full glass-effect" style={{ color: 'var(--text-muted)' }}>
-            {filteredRutinas.length} total
+          </span>
+          <span
+            className="badge"
+            style={{ background: 'var(--bg-overlay)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', fontSize: 10, padding: '2px 8px' }}
+          >
+            {filtered.length} total
           </span>
         </div>
 
-        <div className="space-y-4">
-          {filteredRutinas.map((rutina, index) => (
-            <div key={rutina.id} className="animate-slide-up" style={{ animationDelay: `${400 + index * 100}ms` }}>
+        {/* ── Cards ────────────────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {filtered.map((rutina, i) => (
+            <div
+              key={rutina.id}
+              className="animate-slide-up"
+              style={{ animationDelay: `${250 + i * 50}ms` }}
+            >
               <WorkoutCard rutina={rutina} />
             </div>
           ))}
         </div>
 
-        {filteredRutinas.length === 0 && (
-          <div className="text-center py-16 animate-slide-up">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-3xl glass-effect flex items-center justify-center">
-              <Search className="w-10 h-10" style={{ color: 'var(--text-muted)' }} />
+        {/* ── Empty state ──────────────────────────────── */}
+        {filtered.length === 0 && (
+          <div className="animate-fade-in text-center" style={{ paddingTop: 48 }}>
+            <div
+              style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}
+            >
+              <Search size={22} color="var(--text-muted)" />
             </div>
-            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Sin resultados</h3>
-            <p style={{ color: 'var(--text-muted)' }}>No se encontraron rutinas con ese nombre</p>
+            <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Sin resultados</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No se encontraron rutinas</p>
           </div>
         )}
+
       </main>
     </div>
   );

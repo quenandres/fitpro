@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -10,78 +10,57 @@ interface ModalProps {
   showClose?: boolean;
 }
 
+const SIZE_MAP = {
+  sm:   360,
+  md:   480,
+  lg:   680,
+  xl:   880,
+  full: undefined,
+};
+
 export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  size = 'lg',
-  showClose = true,
+  isOpen, onClose, title, children, size = 'lg', showClose = true,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', onKey);
       document.body.style.overflow = 'hidden';
     }
-
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const sizes = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-[95vw] max-h-[95vh]',
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
+    <div
+      className="animate-fade-in"
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
       <div
-        ref={modalRef}
-        className={`
-          relative w-full ${sizes[size]}
-          bg-[#1a1a1a]/95 backdrop-blur-2xl
-          border border-white/10
-          rounded-2xl
-          shadow-2xl
-          animate-[modalIn_0.3s_ease-out]
-          max-h-[90vh] flex flex-col
-        `}
+        className="fp-card animate-scale-in"
+        style={{ width: '100%', maxWidth: SIZE_MAP[size], maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: 18, overflow: 'hidden' }}
+        onClick={(e) => e.stopPropagation()}
       >
+        {/* Top accent */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg,var(--brand),var(--accent-blue))', flexShrink: 0 }} />
+
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <h2 className="text-xl font-bold text-white">{title}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <h2 className="font-sora" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{title}</h2>
           {showClose && (
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-            >
-              <X className="w-5 h-5" />
+            <button className="fp-btn fp-btn-ghost" style={{ padding: '5px 7px', borderRadius: 9 }} onClick={onClose}>
+              <X size={16} />
             </button>
           )}
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
           {children}
         </div>
       </div>
@@ -89,7 +68,6 @@ export const Modal: React.FC<ModalProps> = ({
   );
 };
 
-// Confirm Dialog
 interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -102,67 +80,27 @@ interface ConfirmDialogProps {
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
-  type = 'danger',
+  isOpen, onClose, onConfirm, title, message,
+  confirmText = 'Confirmar', cancelText = 'Cancelar', type = 'danger',
 }) => {
   if (!isOpen) return null;
 
-  const typeStyles = {
-    danger: {
-      icon: '🔴',
-      button: 'bg-red-500 hover:bg-red-600',
-      border: 'border-red-500/30',
-    },
-    warning: {
-      icon: '⚠️',
-      button: 'bg-yellow-500 hover:bg-yellow-600',
-      border: 'border-yellow-500/30',
-    },
-    info: {
-      icon: 'ℹ️',
-      button: 'bg-blue-500 hover:bg-blue-600',
-      border: 'border-blue-500/30',
-    },
-  };
-
-  const style = typeStyles[type];
+  const btnColor =
+    type === 'danger'  ? 'var(--accent-red)'    :
+    type === 'warning' ? 'var(--accent-orange)'  :
+    'var(--accent-blue)';
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className={`
-        relative w-full max-w-md
-        bg-[#1a1a1a]/95 backdrop-blur-2xl
-        border ${style.border}
-        rounded-2xl p-6
-        animate-[modalIn_0.2s_ease-out]
-      `}>
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-4xl">{style.icon}</span>
-          <div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-gray-400 text-sm mt-1">{message}</p>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={() => { onConfirm(); onClose(); }}
-            className={`flex-1 py-3 rounded-xl font-semibold text-white ${style.button} transition-all`}
-          >
-            {confirmText}
-          </button>
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div className="fp-card animate-scale-in" style={{ maxWidth: 380, width: '100%', padding: 20, borderRadius: 16 }} onClick={(e) => e.stopPropagation()}>
+        <p className="font-sora" style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{title}</p>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>{message}</p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="fp-btn fp-btn-secondary" style={{ flex: 1 }} onClick={onClose}>{cancelText}</button>
+          <button className="fp-btn fp-btn-primary" style={{ flex: 1, background: btnColor }} onClick={() => { onConfirm(); onClose(); }}>{confirmText}</button>
         </div>
       </div>
     </div>

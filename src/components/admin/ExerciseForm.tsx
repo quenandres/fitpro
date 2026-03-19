@@ -1,9 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { X, Image, Video, BookOpen, AlertCircle, Check } from 'lucide-react';
-import { Button } from './common/Button';
-import { Input } from './common/Input';
-import { SimpleToast } from './common/Toast';
+import {
+  X, Image, Video, BookOpen, AlertCircle, Check,
+  Plus, Dumbbell, Tag, Save,
+} from 'lucide-react';
 import type { Ejercicio } from '../../types';
+
+/* ── Constants ───────────────────────────────────────────── */
+const MUSCLE_GROUPS = [
+  'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps',
+  'Antebrazos', 'Core', 'Cuadriceps', 'Isquiotibiales',
+  'Glúteos', 'Piernas', 'Gemelos',
+];
+
+const EQUIPAMIENTOS = [
+  'Barra', 'Mancuernas', 'Peso Corporal', 'Máquina',
+  'Cable', 'Banda Elástica', 'Kettlebell', 'Banco', 'Ninguno',
+];
+
+const DIFICULTADES = ['Principiante', 'Intermedio', 'Avanzado'];
+const CATEGORIAS   = ['Fuerza', 'Cardio', 'Funcional', 'Core', 'Hipertrofia', 'Metabólico', 'Movilidad'];
+
+/* ── Small internal components ───────────────────────────── */
+
+const SectionTitle = ({ icon: Icon, label }: { icon: React.FC<{ size?: number; color?: string }>; label: string }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+    <Icon size={13} color="var(--text-muted)" />
+    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' as const, letterSpacing: '.07em' }}>
+      {label}
+    </span>
+  </div>
+);
+
+const FLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' as const, letterSpacing: '.05em', marginBottom: 6 }}>
+    {children}
+    {required && <span style={{ color: 'var(--accent-red)', marginLeft: 3 }}>*</span>}
+  </label>
+);
+
+const FieldError = ({ msg }: { msg?: string }) =>
+  msg ? <p style={{ marginTop: 5, fontSize: 12, color: 'var(--accent-red)' }}>{msg}</p> : null;
+
+interface ToggleChipProps {
+  label: string;
+  selected: boolean;
+  accent?: string;
+  onClick: () => void;
+}
+const ToggleChip = ({ label, selected, accent = 'var(--brand)', onClick }: ToggleChipProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    style={{
+      padding: '5px 12px',
+      borderRadius: 100,
+      border: `1px solid ${selected ? accent : 'var(--border)'}`,
+      background: selected ? `${accent}18` : 'var(--bg-elevated)',
+      color: selected ? accent : 'var(--text-secondary)',
+      fontSize: 12, fontWeight: 600,
+      cursor: 'pointer', outline: 'none',
+      transition: 'all .15s',
+      display: 'flex', alignItems: 'center', gap: 5,
+    }}
+  >
+    {selected && <Check size={10} />}
+    {label}
+  </button>
+);
+
+/* ── Main form ───────────────────────────────────────────── */
 
 interface ExerciseFormProps {
   isOpen: boolean;
@@ -12,441 +77,412 @@ interface ExerciseFormProps {
   onSave: (ejercicio: Omit<Ejercicio, 'id'>) => void;
 }
 
-const muscleGroups = [
-  'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps', 
-  'Antebrazos', 'Core', 'Cuadriceps', 'Isquiotibiales', 
-  'Glúteos', 'Piernas', 'Gemelos'
-];
-
-const equipamientos = [
-  'Barra', 'Mancuernas', 'Peso Corporal', 'Máquina', 
-  'Cable', 'Banda Elástica', 'Kettlebell', 'Banco', 'Ninguno'
-];
-
-const dificultades = ['Principiante', 'Intermedio', 'Avanzado'];
-const categorias = ['Fuerza', 'Cardio', 'Funcional', 'Core', 'Hipertrofia', 'Metabólico', 'Movilidad'];
+const EMPTY_FORM = {
+  nombre: '', categoria: 'Fuerza', dificultad: 'Intermedio',
+  descripcion: '', descripcion_larga: '',
+  grupo_muscular: [] as string[], equipamiento: [] as string[],
+  tags: [] as string[], imagen: '',
+  videos: [] as string[], recomendaciones: [] as string[],
+  unidad_id_default: 1,
+};
 
 export const ExerciseForm: React.FC<ExerciseFormProps> = ({
-  isOpen,
-  onClose,
-  editingEjercicio,
-  onSave,
+  isOpen, onClose, editingEjercicio, onSave,
 }) => {
-  const [toast, setToast] = useState<{ visible: boolean; type: 'success' | 'error'; message: string }>({
-    visible: false,
-    type: 'success',
-    message: '',
-  });
-
-  const [formData, setFormData] = useState({
-    nombre: '',
-    categoria: 'Fuerza',
-    dificultad: 'Intermedio',
-    descripcion: '',
-    descripcion_larga: '',
-    grupo_muscular: [] as string[],
-    equipamiento: [] as string[],
-    tags: [] as string[],
-    imagen: '',
-    videos: [] as string[],
-    recomendaciones: [] as string[],
-    unidad_id_default: 1,
-  });
-
-  const [newTag, setNewTag] = useState('');
-  const [newVideo, setNewVideo] = useState('');
-  const [newRecomendacion, setNewRecomendacion] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form,              setForm]              = useState(EMPTY_FORM);
+  const [errors,            setErrors]            = useState<Record<string, string>>({});
+  const [newTag,            setNewTag]            = useState('');
+  const [newVideo,          setNewVideo]          = useState('');
+  const [newRecomendacion,  setNewRecomendacion]  = useState('');
 
   useEffect(() => {
     if (editingEjercicio) {
-      setFormData({
-        nombre: editingEjercicio.nombre,
-        categoria: editingEjercicio.categoria,
-        dificultad: editingEjercicio.dificultad,
-        descripcion: editingEjercicio.descripcion,
+      setForm({
+        nombre:            editingEjercicio.nombre,
+        categoria:         editingEjercicio.categoria,
+        dificultad:        editingEjercicio.dificultad,
+        descripcion:       editingEjercicio.descripcion,
         descripcion_larga: editingEjercicio.descripcion_larga || '',
-        grupo_muscular: editingEjercicio.grupo_muscular,
-        equipamiento: editingEjercicio.equipamiento,
-        tags: editingEjercicio.tags,
-        imagen: editingEjercicio.imagen || '',
-        videos: editingEjercicio.videos || [],
-        recomendaciones: editingEjercicio.recomendaciones || [],
+        grupo_muscular:    editingEjercicio.grupo_muscular,
+        equipamiento:      editingEjercicio.equipamiento,
+        tags:              editingEjercicio.tags,
+        imagen:            editingEjercicio.imagen || '',
+        videos:            editingEjercicio.videos || [],
+        recomendaciones:   editingEjercicio.recomendaciones || [],
         unidad_id_default: editingEjercicio.unidad_id_default,
       });
     } else {
-      setFormData({
-        nombre: '',
-        categoria: 'Fuerza',
-        dificultad: 'Intermedio',
-        descripcion: '',
-        descripcion_larga: '',
-        grupo_muscular: [],
-        equipamiento: [],
-        tags: [],
-        imagen: '',
-        videos: [],
-        recomendaciones: [],
-        unidad_id_default: 1,
-      });
+      setForm(EMPTY_FORM);
     }
     setErrors({});
   }, [editingEjercicio, isOpen]);
 
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ visible: true, type, message });
-    setTimeout(() => setToast({ visible: false, type: 'success', message: '' }), 3000);
+  /* Handlers */
+  const set  = (key: string, val: unknown) => setForm((p) => ({ ...p, [key]: val }));
+  const toggle = (field: 'grupo_muscular' | 'equipamiento', val: string) =>
+    set(field, form[field].includes(val) ? form[field].filter((v) => v !== val) : [...form[field], val]);
+
+  const addListItem = (field: 'tags' | 'videos' | 'recomendaciones', val: string, setter: (v: string) => void) => {
+    if (!val.trim()) return;
+    if (field === 'tags' && form.tags.includes(val.trim())) return;
+    set(field, [...form[field], val.trim()]);
+    setter('');
   };
+  const removeListItem = (field: 'tags' | 'videos' | 'recomendaciones', idx: number) =>
+    set(field, (form[field] as string[]).filter((_, i) => i !== idx));
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = 'El nombre es obligatorio';
-    } else if (formData.nombre.length < 2) {
-      newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
-    }
-
-    if (formData.descripcion.length > 500) {
-      newErrors.descripcion = 'La descripción no puede exceder 500 caracteres';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.nombre.trim())       e.nombre      = 'El nombre es obligatorio';
+    if (form.nombre.length < 2)    e.nombre      = 'Mínimo 2 caracteres';
+    if (form.descripcion.length > 500) e.descripcion = 'Máximo 500 caracteres';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-
-    onSave({
-      nombre: formData.nombre,
-      categoria: formData.categoria,
-      dificultad: formData.dificultad,
-      descripcion: formData.descripcion,
-      descripcion_larga: formData.descripcion_larga,
-      grupo_muscular: formData.grupo_muscular,
-      equipamiento: formData.equipamiento,
-      tags: formData.tags,
-      imagen: formData.imagen,
-      videos: formData.videos,
-      recomendaciones: formData.recomendaciones,
-      unidad_id_default: formData.unidad_id_default,
-    });
-
-    showToast(
-      editingEjercicio ? 'Ejercicio actualizado' : 'Ejercicio creado',
-      'success'
-    );
+    onSave(form);
     onClose();
-  };
-
-  const toggleArrayField = (field: 'grupo_muscular' | 'equipamiento', value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter(v => v !== value)
-        : [...prev[field], value]
-    }));
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
-  };
-
-  const addVideo = () => {
-    if (newVideo.trim()) {
-      setFormData(prev => ({ ...prev, videos: [...prev.videos, newVideo.trim()] }));
-      setNewVideo('');
-    }
-  };
-
-  const removeVideo = (index: number) => {
-    setFormData(prev => ({ ...prev, videos: prev.videos.filter((_, i) => i !== index) }));
-  };
-
-  const addRecomendacion = () => {
-    if (newRecomendacion.trim()) {
-      setFormData(prev => ({ ...prev, recomendaciones: [...prev.recomendaciones, newRecomendacion.trim()] }));
-      setNewRecomendacion('');
-    }
-  };
-
-  const removeRecomendacion = (index: number) => {
-    setFormData(prev => ({ ...prev, recomendaciones: prev.recomendaciones.filter((_, i) => i !== index) }));
   };
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
-        <SimpleToast {...toast} />
+  /* Shared input style */
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '10px 13px',
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
+    borderRadius: 11, color: 'var(--text-primary)',
+    fontSize: 13, fontFamily: 'inherit', outline: 'none',
+    transition: 'border-color .15s',
+  };
+  const inpErr: React.CSSProperties = { ...inp, borderColor: 'rgba(248,81,73,.5)' };
 
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-800">
-            {editingEjercicio ? 'Editar Ejercicio' : 'Nuevo Ejercicio'}
-          </h2>
+  return (
+    <div
+      className="animate-fade-in"
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="fp-card animate-slide-up"
+        style={{ width: '100%', maxWidth: 680, maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: 20, overflow: 'hidden' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+
+        {/* ── Top accent ──────────────────────────────── */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg,var(--brand),var(--accent-blue))', flexShrink: 0 }} />
+
+        {/* ── Header ──────────────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--brand-dim)', border: '1px solid rgba(34,197,94,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Dumbbell size={15} color="var(--brand)" />
+            </div>
+            <div>
+              <p className="font-sora" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                {editingEjercicio ? 'Editar ejercicio' : 'Nuevo ejercicio'}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                {editingEjercicio ? editingEjercicio.nombre : 'Completa los campos para crear'}
+              </p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="fp-btn fp-btn-ghost"
+            style={{ padding: '6px 8px', borderRadius: 9 }}
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Imagen Thumbnail */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <Image className="w-4 h-4" /> Imagen Thumbnail (URL)
-            </label>
-            <Input
-              value={formData.imagen}
-              onChange={(e) => setFormData(prev => ({ ...prev, imagen: e.target.value }))}
-              placeholder="https://ejemplo.com/imagen.jpg"
-            />
-            {formData.imagen && (
-              <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
-                <img 
-                  src={formData.imagen} 
-                  alt="Preview" 
-                  className="w-full h-48 object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        {/* ── Scrollable body ─────────────────────────── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 18px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+            {/* ─ Imagen + preview ─ */}
+            <div>
+              <SectionTitle icon={Image} label="Imagen (URL)" />
+              <input
+                style={inp}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                value={form.imagen}
+                onChange={(e) => set('imagen', e.target.value)}
+              />
+              {form.imagen && (
+                <div style={{ marginTop: 8, borderRadius: 11, overflow: 'hidden', border: '1px solid var(--border)', height: 140 }}>
+                  <img
+                    src={form.imagen}
+                    alt="Preview"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* ─ Nombre ─ */}
+            <div>
+              <FLabel required>Nombre del ejercicio</FLabel>
+              <input
+                style={errors.nombre ? inpErr : inp}
+                placeholder="Ej: Press de Banca con Barra"
+                value={form.nombre}
+                onChange={(e) => set('nombre', e.target.value)}
+              />
+              <FieldError msg={errors.nombre} />
+            </div>
+
+            {/* ─ Categoría + Dificultad ─ */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <FLabel>Categoría</FLabel>
+                <select
+                  style={{ ...inp, cursor: 'pointer' }}
+                  value={form.categoria}
+                  onChange={(e) => set('categoria', e.target.value)}
+                >
+                  {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <FLabel>Dificultad</FLabel>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {DIFICULTADES.map((d) => {
+                    const sel = form.dificultad === d;
+                    const col = d === 'Avanzado' ? 'var(--accent-red)' : d === 'Intermedio' ? 'var(--accent-orange)' : 'var(--brand)';
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => set('dificultad', d)}
+                        style={{
+                          flex: 1, padding: '9px 6px',
+                          borderRadius: 10, border: `1px solid ${sel ? col : 'var(--border)'}`,
+                          background: sel ? `${col}18` : 'var(--bg-elevated)',
+                          color: sel ? col : 'var(--text-muted)',
+                          fontSize: 11, fontWeight: 600, cursor: 'pointer', outline: 'none',
+                          transition: 'all .15s',
+                        }}
+                      >
+                        {d}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* ─ Grupos musculares ─ */}
+            <div>
+              <FLabel>Grupos musculares</FLabel>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {MUSCLE_GROUPS.map((m) => (
+                  <ToggleChip
+                    key={m}
+                    label={m}
+                    selected={form.grupo_muscular.includes(m)}
+                    accent="var(--brand)"
+                    onClick={() => toggle('grupo_muscular', m)}
+                  />
+                ))}
+              </div>
+              {form.grupo_muscular.length > 0 && (
+                <p style={{ marginTop: 7, fontSize: 11, color: 'var(--brand)', fontWeight: 600 }}>
+                  {form.grupo_muscular.length} seleccionado{form.grupo_muscular.length > 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+
+            {/* ─ Equipamiento ─ */}
+            <div>
+              <FLabel>Equipamiento</FLabel>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {EQUIPAMIENTOS.map((eq) => (
+                  <ToggleChip
+                    key={eq}
+                    label={eq}
+                    selected={form.equipamiento.includes(eq)}
+                    accent="var(--accent-blue)"
+                    onClick={() => toggle('equipamiento', eq)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* ─ Descripción corta ─ */}
+            <div>
+              <FLabel>Descripción corta</FLabel>
+              <div style={{ position: 'relative' }}>
+                <textarea
+                  rows={2}
+                  style={{ ...inp, resize: 'none', borderColor: errors.descripcion ? 'rgba(248,81,73,.5)' : undefined }}
+                  placeholder="Breve descripción del ejercicio..."
+                  value={form.descripcion}
+                  onChange={(e) => set('descripcion', e.target.value)}
                 />
+                <span style={{ position: 'absolute', bottom: 8, right: 12, fontSize: 10, color: form.descripcion.length > 450 ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
+                  {form.descripcion.length}/500
+                </span>
               </div>
-            )}
-          </div>
-
-          {/* Nombre */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">
-              Nombre del Ejercicio <span className="text-red-500">*</span>
-            </label>
-            <Input
-              value={formData.nombre}
-              onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Ej: Press de Banca"
-              error={errors.nombre}
-            />
-          </div>
-
-          {/* Categoría y Dificultad */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Categoría</label>
-              <select
-                value={formData.categoria}
-                onChange={(e) => setFormData(prev => ({ ...prev, categoria: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 focus:border-orange-500 focus:outline-none"
-              >
-                {categorias.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+              <FieldError msg={errors.descripcion} />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Dificultad</label>
-              <select
-                value={formData.dificultad}
-                onChange={(e) => setFormData(prev => ({ ...prev, dificultad: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 focus:border-orange-500 focus:outline-none"
-              >
-                {dificultades.map(diff => (
-                  <option key={diff} value={diff}>{diff}</option>
-                ))}
-              </select>
-            </div>
-          </div>
 
-          {/* Grupo Muscular */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Grupos Musculares</label>
-            <div className="flex flex-wrap gap-2">
-              {muscleGroups.map(muscle => (
+            {/* ─ Descripción larga ─ */}
+            <div>
+              <SectionTitle icon={BookOpen} label="Descripción larga" />
+              <textarea
+                rows={5}
+                style={{ ...inp, resize: 'vertical', minHeight: 100 }}
+                placeholder="Técnica detallada, consejos, errores comunes..."
+                value={form.descripcion_larga}
+                onChange={(e) => set('descripcion_larga', e.target.value)}
+              />
+            </div>
+
+            {/* ─ Recomendaciones ─ */}
+            <div>
+              <SectionTitle icon={AlertCircle} label="Recomendaciones" />
+              <div style={{ display: 'flex', gap: 8, marginBottom: form.recomendaciones.length ? 10 : 0 }}>
+                <input
+                  style={{ ...inp, flex: 1 }}
+                  placeholder="Añadir una recomendación..."
+                  value={newRecomendacion}
+                  onChange={(e) => setNewRecomendacion(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addListItem('recomendaciones', newRecomendacion, setNewRecomendacion); }}}
+                />
                 <button
-                  key={muscle}
                   type="button"
-                  onClick={() => toggleArrayField('grupo_muscular', muscle)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    formData.grupo_muscular.includes(muscle)
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className="fp-btn fp-btn-secondary"
+                  style={{ gap: 5, flexShrink: 0, fontSize: 12 }}
+                  onClick={() => addListItem('recomendaciones', newRecomendacion, setNewRecomendacion)}
                 >
-                  {muscle}
+                  <Plus size={13} /> Añadir
                 </button>
-              ))}
+              </div>
+              {form.recomendaciones.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {form.recomendaciones.map((rec, i) => (
+                    <div
+                      key={i}
+                      style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 12px', borderRadius: 10, background: 'var(--bg-overlay)', border: '1px solid var(--border-subtle)' }}
+                    >
+                      <Check size={13} color="var(--brand)" style={{ marginTop: 1, flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{rec}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeListItem('recomendaciones', i)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 2 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Equipamiento */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Equipamiento</label>
-            <div className="flex flex-wrap gap-2">
-              {equipamientos.map(equip => (
+            {/* ─ Videos ─ */}
+            <div>
+              <SectionTitle icon={Video} label="Videos explicativos (URLs)" />
+              <div style={{ display: 'flex', gap: 8, marginBottom: form.videos.length ? 10 : 0 }}>
+                <input
+                  style={{ ...inp, flex: 1 }}
+                  placeholder="URL de YouTube, Vimeo..."
+                  value={newVideo}
+                  onChange={(e) => setNewVideo(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addListItem('videos', newVideo, setNewVideo); }}}
+                />
                 <button
-                  key={equip}
                   type="button"
-                  onClick={() => toggleArrayField('equipamiento', equip)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    formData.equipamiento.includes(equip)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className="fp-btn fp-btn-secondary"
+                  style={{ gap: 5, flexShrink: 0, fontSize: 12 }}
+                  onClick={() => addListItem('videos', newVideo, setNewVideo)}
                 >
-                  {equip}
+                  <Plus size={13} /> Añadir
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Descripción Corta */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">
-              Descripción Corta
-              <span className="text-gray-400 font-normal ml-2">({formData.descripcion.length}/500)</span>
-            </label>
-            <textarea
-              value={formData.descripcion}
-              onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
-              placeholder="Breve descripción del ejercicio..."
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none"
-              rows={2}
-            />
-            {errors.descripcion && (
-              <p className="text-red-500 text-sm">{errors.descripcion}</p>
-            )}
-          </div>
-
-          {/* Descripción Larga */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <BookOpen className="w-4 h-4" /> Descripción Larga
-            </label>
-            <textarea
-              value={formData.descripcion_larga}
-              onChange={(e) => setFormData(prev => ({ ...prev, descripcion_larga: e.target.value }))}
-              placeholder="Descripción detallada del ejercicio, técnica, consejos, errores comunes..."
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none"
-              rows={5}
-            />
-          </div>
-
-          {/* Videos */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <Video className="w-4 h-4" /> Videos Explicativos (URLs)
-            </label>
-            <div className="flex gap-2">
-              <Input
-                value={newVideo}
-                onChange={(e) => setNewVideo(e.target.value)}
-                placeholder="URL del video (YouTube, Vimeo...)"
-                className="flex-1"
-              />
-              <Button onClick={addVideo} size="sm">Agregar</Button>
-            </div>
-            {formData.videos.length > 0 && (
-              <div className="space-y-2 mt-2">
-                {formData.videos.map((video, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                    <Video className="w-4 h-4 text-blue-500" />
-                    <span className="flex-1 text-sm text-gray-600 truncate">{video}</span>
-                    <button
-                      onClick={() => removeVideo(index)}
-                      className="p-1 hover:bg-red-100 rounded text-red-500"
+              </div>
+              {form.videos.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {form.videos.map((v, i) => (
+                    <div
+                      key={i}
+                      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', borderRadius: 10, background: 'var(--bg-overlay)', border: '1px solid var(--border-subtle)' }}
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recomendaciones */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> Recomendaciones
-            </label>
-            <div className="flex gap-2">
-              <Input
-                value={newRecomendacion}
-                onChange={(e) => setNewRecomendacion(e.target.value)}
-                placeholder="Agregar una recomendación..."
-                className="flex-1"
-              />
-              <Button onClick={addRecomendacion} size="sm">Agregar</Button>
+                      <Video size={13} color="var(--accent-blue)" style={{ flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeListItem('videos', i)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 2 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {formData.recomendaciones.length > 0 && (
-              <div className="space-y-2 mt-2">
-                {formData.recomendaciones.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-2 bg-orange-50 rounded-lg px-3 py-2">
-                    <Check className="w-4 h-4 text-orange-500 mt-0.5" />
-                    <span className="flex-1 text-sm text-gray-700">{rec}</span>
-                    <button
-                      onClick={() => removeRecomendacion(index)}
-                      className="p-1 hover:bg-red-100 rounded text-red-500"
+
+            {/* ─ Tags ─ */}
+            <div>
+              <SectionTitle icon={Tag} label="Etiquetas" />
+              <div style={{ display: 'flex', gap: 8, marginBottom: form.tags.length ? 10 : 0 }}>
+                <input
+                  style={{ ...inp, flex: 1 }}
+                  placeholder="Añadir etiqueta y presionar Enter..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addListItem('tags', newTag, setNewTag); }}}
+                />
+                <button
+                  type="button"
+                  className="fp-btn fp-btn-secondary"
+                  style={{ gap: 5, flexShrink: 0, fontSize: 12 }}
+                  onClick={() => addListItem('tags', newTag, setNewTag)}
+                >
+                  <Plus size={13} /> Añadir
+                </button>
+              </div>
+              {form.tags.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {form.tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 100, background: 'var(--bg-overlay)', border: '1px solid var(--border)', fontSize: 12, color: 'var(--text-secondary)' }}
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Tags */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Etiquetas</label>
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                placeholder="Agregar etiqueta..."
-                className="flex-1"
-              />
-              <Button onClick={addTag} size="sm">Agregar</Button>
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeListItem('tags', i)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}
+                      >
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center gap-1"
-                  >
-                    {tag}
-                    <button onClick={() => removeTag(tag)} className="hover:text-red-500">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100 bg-gray-50">
-          <Button variant="ghost" onClick={onClose}>
+        {/* ── Footer ──────────────────────────────────── */}
+        <div
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, padding: '14px 18px', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)', flexShrink: 0 }}
+        >
+          <button className="fp-btn fp-btn-ghost" onClick={onClose} style={{ fontSize: 13 }}>
             Cancelar
-          </Button>
-          <Button onClick={handleSubmit}>
-            {editingEjercicio ? 'Guardar Cambios' : 'Crear Ejercicio'}
-          </Button>
+          </button>
+          <button className="fp-btn fp-btn-primary" onClick={handleSubmit} style={{ gap: 7, fontSize: 13 }}>
+            <Save size={14} />
+            {editingEjercicio ? 'Guardar cambios' : 'Crear ejercicio'}
+          </button>
         </div>
+
       </div>
     </div>
   );
