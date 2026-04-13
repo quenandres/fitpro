@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Settings, Dumbbell, Activity, Ruler, ChevronLeft, ChevronRight,
-  Download, Upload, RotateCcw, Plus, Search,
+  Download, Upload, RotateCcw, Plus, Search, Users,
 } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { ExerciseForm } from '../components/admin/ExerciseForm';
@@ -11,7 +11,7 @@ import { RoutineCard } from '../components/admin/RoutineCard';
 import { AdminExerciseCard } from '../components/admin/AdminExerciseCard';
 import type { Ejercicio } from '../types';
 
-type Tab = 'rutinas' | 'ejercicios' | 'unidades';
+type Tab = 'rutinas' | 'ejercicios' | 'unidades' | 'planes';
 
 /* ── Exercise Manager ─────────────────────────────────────── */
 const ExerciseManager = () => {
@@ -137,6 +137,7 @@ export const Admin = () => {
     { id: 'rutinas',    label: 'Rutinas',    Icon: Dumbbell, count: rutinas.length,    accent: '#f0883e' },
     { id: 'ejercicios', label: 'Ejercicios', Icon: Activity, count: ejercicios.length, accent: '#22c55e' },
     { id: 'unidades',   label: 'Unidades',   Icon: Ruler,    count: unidades.length,   accent: '#58a6ff' },
+    { id: 'planes',     label: 'Planes',     Icon: Users,    count: 3,                 accent: '#a371f7' },
   ];
 
   return (
@@ -266,6 +267,46 @@ export const Admin = () => {
               onClick={() => navigate('/admin/unidades')}
             >
               Ver y gestionar todas las unidades <ChevronRight size={15} />
+            </button>
+          </div>
+        )}
+
+        {/* Planes — navega a página propia */}
+        {activeTab === 'planes' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                <span style={{ color: '#a371f7', fontWeight: 700 }}>Gestión de planes</span> por usuario
+              </p>
+              <button className="fp-btn fp-btn-primary" style={{ gap: 6 }} onClick={() => navigate('/admin/planes')}>
+                <Users size={14} /> Ver planes
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', marginBottom: 16 }}>
+              {[
+                { nombre: 'Carlos Martínez', objetivo: 'Ganar masa muscular', nivel: 'Intermedio' },
+                { nombre: 'Ana López', objetivo: 'Perder grasa y tonificar', nivel: 'Principiante' },
+                { nombre: 'Miguel Sánchez', objetivo: 'Competencia Hyrox', nivel: 'Avanzado' },
+              ].map((u, idx) => (
+                <div key={idx} className="fp-card" style={{ padding: '11px 13px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 9, background: '#a371f718', border: '1px solid #a371f728', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Users size={16} color="#a371f7" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.nombre}</p>
+                    <p style={{ fontSize: 10, color: '#a371f7' }}>{u.objetivo}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className="fp-btn fp-btn-secondary"
+              style={{ width: '100%', gap: 7, fontSize: 13, justifyContent: 'center', padding: '12px' }}
+              onClick={() => navigate('/admin/planes')}
+            >
+              Gestionar todos los planes de usuarios <ChevronRight size={15} />
             </button>
           </div>
         )}

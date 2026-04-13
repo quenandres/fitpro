@@ -1,0 +1,213 @@
+[
+  {
+    "id": 1,
+    "nombre": "Carlos Martínez",
+    "email": "carlos.martinez@email.com",
+    "objetivo": "Ganar masa muscular",
+    "nivel": "Intermedio",
+    "dias_entrenar": 4,
+    "plan": {
+      "id": 1,
+      "nombre": "Plan Fuerza + Hipertrofia",
+      "descripcion": "Plan personalizado para ganar masa muscular con énfasis en ejercicios compuestos",
+      "semanas": 8,
+      "dias_entrenar_semana": 4,
+      "rutinas_asignadas": [
+        {
+          "rutina_id": 2,
+          "nombre_rutina": "Fuerza Total (Full Body)",
+          "frecuencia": "2 veces por semana",
+          "notas": "Enfocarse en técnica perfecta"
+        },
+        {
+          "rutina_id": 5,
+          "nombre_rutina": "Piernas y Glúteos",
+          "frecuencia": "1 vez por semana",
+          "notas": "Añadir peso progresivamente"
+        },
+        {
+          "rutina_id": 6,
+          "nombre_rutina": "Empuje y Tracción (Push/Pull)",
+          "frecuencia": "1 vez por semana",
+          "notas": "Completar con exercises adicionales de biceps"
+        }
+      ],
+      "ejercicios_personalizados": [
+        {
+          "nombre": "Curl de Martillo",
+          "series": 3,
+          "reps": 12,
+          "notas": "Añadir cuando biceps esté fatigado"
+        },
+        {
+          "nombre": "Elevaciones Lateral",
+          "series": 4,
+          "reps": 15,
+          "notas": "Peso ligero para DELTS"
+        }
+      ],
+      "programacion_semanal": [
+        {
+          "semana": 1,
+          "dias": [
+            { "dia": 1, "nombre": "Lunes", "rutina_id": 2, "rutina_nombre": "Fuerza Total (Full Body)", "ejercicios_personalizados": [] },
+            { "dia": 2, "nombre": "Martes", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 3, "nombre": "Miércoles", "rutina_id": 5, "rutina_nombre": "Piernas y Glúteos", "ejercicios_personalizados": [] },
+            { "dia": 4, "nombre": "Jueves", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 5, "nombre": "Viernes", "rutina_id": 6, "rutina_nombre": "Empuje y Tracción (Push/Pull)", "ejercicios_personalizados": [] },
+            { "dia": 6, "nombre": "Sábado", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 0, "nombre": "Domingo", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] }
+          ],
+          "notas": "Semana de adaptación"
+        },
+        {
+          "semana": 2,
+          "dias": [
+            { "dia": 1, "nombre": "Lunes", "rutina_id": 2, "rutina_nombre": "Fuerza Total (Full Body)", "ejercicios_personalizados": [] },
+            { "dia": 2, "nombre": "Martes", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 3, "nombre": "Miércoles", "rutina_id": 5, "rutina_nombre": "Piernas y Glúteos", "ejercicios_personalizados": [] },
+            { "dia": 4, "nombre": "Jueves", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 5, "nombre": "Viernes", "rutina_id": 6, "rutina_nombre": "Empuje y Tracción (Push/Pull)", "ejercicios_personalizados": [] },
+            { "dia": 6, "nombre": "Sábado", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 0, "nombre": "Domingo", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] }
+          ],
+          "notas": "Aumentar peso 5%"
+        }
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "nombre": "Ana López",
+    "email": "ana.lopez@email.com",
+    "objetivo": "Perder grasa y tonificar",
+    "nivel": "Principiante",
+    "dias_entrenar": 3,
+    "plan": {
+      "id": 2,
+      "nombre": "Plan Quema Grasa + Tono",
+      "descripcion": "Plan de HIIT combinado con ejercicios de tonificación",
+      "semanas": 6,
+      "dias_entrenar_semana": 3,
+      "rutinas_asignadas": [
+        {
+          "rutina_id": 3,
+          "nombre_rutina": "HIIT Quema Grasa",
+          "frecuencia": "2 veces por semana",
+          "notas": "Mantener intensidad alta"
+        },
+        {
+          "rutina_id": 4,
+          "nombre_rutina": "Core de Acero",
+          "frecuencia": "2 veces por semana",
+          "notas": "Enfocarse en contraccion"
+        },
+        {
+          "rutina_id": 8,
+          "nombre_rutina": "Movilidad y Recuperación",
+          "frecuencia": "1 vez por semana",
+          "notas": "Importante para recuperacion"
+        }
+      ],
+      "ejercicios_personalizados": [
+        {
+          "nombre": "Saltar la Cuerda",
+          "series": 3,
+          "reps": 100,
+          "notas": " cardio adicional"
+        },
+        {
+          "nombre": "Sentadilla con Salto",
+          "series": 3,
+          "reps": 15,
+          "notas": "Explosivas"
+        }
+      ],
+      "programacion_semanal": [
+        {
+          "semana": 1,
+          "dias": [
+            { "dia": 1, "nombre": "Lunes", "rutina_id": 3, "rutina_nombre": "HIIT Quema Grasa", "ejercicios_personalizados": [] },
+            { "dia": 2, "nombre": "Martes", "rutina_id": 4, "rutina_nombre": "Core de Acero", "ejercicios_personalizados": [] },
+            { "dia": 3, "nombre": "Miércoles", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 4, "nombre": "Jueves", "rutina_id": 3, "rutina_nombre": "HIIT Quema Grasa", "ejercicios_personalizados": [] },
+            { "dia": 5, "nombre": "Viernes", "rutina_id": 4, "rutina_nombre": "Core de Acero", "ejercicios_personalizados": [] },
+            { "dia": 6, "nombre": "Sábado", "rutina_id": 8, "rutina_nombre": "Movilidad y Recuperación", "ejercicios_personalizados": [] },
+            { "dia": 0, "nombre": "Domingo", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] }
+          ],
+          "notas": "Semana inicial"
+        }
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "nombre": "Miguel Sánchez",
+    "email": "miguel.sanchez@email.com",
+    "objetivo": "Preparacion para competencia Hyrox",
+    "nivel": "Avanzado",
+    "dias_entrenar": 5,
+    "plan": {
+      "id": 3,
+      "nombre": "Plan Competencia Hyrox",
+      "descripcion": "Plan intensivo de preparación para competición Hyrox",
+      "semanas": 12,
+      "dias_entrenar_semana": 5,
+      "rutinas_asignadas": [
+        {
+          "rutina_id": 1,
+          "nombre_rutina": "Simulacro Hyrox",
+          "frecuencia": "1 vez por semana",
+          "notas": "Simular condiciones de competencia"
+        },
+        {
+          "rutina_id": 9,
+          "nombre_rutina": "WOD Tipo CrossFit",
+          "frecuencia": "2 veces por semana",
+          "notas": "Alta intensidad"
+        },
+        {
+          "rutina_id": 10,
+          "nombre_rutina": "Cardio Steady State",
+          "frecuencia": "2 veces por semana",
+          "notas": "Base aeróbica"
+        }
+      ],
+      "ejercicios_personalizados": [
+        {
+          "nombre": "SkiErg",
+          "series": 5,
+          "reps": 1000,
+          "notas": " Trabajar técnica"
+        },
+        {
+          "nombre": "Burpee Broad Jumps",
+          "series": 4,
+          "reps": 80,
+          "notas": "Pista de 20m"
+        },
+        {
+          "nombre": "Empuje de Trineo",
+          "series": 6,
+          "reps": 50,
+          "notas": "Peso: 80kg"
+        }
+      ],
+      "programacion_semanal": [
+        {
+          "semana": 1,
+          "dias": [
+            { "dia": 1, "nombre": "Lunes", "rutina_id": 10, "rutina_nombre": "Cardio Steady State", "ejercicios_personalizados": [] },
+            { "dia": 2, "nombre": "Martes", "rutina_id": 9, "rutina_nombre": "WOD Tipo CrossFit", "ejercicios_personalizados": [] },
+            { "dia": 3, "nombre": "Miércoles", "rutina_id": 10, "rutina_nombre": "Cardio Steady State", "ejercicios_personalizados": [] },
+            { "dia": 4, "nombre": "Jueves", "rutina_id": 9, "rutina_nombre": "WOD Tipo CrossFit", "ejercicios_personalizados": [] },
+            { "dia": 5, "nombre": "Viernes", "rutina_id": 1, "rutina_nombre": "Simulacro Hyrox", "ejercicios_personalizados": [] },
+            { "dia": 6, "nombre": "Sábado", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] },
+            { "dia": 0, "nombre": "Domingo", "rutina_id": null, "rutina_nombre": "Descuesto", "ejercicios_personalizados": [] }
+          ],
+          "notas": "Semana de base"
+        }
+      ]
+    }
+  }
+]
