@@ -11,6 +11,7 @@ import { UnitPage } from './pages/UnitPage';
 import { UserPlansPage } from './pages/UserPlansPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
 import type { ReactNode } from 'react';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -47,14 +48,15 @@ function AppRoutes() {
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
       {/* Protected routes */}
-      <Route path="/"               element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/workout/:id"    element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
-      <Route path="/library"        element={<ProtectedRoute><ExerciseLibrary /></ProtectedRoute>} />
-      <Route path="/player"         element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
-      <Route path="/admin"          element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-      <Route path="/admin/rutina"   element={<ProtectedRoute><RoutinePage /></ProtectedRoute>} />
-      <Route path="/admin/unidades" element={<ProtectedRoute><UnitPage /></ProtectedRoute>} />
-      <Route path="/admin/planes"   element={<ProtectedRoute><UserPlansPage /></ProtectedRoute>} />
+      <Route path="/"               element={<PublicRoute><Dashboard /></PublicRoute>} />
+      <Route path="/workout/:id"    element={<PublicRoute><WorkoutDetail /></PublicRoute>} />
+      <Route path="/library"        element={<PublicRoute><ExerciseLibrary /></PublicRoute>} />
+      <Route path="/player"         element={<PublicRoute><WorkoutPlayer /></PublicRoute>} />
+      <Route path="/admin"          element={<PublicRoute><Admin /></PublicRoute>} />
+      <Route path="/admin/rutina"   element={<PublicRoute><RoutinePage /></PublicRoute>} />
+      <Route path="/admin/unidades" element={<PublicRoute><UnitPage /></PublicRoute>} />
+      <Route path="/admin/planes"   element={<PublicRoute><UserPlansPage /></PublicRoute>} />
+      <Route path="/anatomytracker" element={<PublicRoute><AnatomyRecoveryTracker /></PublicRoute>} />
     </Routes>
   );
 }
