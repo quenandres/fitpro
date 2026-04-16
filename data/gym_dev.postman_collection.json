@@ -1,0 +1,131 @@
+{
+  "info": {
+    "_postman_id": "646f8f9d-c2bc-40e0-bc4a-695ce3511fba",
+    "name": "gym_dev",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "31693006"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cbasqbll95@gmail.com\",\n  \"password\": \"SiEBTnMuLRBRXEAQAjfA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/v1/signup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "v1",
+                "signup"
+              ]
+            },
+            "description": "Generated from cURL: \ncurl -X POST 'https://amxcrjswywlljumrraxo.supabase.co/auth/v1/signup' \\\n-H \"apikey: SUPABASE_KEY\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n  \"email\": \"someone@email.com\",\n  \"password\": \"SiEBTnMuLRBRXEAQAjfA\"\n}'\n"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cbasqbll95@gmail.com\",\n  \"password\": \"SiEBTnMuLRBRXEAQAjfA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "v1",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            },
+            "description": "Generated from cURL: \ncurl -X POST 'https://amxcrjswywlljumrraxo.supabase.co/auth/v1/token?grant_type=password' \\\n-H \"apikey: SUPABASE_KEY\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n  \"email\": \"someone@email.com\",\n  \"password\": \"SiEBTnMuLRBRXEAQAjfA\"\n}'\n"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "api_key",
+      "value": ""
+    }
+  ]
+}

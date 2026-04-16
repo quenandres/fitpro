@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "gym-app",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

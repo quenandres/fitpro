@@ -1,0 +1,38 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/v1/token?grant_type=password
+  body: json
+  auth: none
+}
+
+params:query {
+  grant_type: password
+}
+
+headers {
+  apikey: {{api_key}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "cbasqbll95@gmail.com",
+    "password": "SiEBTnMuLRBRXEAQAjfA"
+  }
+}
+
+docs {
+  Generated from cURL:
+  curl -X POST 'https://amxcrjswywlljumrraxo.supabase.co/auth/v1/token?grant_type=password' \
+  -H "apikey: SUPABASE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "someone@email.com",
+    "password": "SiEBTnMuLRBRXEAQAjfA"
+  }'
+}
