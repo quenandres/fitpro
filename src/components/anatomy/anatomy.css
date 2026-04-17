@@ -1,0 +1,32 @@
+/*
+ * Hit-testing por píxel pintado para músculos SVG inline.
+ *
+ * El `<img>` clásico captura clics en todo su rectángulo. Como cada SVG de
+ * músculo tiene un viewBox 595×842 con sólo una forma pintada en el centro,
+ * todos los rectángulos se superponen y el último del DOM se comía todos los
+ * clics. Al renderizar inline:
+ *   - El wrapper queda sin pointer-events, no actúa como hit target.
+ *   - Cada <path> usa `visiblePainted` (default SVG), por lo que sólo los
+ *     píxeles pintados reciben el click.
+ *   - El click llega por bubbling al onClick del wrapper.
+ */
+.anatomy-muscle-svg {
+  pointer-events: none;
+}
+
+.anatomy-muscle-svg > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.anatomy-muscle-svg path,
+.anatomy-muscle-svg circle,
+.anatomy-muscle-svg polygon,
+.anatomy-muscle-svg ellipse,
+.anatomy-muscle-svg rect {
+  pointer-events: visiblePainted;
+  cursor: pointer;
+}
