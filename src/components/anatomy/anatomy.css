@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────────────────────
+ * Anatomy tracker — estilos auxiliares
+ * ───────────────────────────────────────────────────────── */
+
 /*
  * Hit-testing por píxel pintado para músculos SVG inline.
  *
@@ -29,4 +33,126 @@
 .anatomy-muscle-svg rect {
   pointer-events: visiblePainted;
   cursor: pointer;
+  transition: filter .25s ease;
+}
+
+.anatomy-muscle-svg:hover path,
+.anatomy-muscle-svg:hover circle,
+.anatomy-muscle-svg:hover polygon,
+.anatomy-muscle-svg:hover ellipse,
+.anatomy-muscle-svg:hover rect {
+  filter: brightness(1.25) saturate(1.1);
+}
+
+/* ─── Viewport grid + vignette ────────────────────────── */
+.anatomy-viewport {
+  background-image:
+    radial-gradient(ellipse at 50% 38%, rgba(34, 197, 94, .10) 0%, rgba(88, 166, 255, .04) 35%, transparent 70%),
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px),
+    var(--bg-base) !important;
+  background-size: auto, 24px 24px, 24px 24px, auto;
+}
+
+.anatomy-viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .35) 100%);
+  border-radius: inherit;
+}
+
+:root.light .anatomy-viewport::after {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .08) 100%);
+}
+
+/* ─── Slider custom ───────────────────────────────────── */
+.anatomy-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: var(--bg-overlay);
+}
+
+.anatomy-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.anatomy-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.anatomy-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  margin-top: -7px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .2), 0 3px 8px rgba(0, 0, 0, .4);
+  cursor: grab;
+  transition: transform .1s ease;
+}
+
+.anatomy-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .2), 0 3px 8px rgba(0, 0, 0, .4);
+  cursor: grab;
+}
+
+.anatomy-slider::-webkit-slider-thumb:active,
+.anatomy-slider::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.12);
+}
+
+.anatomy-slider:focus-visible {
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+
+/* ─── Quick chips hover ───────────────────────────────── */
+.anatomy-chip:hover {
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+/* ─── Action buttons hover ────────────────────────────── */
+.anatomy-btn:hover {
+  color: var(--text-primary);
+  border-color: rgba(34, 197, 94, .25);
+  background: var(--bg-elevated);
+}
+
+.anatomy-btn:active {
+  transform: scale(.97);
+}
+
+.anatomy-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+
+/* ─── Inspector slide-up ──────────────────────────────── */
+@keyframes anatomy-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anatomy-slide-up {
+  animation: anatomy-slide-up .25s ease-out;
 }

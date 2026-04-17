@@ -41,6 +41,7 @@ export function AnatomyViewport({
   return (
     <div
       style={styles.viewport}
+      className="anatomy-viewport"
       data-role="viewport"
       onClick={handleBackgroundClick}
     >
