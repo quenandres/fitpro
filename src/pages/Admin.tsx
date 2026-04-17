@@ -11,6 +11,7 @@ import { RoutineCard } from '../components/admin/RoutineCard';
 import { AdminExerciseCard } from '../components/admin/AdminExerciseCard';
 import type { Ejercicio } from '../types';
 
+
 type Tab = 'rutinas' | 'ejercicios' | 'unidades' | 'planes';
 
 /* ── Exercise Manager ─────────────────────────────────────── */
@@ -138,6 +139,7 @@ export const Admin = () => {
     { id: 'ejercicios', label: 'Ejercicios', Icon: Activity, count: ejercicios.length, accent: '#22c55e' },
     { id: 'unidades',   label: 'Unidades',   Icon: Ruler,    count: unidades.length,   accent: '#58a6ff' },
     { id: 'planes',     label: 'Planes',     Icon: Users,    count: 3,                 accent: '#a371f7' },
+    { id: 'bodytracker',     label: 'bodytracker',     Icon: Users,    count: 3,                 accent: '#a371f7' },
   ];
 
   return (

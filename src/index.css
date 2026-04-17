@@ -462,3 +462,114 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
   .auth-social-group { flex-direction: row; }
   .auth-social-btn { font-size: 12px; gap: 6px; padding: 10px 8px; }
 }
+
+/* ─── Admin page — responsive tab bar + header ─────────── */
+.fp-admin-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.fp-admin-tabs::-webkit-scrollbar { display: none; }
+
+.fp-admin-tab {
+  flex: 1 1 auto;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+  scroll-snap-align: start;
+  position: relative;
+}
+.fp-admin-tab[data-active="true"] {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  box-shadow: inset 0 -2px 0 var(--fp-tab-accent, var(--brand));
+}
+.fp-admin-tab-count {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--bg-overlay);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+.fp-admin-tab[data-active="true"] .fp-admin-tab-count {
+  background: color-mix(in srgb, var(--fp-tab-accent, var(--brand)) 12%, transparent);
+  color: var(--fp-tab-accent, var(--brand));
+  border-color: color-mix(in srgb, var(--fp-tab-accent, var(--brand)) 20%, transparent);
+}
+
+/* Mobile: icon-only tabs (active tab expands to show its label) */
+@media (max-width: 520px) {
+  .fp-admin-tabs { gap: 2px; padding: 4px; }
+  .fp-admin-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 6px;
+    gap: 0;
+  }
+  .fp-admin-tab-label { display: none; }
+  .fp-admin-tab[data-active="true"] {
+    flex: 2 1 0;
+    padding: 10px 10px;
+  }
+  .fp-admin-tab[data-active="true"] .fp-admin-tab-label {
+    display: inline;
+    margin-left: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+  }
+  .fp-admin-tab-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 9px;
+    padding: 0 4px;
+    line-height: 14px;
+    min-width: 14px;
+    text-align: center;
+  }
+  .fp-admin-tab[data-active="true"] .fp-admin-tab-count {
+    position: static;
+    font-size: 10px;
+    padding: 1px 6px;
+    line-height: 1.2;
+    margin-left: 4px;
+  }
+}
+
+/* Header stat chips — hide labels on narrow screens */
+.fp-admin-stat { display: flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 8px; background: var(--bg-overlay); border: 1px solid var(--border); }
+.fp-admin-stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+.fp-admin-stat-value { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.fp-admin-stat-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+@media (max-width: 520px) {
+  .fp-admin-stat { padding: 4px 7px; }
+  .fp-admin-stat-label { display: none; }
+}
+
+/* Header brand subtitle — hide on narrow */
+@media (max-width: 380px) {
+  .fp-admin-brand-sub { display: none; }
+}
