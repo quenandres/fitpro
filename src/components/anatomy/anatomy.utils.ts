@@ -1,5 +1,4 @@
 import {
-  ASSETS_URL,
   HEATMAP_OFF_FILTER,
   RECOVERY_LEVELS,
 } from './anatomy.constants';
@@ -63,10 +62,14 @@ export function buildSilhouetteFileName(view: AnatomyView, gender: Gender): stri
 }
 
 /**
- * Devuelve la URL de la silueta. Prioriza el archivo local bundled por Vite
- * (desde `data/anatomy_svgs/`) y cae al CDN remoto sólo si no está presente.
+ * Devuelve la URL local (bundled por Vite) de la silueta desde
+ * `data/anatomy_svgs/`. Lanza si el archivo no existe.
  */
 export function buildSilhouetteUrl(view: AnatomyView, gender: Gender): string {
   const fileName = buildSilhouetteFileName(view, gender);
-  return getLocalSvgUrl(fileName) ?? `${ASSETS_URL}/silhouettes/${fileName}`;
+  const url = getLocalSvgUrl(fileName);
+  if (!url) {
+    throw new Error(`Silueta no encontrada en data/anatomy_svgs/: ${fileName}`);
+  }
+  return url;
 }

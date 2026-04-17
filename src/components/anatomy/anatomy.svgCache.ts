@@ -1,5 +1,3 @@
-import { ASSETS_URL } from './anatomy.constants';
-
 type RawLoader = () => Promise<string>;
 
 function basename(path: string): string {
@@ -10,7 +8,7 @@ function basename(path: string): string {
  * Glob lazy de los SVGs de músculos (todos excepto siluetas) como texto.
  * Vite los bundea como módulos `?raw`: se cargan sin red ni CORS y se inyectan
  * inline. Las siluetas se excluyen porque se pintan como `<img>` (ver URLs
- * más abajo). El fallback remoto sólo se usa si falta algún archivo local.
+ * más abajo).
  */
 const localLoaders = import.meta.glob<string>(
   [
@@ -46,16 +44,10 @@ export function getLocalSvgUrl(fileName: string): string | undefined {
 const cache = new Map<string, string>();
 const inflight = new Map<string, Promise<string>>();
 
-async function fetchRemote(fileName: string): Promise<string> {
-  const url = `${ASSETS_URL}/muscles/${fileName}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} at ${url}`);
-  return res.text();
-}
-
 /**
  * Devuelve el markup de un SVG dado su nombre de archivo (ej. `Abs_male.svg`).
- * Usa caché en memoria y deduplica fetches concurrentes.
+ * Usa caché en memoria y deduplica cargas concurrentes. Rechaza si el archivo
+ * no existe en `data/anatomy_svgs/`.
  */
 export function loadSvgMarkup(fileName: string): Promise<string> {
   const cached = cache.get(fileName);
@@ -65,7 +57,13 @@ export function loadSvgMarkup(fileName: string): Promise<string> {
   if (pending) return pending;
 
   const loader = byFileName[fileName];
-  const promise = (loader ? loader() : fetchRemote(fileName))
+  if (!loader) {
+    return Promise.reject(
+      new Error(`SVG no encontrado en data/anatomy_svgs/: ${fileName}`),
+    );
+  }
+
+  const promise = loader()
     .then((text) => {
       cache.set(fileName, text);
       inflight.delete(fileName);

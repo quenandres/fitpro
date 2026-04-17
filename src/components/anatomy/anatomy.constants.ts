@@ -1,11 +1,5 @@
 import type { LegendItem, MuscleMap, RecoveryLevel } from './anatomy.types';
 
-/**
- * CDN remoto usado sólo como fallback cuando falta algún SVG local.
- * Las imágenes habituales se sirven desde `data/anatomy_svgs/` vía Vite.
- */
-export const ASSETS_URL = 'https://www.builtworkout.com/assets/anatomy';
-
 export const MUSCLE_MAP: MuscleMap = {
   front: {
     male: [
