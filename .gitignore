@@ -21,3 +21,7 @@ sketch
 
 dist/
 dist/*
+
+*.mp4
+*.py
+*.mjs
