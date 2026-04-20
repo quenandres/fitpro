@@ -3,6 +3,8 @@ export type { AnatomyViewerProps } from './AnatomyViewer';
 export { AnatomyViewport } from './AnatomyViewport';
 export { AnatomyMuscleSelector } from './AnatomyMuscleSelector';
 export type { AnatomyMuscleSelectorProps } from './AnatomyMuscleSelector';
+export { AnatomyMuscleHeatmap } from './AnatomyMuscleHeatmap';
+export type { AnatomyMuscleHeatmapProps } from './AnatomyMuscleHeatmap';
 export { MuscleLayer } from './MuscleLayer';
 export { RecoveryInspector } from './RecoveryInspector';
 export { RecoveryLegend } from './RecoveryLegend';

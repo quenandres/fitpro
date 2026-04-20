@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Check, Save, Plus, Trash2,
@@ -12,6 +12,8 @@ import {
   durationOptions, restOptions, type ValidationError,
 } from '../utils/validators';
 import { getSuggestions } from '../utils/suggestions';
+import { aggregateRoutineMuscles } from '../utils/routineMuscles';
+import { AnatomyMuscleHeatmap } from '../components/anatomy';
 import type { Ejercicio, Rutina } from '../types';
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -315,8 +317,8 @@ const ExercisePicker = ({
 
 /* ── Step 3: Exercises ───────────────────────────────────── */
 const Step3 = ({
-  form, set, errors, ejerciciosLib, unidades,
-}: { form: FormData; set: (k: string, v: unknown) => void; errors: ValidationError[]; ejerciciosLib: Ejercicio[]; unidades: { id: number; simbolo: string }[] }) => {
+  form, set, errors, ejerciciosLib, unidades, muscleCounts,
+}: { form: FormData; set: (k: string, v: unknown) => void; errors: ValidationError[]; ejerciciosLib: Ejercicio[]; unidades: { id: number; simbolo: string }[]; muscleCounts: Record<string, number> }) => {
   const [showPicker, setShowPicker] = useState(false);
   const getErr = (f: string) => errors.find((e) => e.field === f)?.message;
 
@@ -401,6 +403,16 @@ const Step3 = ({
         </div>
       )}
 
+      {/* Músculos trabajados (heatmap) */}
+      {form.ejercicios.length > 0 && (
+        <div className="fp-card" style={{ padding: 12, borderRadius: 13 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' as const, letterSpacing: '.06em', marginBottom: 8 }}>
+            Músculos trabajados
+          </p>
+          <AnatomyMuscleHeatmap counts={muscleCounts} compact />
+        </div>
+      )}
+
       {/* Suggestions */}
       {suggestions.length > 0 && form.ejercicios.length > 0 && (
         <div style={{ paddingTop: 6 }}>
@@ -469,7 +481,7 @@ const Step4 = ({ form, set }: { form: FormData; set: (k: string, v: unknown) => 
 );
 
 /* ── Step 5: Review ──────────────────────────────────────── */
-const Step5 = ({ form, isEdit }: { form: FormData; isEdit: boolean }) => {
+const Step5 = ({ form, isEdit, muscleCounts }: { form: FormData; isEdit: boolean; muscleCounts: Record<string, number> }) => {
   const totalSeries = form.ejercicios.reduce((a, e) => a + e.series, 0);
   const rows = [
     { lbl: 'Nombre',    val: form.nombre },
@@ -506,6 +518,20 @@ const Step5 = ({ form, isEdit }: { form: FormData; isEdit: boolean }) => {
         </div>
       )}
 
+      {/* Músculos trabajados (heatmap) */}
+      <div className="fp-card" style={{ borderRadius: 13, padding: 14 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' as const, letterSpacing: '.06em', marginBottom: 10 }}>
+          Músculos trabajados
+        </p>
+        {form.ejercicios.length > 0 ? (
+          <AnatomyMuscleHeatmap counts={muscleCounts} />
+        ) : (
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' as const, padding: '20px 0' }}>
+            Aún no has añadido ejercicios.
+          </p>
+        )}
+      </div>
+
       {/* CTA hint */}
       <div style={{ padding: '12px 14px', borderRadius: 13, background: 'var(--brand-dim)', border: '1px solid rgba(34,197,94,.2)', textAlign: 'center' as const }}>
         <p style={{ fontSize: 13, color: 'var(--brand)', fontWeight: 500 }}>
@@ -527,6 +553,11 @@ export const RoutinePage: React.FC = () => {
   const [step,   setStep]   = useState(1);
   const [form,   setForm]   = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<ValidationError[]>([]);
+
+  const muscleCounts = useMemo(
+    () => aggregateRoutineMuscles(form.ejercicios, ejercicios),
+    [form.ejercicios, ejercicios],
+  );
 
   useEffect(() => {
     if (editingRutina) {
@@ -645,9 +676,9 @@ export const RoutinePage: React.FC = () => {
       <div style={{ flex: 1, maxWidth: 480, margin: '0 auto', width: '100%', padding: '20px 16px 120px' }}>
         {step === 1 && <Step1 form={form} set={setField} errors={errors} />}
         {step === 2 && <Step2 form={form} set={setField} errors={errors} />}
-        {step === 3 && <Step3 form={form} set={setField} errors={errors} ejerciciosLib={ejercicios} unidades={unidades} />}
+        {step === 3 && <Step3 form={form} set={setField} errors={errors} ejerciciosLib={ejercicios} unidades={unidades} muscleCounts={muscleCounts} />}
         {step === 4 && <Step4 form={form} set={setField} />}
-        {step === 5 && <Step5 form={form} isEdit={!!editingRutina} />}
+        {step === 5 && <Step5 form={form} isEdit={!!editingRutina} muscleCounts={muscleCounts} />}
       </div>
 
       {/* ── Footer nav ─────────────────────────────────── */}
