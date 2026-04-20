@@ -4,14 +4,9 @@ import {
   Plus, Dumbbell, Tag, Save,
 } from 'lucide-react';
 import type { Ejercicio } from '../../types';
+import { AnatomyMuscleSelector, canonicalsToGrupos } from '../anatomy';
 
 /* ── Constants ───────────────────────────────────────────── */
-const MUSCLE_GROUPS = [
-  'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps',
-  'Antebrazos', 'Core', 'Cuadriceps', 'Isquiotibiales',
-  'Glúteos', 'Piernas', 'Gemelos',
-];
-
 const EQUIPAMIENTOS = [
   'Barra', 'Mancuernas', 'Peso Corporal', 'Máquina',
   'Cable', 'Banda Elástica', 'Kettlebell', 'Banco', 'Ninguno',
@@ -80,7 +75,9 @@ interface ExerciseFormProps {
 const EMPTY_FORM = {
   nombre: '', categoria: 'Fuerza', dificultad: 'Intermedio',
   descripcion: '', descripcion_larga: '',
-  grupo_muscular: [] as string[], equipamiento: [] as string[],
+  grupo_muscular: [] as string[],
+  musculos_anatomia: [] as string[],
+  equipamiento: [] as string[],
   tags: [] as string[], imagen: '',
   videos: [] as string[], recomendaciones: [] as string[],
   unidad_id_default: 1,
@@ -104,6 +101,7 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
         descripcion:       editingEjercicio.descripcion,
         descripcion_larga: editingEjercicio.descripcion_larga || '',
         grupo_muscular:    editingEjercicio.grupo_muscular,
+        musculos_anatomia: editingEjercicio.musculos_anatomia ?? [],
         equipamiento:      editingEjercicio.equipamiento,
         tags:              editingEjercicio.tags,
         imagen:            editingEjercicio.imagen || '',
@@ -119,7 +117,7 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
 
   /* Handlers */
   const set  = (key: string, val: unknown) => setForm((p) => ({ ...p, [key]: val }));
-  const toggle = (field: 'grupo_muscular' | 'equipamiento', val: string) =>
+  const toggle = (field: 'equipamiento', val: string) =>
     set(field, form[field].includes(val) ? form[field].filter((v) => v !== val) : [...form[field], val]);
 
   const addListItem = (field: 'tags' | 'videos' | 'recomendaciones', val: string, setter: (v: string) => void) => {
@@ -142,7 +140,8 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
 
   const handleSubmit = () => {
     if (!validate()) return;
-    onSave(form);
+    const musculos = form.musculos_anatomia ?? [];
+    onSave({ ...form, musculos_anatomia: musculos, grupo_muscular: canonicalsToGrupos(musculos) });
     onClose();
   };
 
@@ -152,7 +151,9 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
   const inp: React.CSSProperties = {
     width: '100%', padding: '10px 13px',
     background: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
     borderRadius: 11, color: 'var(--text-primary)',
     fontSize: 13, fontFamily: 'inherit', outline: 'none',
     transition: 'border-color .15s',
@@ -275,23 +276,16 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
               </div>
             </div>
 
-            {/* ─ Grupos musculares ─ */}
+            {/* ─ Músculos trabajados (anatomía) ─ */}
             <div>
-              <FLabel>Grupos musculares</FLabel>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {MUSCLE_GROUPS.map((m) => (
-                  <ToggleChip
-                    key={m}
-                    label={m}
-                    selected={form.grupo_muscular.includes(m)}
-                    accent="var(--brand)"
-                    onClick={() => toggle('grupo_muscular', m)}
-                  />
-                ))}
-              </div>
-              {form.grupo_muscular.length > 0 && (
+              <FLabel>Músculos trabajados</FLabel>
+              <AnatomyMuscleSelector
+                value={form.musculos_anatomia ?? []}
+                onChange={(next) => set('musculos_anatomia', next)}
+              />
+              {(form.musculos_anatomia?.length ?? 0) > 0 && (
                 <p style={{ marginTop: 7, fontSize: 11, color: 'var(--brand)', fontWeight: 600 }}>
-                  {form.grupo_muscular.length} seleccionado{form.grupo_muscular.length > 1 ? 's' : ''}
+                  {form.musculos_anatomia!.length} músculo{form.musculos_anatomia!.length > 1 ? 's' : ''} seleccionado{form.musculos_anatomia!.length > 1 ? 's' : ''}
                 </p>
               )}
             </div>

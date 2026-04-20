@@ -50,21 +50,7 @@ export function AnatomyViewer({
   }, [muscles, getLevel]);
 
   return (
-    <div style={styles.root} className="animate-fade-in">
-      {/* ── Header ─────────────────────────────── */}
-      <header style={styles.header}>
-        <div style={styles.headerIcon} aria-hidden="true">
-          <Activity size={22} color="#fff" strokeWidth={2.4} />
-        </div>
-        <div style={styles.headerText}>
-          <h1 style={styles.headerTitle}>
-            Built <span className="text-gradient">Recovery</span>
-          </h1>
-          <p style={styles.headerSubtitle}>
-            {avgRecoveryPct}% recuperación media · {muscles.length} músculos
-          </p>
-        </div>
-      </header>
+    <div style={styles.root} className="animate-fade-in">      
 
       {/* ── Card principal ─────────────────────── */}
       <div className="fp-card animate-slide-up delay-50" style={styles.card}>

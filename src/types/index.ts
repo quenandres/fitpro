@@ -20,6 +20,7 @@ export interface Ejercicio {
   nombre: string;
   categoria: string;
   grupo_muscular: string[];
+  musculos_anatomia?: string[];
   equipamiento: string[];
   dificultad: string;
   unidad_id_default: number;
