@@ -154,8 +154,14 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 
 ### Convenciones de código
 
-- TypeScript estricto. Evitar `any`; preferir `unknown` + narrow o tipos
-  explícitos.
+- **TypeScript estricto y obligatorio** en `src/`: no relajar `tsconfig` ni
+  reglas del linter para “salir del paso”; evitar `any` y suprimir errores del
+  compilador salvo caso puntual y comentado; preferir `unknown` + narrow o
+  tipos explícitos.
+- **Principios SOLID** al diseñar módulos, hooks y componentes: una razón de
+  cambio por unidad (SRP), extender sin modificar consumidores cuando baste
+  (OCP), contratos sustituibles (LSP), APIs mínimas expuestas (ISP), depender
+  de abstracciones tipadas frente a detalles de infraestructura (DIP).
 - Componentes en PascalCase, hooks en `useCamelCase`, stores `useXxxStore`.
 - Nombres de dominio en español (`Rutina`, `Ejercicio`, `Bloque`,
   `SerieDef`). Nombres técnicos en inglés.
