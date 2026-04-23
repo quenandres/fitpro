@@ -8,6 +8,8 @@ import {
   Dumbbell,
   RefreshCw,
   Search,
+  Copy,
+  X,
 } from 'lucide-react';
 import type { Ejercicio, EjercicioPersonalizado, Rutina, Usuario } from '../../types';
 import { DIAS_SEMANA } from './diasSemana';
@@ -22,9 +24,10 @@ interface Props {
   diaIndex: number;
   onChangeSemana: (semana: number) => void;
   onChangeDia: (diaIndex: number) => void;
+  onBack?: () => void;
   onToggleEntreno: () => void;
   onSelectRutina: (rutina: Rutina) => void;
-  onAddEjercicio: (ejercicio: EjercicioPersonalizado) => void;
+  onAddEjercicio: (ejercicio: EjercicioPersonalizado, replicarEnSiguientes: boolean) => void;
   onRemoveEjercicio: (index: number) => void;
   onUpdateEjercicio: (index: number, updates: Partial<EjercicioPersonalizado>) => void;
   onResync: (rutina: Rutina) => void;
@@ -41,6 +44,7 @@ export const VistaDia = ({
   diaIndex,
   onChangeSemana,
   onChangeDia,
+  onBack,
   onToggleEntreno,
   onSelectRutina,
   onAddEjercicio,
@@ -53,6 +57,24 @@ export const VistaDia = ({
   const [showRutinaPicker, setShowRutinaPicker] = useState(false);
   const [showEjercicioPicker, setShowEjercicioPicker] = useState(false);
   const [ejSearch, setEjSearch] = useState('');
+  const [pendingEjercicio, setPendingEjercicio] = useState<EjercicioPersonalizado | null>(null);
+
+  const semanasSiguientes = Math.max(0, user.plan.semanas - semana);
+
+  const handlePickEjercicio = (ejercicio: EjercicioPersonalizado) => {
+    setShowEjercicioPicker(false);
+    if (semanasSiguientes === 0) {
+      onAddEjercicio(ejercicio, false);
+      return;
+    }
+    setPendingEjercicio(ejercicio);
+  };
+
+  const confirmAddEjercicio = (replicar: boolean) => {
+    if (!pendingEjercicio) return;
+    onAddEjercicio(pendingEjercicio, replicar);
+    setPendingEjercicio(null);
+  };
 
   const semanaPlan = user.plan.programacion_semanal.find((s) => s.semana === semana);
   const dia = semanaPlan?.dias[diaIndex];
@@ -73,13 +95,14 @@ export const VistaDia = ({
   if (!dia) return null;
 
   const isEntreno = dia.rutina_id !== null;
-  const sinConfigurar =
-    !isEntreno ||
-    ((dia.rutina_id === -1 || dia.rutina_id === 0) && dia.ejercicios_personalizados.length === 0);
+  const sinConfigurar = !isEntreno && dia.ejercicios_personalizados.length === 0;
 
   const ejerciciosIds = dia.ejercicios_personalizados.map((_, i) =>
     buildEjId(semana, diaIndex, i)
   );
+
+  const nombreDia =
+    DIAS_SEMANA.find((dd) => dd.dia === dia.dia)?.nombre ?? dia.dia;
 
   return (
     <div>
@@ -88,30 +111,33 @@ export const VistaDia = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 14,
+          marginBottom: 10,
           flexWrap: 'wrap',
           gap: 8,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {onBack && (
           <button
-            onClick={() => onChangeSemana(Math.max(1, semana - 1))}
-            disabled={semana === 1}
+            onClick={onBack}
             className="fp-btn fp-btn-ghost"
-            style={{ padding: 6 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '5px 10px' }}
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={14} />
+            Volver
           </button>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>Semana {semana}</span>
-          <button
-            onClick={() => onChangeSemana(Math.min(user.plan.semanas, semana + 1))}
-            disabled={semana === user.plan.semanas}
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: 6 }}
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
+        )}
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            flex: 1,
+            textAlign: onBack ? 'center' : 'left',
+          }}
+        >
+          {nombreDia}
+          <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}> · Semana {semana}</span>
+        </span>
         <button
           onClick={onToggleEntreno}
           className="fp-btn"
@@ -123,6 +149,36 @@ export const VistaDia = ({
           }}
         >
           {isEntreno ? 'Marcar descanso' : 'Activar día'}
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginBottom: 14,
+          justifyContent: 'center',
+        }}
+      >
+        <button
+          onClick={() => onChangeSemana(Math.max(1, semana - 1))}
+          disabled={semana === 1}
+          className="fp-btn fp-btn-ghost"
+          style={{ padding: 5 }}
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 70, textAlign: 'center' }}>
+          Sem {semana} / {user.plan.semanas}
+        </span>
+        <button
+          onClick={() => onChangeSemana(Math.min(user.plan.semanas, semana + 1))}
+          disabled={semana === user.plan.semanas}
+          className="fp-btn fp-btn-ghost"
+          style={{ padding: 5 }}
+        >
+          <ChevronRight size={14} />
         </button>
       </div>
 
@@ -187,32 +243,36 @@ export const VistaDia = ({
       />
 
       {sinConfigurar ? (
-        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center', padding: '32px 20px' }}>
           <div
             style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
+              width: 56,
+              height: 56,
+              borderRadius: 14,
               background: 'var(--bg-overlay)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 16px',
+              margin: '0 auto 14px',
+              border: '1px solid var(--border)',
             }}
           >
-            <Calendar size={28} color="var(--text-muted)" />
+            <Calendar size={24} color="var(--text-muted)" />
           </div>
           <p
-            style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}
+            style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}
           >
-            Día sin configurar
+            Día de descanso
           </p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>
-            Elige una rutina base o añade ejercicios sueltos
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>
+            Activa el día para asignar una rutina o añadir ejercicios sueltos
           </p>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
-              onClick={() => setShowRutinaPicker(true)}
+              onClick={() => {
+                onToggleEntreno();
+                setShowRutinaPicker(true);
+              }}
               className="fp-btn fp-btn-primary"
               style={{ gap: 6 }}
             >
@@ -228,6 +288,15 @@ export const VistaDia = ({
             >
               <Plus size={14} /> Ejercicio suelto
             </button>
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="fp-btn fp-btn-ghost"
+                style={{ gap: 6, marginTop: 4 }}
+              >
+                <ChevronLeft size={14} /> Volver al calendario
+              </button>
+            )}
           </div>
         </div>
       ) : (
@@ -370,15 +439,14 @@ export const VistaDia = ({
                 {ejerciciosFiltrados.map((ej) => (
                   <button
                     key={ej.id}
-                    onClick={() => {
-                      onAddEjercicio({
+                    onClick={() =>
+                      handlePickEjercicio({
                         nombre: ej.nombre,
                         series: 3,
                         reps: ej.unidad_id_default === 1 ? 12 : 10,
                         notas: '',
-                      });
-                      setShowEjercicioPicker(false);
-                    }}
+                      })
+                    }
                     style={{
                       padding: 10,
                       borderRadius: 6,
@@ -460,6 +528,105 @@ export const VistaDia = ({
               <RefreshCw size={13} /> Resincronizar con {rutinaBase.nombre}
             </button>
           )}
+        </div>
+      )}
+
+      {pendingEjercicio && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,.55)',
+            zIndex: 200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
+          className="animate-fade-in"
+          onClick={() => setPendingEjercicio(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="fp-card animate-slide-up"
+            style={{
+              maxWidth: 420,
+              width: '100%',
+              padding: 20,
+              borderRadius: 14,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 14,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    background: `${ACCENT}20`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Copy size={16} color={ACCENT} />
+                </div>
+                <p
+                  className="font-sora"
+                  style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}
+                >
+                  Añadir ejercicio
+                </p>
+              </div>
+              <button
+                onClick={() => setPendingEjercicio(null)}
+                style={{
+                  background: 'var(--bg-overlay)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  padding: 6,
+                  cursor: 'pointer',
+                }}
+                aria-label="Cerrar"
+              >
+                <X size={14} color="var(--text-muted)" />
+              </button>
+            </div>
+
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>
+              <strong style={{ color: 'var(--text-primary)' }}>{pendingEjercicio.nombre}</strong>
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.4 }}>
+              Lo añadiremos al <strong>{dia.nombre}</strong> de la semana {semana}. ¿Replicarlo
+              también en ese mismo día de las {semanasSiguientes}{' '}
+              {semanasSiguientes === 1 ? 'semana siguiente' : 'semanas siguientes'}?
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button
+                onClick={() => confirmAddEjercicio(true)}
+                className="fp-btn fp-btn-primary"
+                style={{ width: '100%', gap: 6, justifyContent: 'center' }}
+              >
+                <Copy size={13} /> Replicar en {semanasSiguientes}{' '}
+                {semanasSiguientes === 1 ? 'semana' : 'semanas'}
+              </button>
+              <button
+                onClick={() => confirmAddEjercicio(false)}
+                className="fp-btn fp-btn-secondary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                Solo esta semana
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

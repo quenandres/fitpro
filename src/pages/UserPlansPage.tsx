@@ -35,9 +35,23 @@ const UserPlansPage = () => {
   const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   const [view, setView] = useState<PlanView>('semana');
+  const [previousView, setPreviousView] = useState<PlanView>('semana');
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [selectedDiaIndex, setSelectedDiaIndex] = useState(0);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const handleChangeView = (newView: PlanView) => {
+    if (newView === 'dia') setPreviousView(view);
+    setView(newView);
+  };
+
+  const handleBack = () => {
+    if (view === 'dia') {
+      setView(previousView);
+    } else {
+      setSelectedUser(null);
+    }
+  };
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return usuarios;
@@ -74,6 +88,7 @@ const UserPlansPage = () => {
   };
 
   const handleOpenDia = (semana: number, diaIndex: number) => {
+    setPreviousView(view);
     setSelectedWeek(semana);
     setSelectedDiaIndex(diaIndex);
     setView('dia');
@@ -129,7 +144,16 @@ const UserPlansPage = () => {
   }, [activeDragId, selectedUser]);
 
   const renderListaUsuarios = () => (
-    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px' }}>
+    <div
+      style={{
+        maxWidth: 1400,
+        margin: '0 auto',
+        paddingTop: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
+        paddingLeft: 20,
+      }}
+    >
       <div
         className="fp-card"
         style={{
@@ -295,7 +319,16 @@ const UserPlansPage = () => {
     if (!selectedUser) return null;
 
     return (
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px', paddingBottom: 100 }}>
+      <div
+        style={{
+          maxWidth: 1400,
+          margin: '0 auto',
+          paddingTop: 20,
+          paddingRight: 20,
+          paddingBottom: 100,
+          paddingLeft: 20,
+        }}
+      >
         <div
           style={{
             display: 'flex',
@@ -306,10 +339,10 @@ const UserPlansPage = () => {
           }}
         >
           <button
-            onClick={() => setSelectedUser(null)}
+            onClick={handleBack}
             className="fp-btn fp-btn-ghost"
             style={{ padding: 8 }}
-            aria-label="Volver"
+            aria-label={view === 'dia' ? 'Volver a la vista anterior' : 'Volver a usuarios'}
           >
             <ChevronLeft size={20} />
           </button>
@@ -329,7 +362,7 @@ const UserPlansPage = () => {
           </div>
           <PlanViewSwitcher
             view={view}
-            onChange={setView}
+            onChange={handleChangeView}
             totalSemanas={selectedUser.plan.semanas}
           />
         </div>
@@ -407,6 +440,7 @@ const UserPlansPage = () => {
               diaIndex={selectedDiaIndex}
               onChangeSemana={setSelectedWeek}
               onChangeDia={setSelectedDiaIndex}
+              onBack={() => setView(previousView)}
               onToggleEntreno={() =>
                 mutations.toggleDiaEntreno({ semana: selectedWeek, diaIndex: selectedDiaIndex })
               }
@@ -416,8 +450,8 @@ const UserPlansPage = () => {
                   r
                 )
               }
-              onAddEjercicio={(ej) =>
-                mutations.addEjercicio(
+              onAddEjercicio={(ej, replicar) =>
+                (replicar ? mutations.addEjercicioReplicado : mutations.addEjercicio)(
                   { semana: selectedWeek, diaIndex: selectedDiaIndex },
                   ej
                 )

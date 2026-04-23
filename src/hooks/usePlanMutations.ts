@@ -93,6 +93,35 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     [selectedUser, onUpdate]
   );
 
+  const addEjercicioReplicado = useCallback(
+    (ref: DiaRef, ejercicio: EjercicioPersonalizado) => {
+      if (!selectedUser) return;
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...selectedUser.plan,
+          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => {
+            if (s.semana < ref.semana) return s;
+            return {
+              ...s,
+              dias: s.dias.map((d, idx) => {
+                if (idx !== ref.diaIndex) return d;
+                const nextId = d.rutina_id ?? 0;
+                return {
+                  ...d,
+                  rutina_id: nextId === null ? 0 : nextId,
+                  rutina_nombre: d.rutina_nombre || 'Entrenamiento',
+                  ejercicios_personalizados: [...d.ejercicios_personalizados, ejercicio],
+                };
+              }),
+            };
+          }),
+        },
+      });
+    },
+    [selectedUser, onUpdate]
+  );
+
   const removeEjercicio = useCallback(
     (ref: DiaRef, ejercicioIndex: number) => {
       if (!selectedUser) return;
@@ -180,6 +209,7 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     toggleDiaEntreno,
     selectRutinaForDia,
     addEjercicio,
+    addEjercicioReplicado,
     removeEjercicio,
     updateEjercicio,
     reorderEjerciciosInDia,
