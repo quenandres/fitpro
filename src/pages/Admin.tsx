@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Settings, Dumbbell, Activity, Ruler, ChevronLeft, ChevronRight,
-  Download, Upload, RotateCcw, Plus, Users,
+  Download, Upload, RotateCcw, Plus, Users, Sparkles,
 } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { SimpleToast, useToast } from '../components/admin/common/Toast';
@@ -120,9 +120,14 @@ export const Admin = () => {
         {activeTab === 'rutinas' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
-              <button className="fp-btn fp-btn-primary" style={{ gap: 6 }} onClick={handleNewRoutine}>
-                <Plus size={15} /> Nueva rutina
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="fp-btn fp-btn-secondary" style={{ gap: 6 }} onClick={() => navigate('/admin/rutina-ia')}>
+                  <Sparkles size={15} /> Rutina IA
+                </button>
+                <button className="fp-btn fp-btn-primary" style={{ gap: 6 }} onClick={handleNewRoutine}>
+                  <Plus size={15} /> Nueva rutina
+                </button>
+              </div>
             </div>
             <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {rutinas.map((r) => (

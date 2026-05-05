@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Users, Search, ChevronLeft, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Users, Search, ChevronLeft, Plus, Sparkles } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -29,6 +29,7 @@ import { usePlanMutations, type DiaRef } from '../hooks/usePlanMutations';
 const ACCENT = '#a371f7';
 
 const UserPlansPage = () => {
+  const navigate = useNavigate();
   const { rutinas, ejercicios } = useDataStore();
   const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosData as Usuario[]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -186,6 +187,13 @@ const UserPlansPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <button
+          onClick={() => navigate('/admin/rutina-ia')}
+          className="fp-btn fp-btn-secondary"
+          style={{ gap: 6, fontSize: 12 }}
+        >
+          <Sparkles size={14} /> Rutina IA
+        </button>
         <button
           onClick={() => setShowWizard(true)}
           className="fp-btn fp-btn-primary"

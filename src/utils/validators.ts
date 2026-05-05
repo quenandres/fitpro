@@ -31,6 +31,14 @@ export interface ExerciseInRoutine {
   unidad_id: number;
 }
 
+export interface GenerateRoutineInput {
+  objetivo: string;
+  nivel?: string;
+  duracion_min?: number;
+  equipamiento?: string;
+  limitaciones?: string;
+}
+
 export const validateStep1 = (data: Partial<RoutineFormData>): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -98,6 +106,32 @@ export const validateAllSteps = (data: RoutineFormData): ValidationError[] => {
     ...validateStep3(data),
     ...validateStep4(data),
   ];
+};
+
+export const validateGenerateRoutineInput = (input: GenerateRoutineInput): ValidationError[] => {
+  const errors: ValidationError[] = [];
+
+  if (!input.objetivo?.trim()) {
+    errors.push({ field: 'objetivo', message: 'Describe tu objetivo para generar la rutina' });
+  } else if (input.objetivo.trim().length < 10) {
+    errors.push({ field: 'objetivo', message: 'El objetivo debe tener al menos 10 caracteres' });
+  } else if (input.objetivo.trim().length > 500) {
+    errors.push({ field: 'objetivo', message: 'El objetivo no puede superar 500 caracteres' });
+  }
+
+  if (input.duracion_min !== undefined && (input.duracion_min < 5 || input.duracion_min > 120)) {
+    errors.push({ field: 'duracion_min', message: 'La duración debe estar entre 5 y 120 minutos' });
+  }
+
+  if (input.equipamiento && input.equipamiento.length > 200) {
+    errors.push({ field: 'equipamiento', message: 'Reduce el detalle de equipamiento (max 200 caracteres)' });
+  }
+
+  if (input.limitaciones && input.limitaciones.length > 300) {
+    errors.push({ field: 'limitaciones', message: 'Reduce el detalle de limitaciones (max 300 caracteres)' });
+  }
+
+  return errors;
 };
 
 // Category options with icons

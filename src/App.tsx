@@ -9,6 +9,7 @@ import { Admin } from './pages/Admin';
 import { RoutinePage } from './pages/RoutinePage';
 import { UnitPage } from './pages/UnitPage';
 import { UserPlansPage } from './pages/UserPlansPage';
+import { AIRoutinePage } from './pages/AIRoutinePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/player"         element={<PublicRoute><WorkoutPlayer /></PublicRoute>} />
       <Route path="/admin"          element={<PublicRoute><Admin /></PublicRoute>} />
       <Route path="/admin/rutina"   element={<PublicRoute><RoutinePage /></PublicRoute>} />
+      <Route path="/admin/rutina-ia" element={<PublicRoute><AIRoutinePage /></PublicRoute>} />
       <Route path="/admin/unidades" element={<PublicRoute><UnitPage /></PublicRoute>} />
       <Route path="/admin/planes"   element={<PublicRoute><UserPlansPage /></PublicRoute>} />
       <Route path="/anatomytracker" element={<PublicRoute><AnatomyRecoveryTracker /></PublicRoute>} />

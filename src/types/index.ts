@@ -98,3 +98,35 @@ export interface WorkoutState {
   isActive: boolean;
   startTime: number | null;
 }
+
+export interface GenerateRoutineRequest {
+  objetivo: string;
+  nivel?: string;
+  duracion_min?: number;
+  equipamiento?: string;
+  limitaciones?: string;
+}
+
+export interface GenerateRoutineExercise {
+  nombre: string;
+  series: number;
+  valor: number;
+  unidad_id?: number;
+  motivo?: string;
+}
+
+export interface GenerateRoutineResponse {
+  nombre: string;
+  categoria: string;
+  dificultad: string;
+  duracion_min: number;
+  descripcion: string;
+  dias_entrenamiento: string[];
+  ejercicios: GenerateRoutineExercise[];
+}
+
+export interface GenerateRoutineApiResponse {
+  rutina: Omit<Rutina, 'id'>;
+  dias_entrenamiento: string[];
+  razonamiento?: string;
+}

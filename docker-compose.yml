@@ -8,4 +8,21 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../fitpro_api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../fitpro_api:/app
+    env_file:
+      - ../fitpro_api/.env
+    environment:
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped
