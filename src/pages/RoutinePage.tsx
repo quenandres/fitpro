@@ -2,9 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Check, Save, Plus, Trash2,
-  Dumbbell, Settings, ListChecks, Clock, FileText, Search,
-  Sparkles, X,
+  Dumbbell, Settings, ListChecks, Clock, FileText,
+  Sparkles,
 } from 'lucide-react';
+import {
+  ExercisePickerOverlay,
+  type PickedExercise,
+} from '../components/exercise/ExercisePickerOverlay';
 import { useDataStore } from '../store/useDataStore';
 import {
   validateStep1, validateStep2, validateStep3, validateStep4,
@@ -230,91 +234,6 @@ const Step2 = ({ form, set, errors }: { form: FormData; set: (k: string, v: unkn
   );
 };
 
-/* ── Exercise Picker overlay ─────────────────────────────── */
-const ExercisePicker = ({
-  exercises, selectedNames, onSelect, onClose,
-}: { exercises: Ejercicio[]; selectedNames: string[]; onSelect: (e: Ejercicio) => void; onClose: () => void }) => {
-  const [search, setSearch]     = useState('');
-  const [cat,    setCat]        = useState('');
-  const cats = [...new Set(exercises.map((e) => e.categoria))];
-  const filtered = exercises.filter((e) => {
-    const okS = !search || e.nombre.toLowerCase().includes(search.toLowerCase());
-    const okC = !cat    || e.categoria === cat;
-    return okS && okC;
-  });
-
-  return (
-    <div
-      className="animate-fade-in"
-      style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-      onClick={onClose}
-    >
-      <div
-        className="fp-card animate-slide-up"
-        style={{ width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Handle */}
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)', margin: '12px auto 0' }} />
-
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p className="font-sora" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Seleccionar ejercicio</p>
-          <button className="fp-btn fp-btn-ghost" style={{ padding: '5px 7px', borderRadius: 9 }} onClick={onClose}><X size={16} /></button>
-        </div>
-
-        {/* Search */}
-        <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ position: 'relative', marginBottom: 10 }}>
-            <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            <input className="fp-input" style={{ paddingLeft: 32, fontSize: 13 }} placeholder="Buscar ejercicio..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-          {/* Category chips */}
-          <div className="scrollbar-hide" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
-            <button
-              onClick={() => setCat('')}
-              style={{ flexShrink: 0, padding: '4px 11px', borderRadius: 100, border: `1px solid ${!cat ? 'rgba(34,197,94,.4)' : 'var(--border)'}`, background: !cat ? 'rgba(34,197,94,.1)' : 'var(--bg-elevated)', color: !cat ? 'var(--brand)' : 'var(--text-muted)', fontSize: 11, fontWeight: 600, cursor: 'pointer', outline: 'none' }}
-            >
-              Todos
-            </button>
-            {cats.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCat(cat === c ? '' : c)}
-                style={{ flexShrink: 0, padding: '4px 11px', borderRadius: 100, border: `1px solid ${cat === c ? 'rgba(34,197,94,.4)' : 'var(--border)'}`, background: cat === c ? 'rgba(34,197,94,.1)' : 'var(--bg-elevated)', color: cat === c ? 'var(--brand)' : 'var(--text-muted)', fontSize: 11, fontWeight: 600, cursor: 'pointer', outline: 'none' }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 16px 24px' }}>
-          {filtered.map((ej) => {
-            const isSel = selectedNames.includes(ej.nombre);
-            return (
-              <button
-                key={ej.id}
-                onClick={() => { if (!isSel) { onSelect(ej); onClose(); } }}
-                disabled={isSel}
-                style={{
-                  width: '100%', padding: '11px 12px', borderRadius: 11, border: `1px solid ${isSel ? 'rgba(34,197,94,.3)' : 'var(--border)'}`, background: isSel ? 'rgba(34,197,94,.06)' : 'var(--bg-elevated)', cursor: isSel ? 'default' : 'pointer', outline: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, textAlign: 'left' as const, opacity: isSel ? 0.7 : 1, transition: 'all .15s',
-                }}
-              >
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{ej.nombre}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ej.categoria} · {ej.dificultad}</p>
-                </div>
-                {isSel && <Check size={14} color="var(--brand)" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /* ── Step 3: Exercises ───────────────────────────────────── */
 const Step3 = ({
   form, set, errors, ejerciciosLib, unidades, muscleCounts,
@@ -322,10 +241,27 @@ const Step3 = ({
   const [showPicker, setShowPicker] = useState(false);
   const getErr = (f: string) => errors.find((e) => e.field === f)?.message;
 
-  const addExercise = (ej: Ejercicio) => {
-    if (!form.ejercicios.find((e) => e.nombre === ej.nombre)) {
-      set('ejercicios', [...form.ejercicios, { nombre: ej.nombre, ejercicio_id: ej.id, series: 3, valor: 10, unidad_id: ej.unidad_id_default }]);
+  const addExercise = (pick: PickedExercise) => {
+    if (!form.ejercicios.find((e) => e.nombre === pick.nombre)) {
+      set('ejercicios', [
+        ...form.ejercicios,
+        {
+          nombre: pick.nombre,
+          ejercicio_id: pick.ejercicio_id,
+          series: 3,
+          valor: 10,
+          unidad_id: pick.unidad_id_default,
+        },
+      ]);
     }
+  };
+
+  const addExerciseFromSuggestion = (ej: Ejercicio) => {
+    addExercise({
+      nombre: ej.nombre,
+      ejercicio_id: ej.id,
+      unidad_id_default: ej.unidad_id_default,
+    });
   };
   const removeExercise = (i: number) => set('ejercicios', form.ejercicios.filter((_, idx) => idx !== i));
   const updateExercise = (i: number, field: string, val: number) =>
@@ -424,7 +360,7 @@ const Step3 = ({
             {suggestions.map((s, idx) => (
               <button
                 key={idx}
-                onClick={() => addExercise(s.ejercicio)}
+                onClick={() => addExerciseFromSuggestion(s.ejercicio)}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 100, border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--text-secondary)', fontSize: 12, fontWeight: 500, cursor: 'pointer', outline: 'none', transition: 'all .15s' }}
               >
                 <Plus size={11} color="var(--brand)" />{s.ejercicio.nombre}
@@ -435,8 +371,8 @@ const Step3 = ({
       )}
 
       {showPicker && (
-        <ExercisePicker
-          exercises={ejerciciosLib}
+        <ExercisePickerOverlay
+          localExercises={ejerciciosLib}
           selectedNames={form.ejercicios.map((e) => e.nombre)}
           onSelect={addExercise}
           onClose={() => setShowPicker(false)}

@@ -42,4 +42,5 @@ export {
   validateListParams,
   validateSearchTerm,
 } from './validators';
+export { buildKeywords } from './utils';
 export type { ExerciseListParams } from './validators';

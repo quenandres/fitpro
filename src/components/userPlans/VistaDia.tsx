@@ -7,7 +7,6 @@ import {
   Calendar,
   Dumbbell,
   RefreshCw,
-  Search,
   Copy,
   X,
 } from 'lucide-react';
@@ -17,6 +16,10 @@ import { EjercicioSortable } from './EjercicioSortable';
 import { RutinaVersionBanner } from './RutinaVersionBanner';
 import { compareRutinaSnapshot } from '../../utils/compareRutinaSnapshot';
 import { buildEjId } from './dragIds';
+import {
+  ExercisePickerOverlay,
+  type PickedExercise,
+} from '../exercise/ExercisePickerOverlay';
 
 interface Props {
   user: Usuario;
@@ -56,7 +59,6 @@ export const VistaDia = ({
 }: Props) => {
   const [showRutinaPicker, setShowRutinaPicker] = useState(false);
   const [showEjercicioPicker, setShowEjercicioPicker] = useState(false);
-  const [ejSearch, setEjSearch] = useState('');
   const [pendingEjercicio, setPendingEjercicio] = useState<EjercicioPersonalizado | null>(null);
 
   const semanasSiguientes = Math.max(0, user.plan.semanas - semana);
@@ -76,21 +78,20 @@ export const VistaDia = ({
     setPendingEjercicio(null);
   };
 
+  const handlePickFromOverlay = (pick: PickedExercise) => {
+    handlePickEjercicio({
+      nombre: pick.nombre,
+      series: 3,
+      reps: pick.unidad_id_default === 1 ? 12 : 10,
+      notas: '',
+    });
+  };
+
   const semanaPlan = user.plan.programacion_semanal.find((s) => s.semana === semana);
   const dia = semanaPlan?.dias[diaIndex];
 
   const rutinaBase = rutinas.find((r) => r.id === dia?.rutina_id);
   const syncStatus = dia ? compareRutinaSnapshot(rutinaBase, dia) : 'sin_rutina';
-
-  const ejSearchTerm = ejSearch.toLowerCase().trim();
-  const ejerciciosFiltrados = ejSearchTerm
-    ? ejercicios.filter(
-        (e) =>
-          e.nombre.toLowerCase().includes(ejSearchTerm) ||
-          e.categoria.toLowerCase().includes(ejSearchTerm) ||
-          e.grupo_muscular.some((g) => g.toLowerCase().includes(ejSearchTerm))
-      )
-    : ejercicios;
 
   if (!dia) return null;
 
@@ -396,7 +397,7 @@ export const VistaDia = ({
               Ejercicios
             </p>
             <button
-              onClick={() => setShowEjercicioPicker((v) => !v)}
+              onClick={() => setShowEjercicioPicker(true)}
               className="fp-btn fp-btn-primary"
               style={{ gap: 4, fontSize: 11, padding: '6px 12px' }}
             >
@@ -405,90 +406,13 @@ export const VistaDia = ({
           </div>
 
           {showEjercicioPicker && (
-            <div
-              style={{
-                marginBottom: 14,
-                padding: 14,
-                borderRadius: 12,
-                background: 'var(--bg-overlay)',
-                border: '1px solid var(--border)',
-              }}
-              className="animate-slide-down"
-            >
-              <div style={{ position: 'relative', marginBottom: 10 }}>
-                <Search
-                  size={13}
-                  color="var(--text-muted)"
-                  style={{
-                    position: 'absolute',
-                    left: 11,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <input
-                  className="fp-input"
-                  style={{ paddingLeft: 32 }}
-                  placeholder="Buscar ejercicio..."
-                  value={ejSearch}
-                  onChange={(e) => setEjSearch(e.target.value)}
-                />
-              </div>
-              <div style={{ display: 'grid', gap: 6, maxHeight: 240, overflow: 'auto' }}>
-                {ejerciciosFiltrados.map((ej) => (
-                  <button
-                    key={ej.id}
-                    onClick={() =>
-                      handlePickEjercicio({
-                        nombre: ej.nombre,
-                        series: 3,
-                        reps: ej.unidad_id_default === 1 ? 12 : 10,
-                        notas: '',
-                      })
-                    }
-                    style={{
-                      padding: 10,
-                      borderRadius: 6,
-                      border: '1px solid var(--border)',
-                      background: 'var(--bg-card)',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 12, color: 'var(--text-primary)' }}>{ej.nombre}</p>
-                      <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                        {ej.grupo_muscular.join(', ')}
-                      </p>
-                    </div>
-                    <Plus size={14} color={ENTRENO} />
-                  </button>
-                ))}
-                {ejerciciosFiltrados.length === 0 && (
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--text-muted)',
-                      textAlign: 'center',
-                      padding: 12,
-                    }}
-                  >
-                    Sin resultados
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => setShowEjercicioPicker(false)}
-                className="fp-btn fp-btn-ghost"
-                style={{ marginTop: 10, width: '100%', fontSize: 11 }}
-              >
-                Cancelar
-              </button>
-            </div>
+            <ExercisePickerOverlay
+              localExercises={ejercicios}
+              selectedNames={dia.ejercicios_personalizados.map((e) => e.nombre)}
+              onSelect={handlePickFromOverlay}
+              onClose={() => setShowEjercicioPicker(false)}
+              title="Añadir ejercicio al día"
+            />
           )}
 
           <SortableContext items={ejerciciosIds} strategy={verticalListSortingStrategy}>

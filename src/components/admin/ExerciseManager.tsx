@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Activity, Plus, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Activity, BookOpen, Plus, Search } from 'lucide-react';
 import { useDataStore } from '../../store/useDataStore';
 import { useToast } from './common/Toast';
 import { ExerciseForm } from './ExerciseForm';
@@ -35,6 +36,35 @@ export const ExerciseManager = () => {
 
   return (
     <div>
+      <div
+        className="fp-card"
+        style={{
+          padding: '12px 14px',
+          marginBottom: 14,
+          borderRadius: 13,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+          borderColor: 'rgba(88,166,255,.25)',
+          background: 'rgba(88,166,255,.06)',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+            Biblioteca ExerciseDB
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            Explora miles de ejercicios con video. Aquí gestionas tus ejercicios personalizados.
+          </p>
+        </div>
+        <Link to="/library" className="fp-btn fp-btn-secondary" style={{ gap: 6, fontSize: 12, flexShrink: 0 }}>
+          <BookOpen size={14} color="var(--accent-blue)" />
+          Abrir biblioteca
+        </Link>
+      </div>
+
       <div className="fp-card" style={{ padding: 14, marginBottom: 14, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', borderRadius: 13 }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
           <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
