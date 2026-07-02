@@ -439,6 +439,7 @@ _(vacío — agrega aquí contexto nuevo a medida que aparezca)_
 |---|---|---|
 | 2026-04-16 | Crear este CONTEXT.md como fuente única | Conversaciones pierden contexto entre sesiones |
 | 2026-04-16 | Fase 2.5 (rediseño modelo) es bloqueante antes de Supabase | Evitar doble migración |
+| 2026-07-02 | Integrar ExerciseDB (RapidAPI) via capa `src/lib/exercisedb` + TanStack Query | Enriquecer biblioteca de ejercicios con datos, imagenes y videos externos; key en `VITE_RAPIDAPI_KEY` (client-side por ahora, proxy en Fase 3) |
 
 ---
 
