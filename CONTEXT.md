@@ -121,7 +121,7 @@ La interface `Rutina` no los contempla. El usuario cree que los configuró; se p
 7. **`UserPlansPage` es un juguete**: `useState(usuariosData)` → se pierde todo al recargar.
 8. **Workout store sin persistencia** → no hay historial, no hay progreso, no hay producto.
 9. **Páginas gigantes**: 683/697/489/424/336/324 líneas. Componentes internos no reutilizables.
-10. **Carpetas vacías** (`components/common`, `components/library`, `components/player`, `components/workout`, `admin/lists`).
+10. **Carpetas vacías** (`components/common`, `components/player`, `components/workout`, `admin/lists`).
 11. **Código muerto**: stubs de 2-3 líneas (`RoutineWizard.tsx`, `WizardProgress.tsx`, `UnitManager.tsx`), `create-admin.js` en raíz, `ExercisePicker` duplicado.
 12. **Estilos mezclados**: Tailwind + `style={{}}` inline masivos + tokens CSS. Elegir uno.
 13. **Sin capa de datos servidor**: ausencia de TanStack Query forzará `useEffect` manuales al conectar Supabase.
@@ -385,7 +385,7 @@ Candidatos a borrar en cuanto se implemente la próxima fase:
 - [src/components/admin/wizard/WizardProgress.tsx](src/components/admin/wizard/WizardProgress.tsx) (stub 2 líneas)
 - [src/components/admin/UnitManager.tsx](src/components/admin/UnitManager.tsx) (stub 3 líneas)
 - `create-admin.js` en raíz (codegen viejo)
-- Carpetas vacías: `src/components/common/`, `src/components/library/`, `src/components/player/`, `src/components/workout/`, `src/components/admin/lists/`
+- Carpetas vacías: `src/components/common/`, `src/components/player/`, `src/components/workout/`, `src/components/admin/lists/`
 
 Consolidar:
 - Elegir `ExercisePicker` canónico ([src/components/admin/picker/ExercisePicker.tsx](src/components/admin/picker/ExercisePicker.tsx) o el embebido en `RoutinePage.tsx`).
@@ -440,6 +440,12 @@ _(vacío — agrega aquí contexto nuevo a medida que aparezca)_
 | 2026-04-16 | Crear este CONTEXT.md como fuente única | Conversaciones pierden contexto entre sesiones |
 | 2026-04-16 | Fase 2.5 (rediseño modelo) es bloqueante antes de Supabase | Evitar doble migración |
 | 2026-07-02 | Integrar ExerciseDB (RapidAPI) via capa `src/lib/exercisedb` + TanStack Query | Enriquecer biblioteca de ejercicios con datos, imagenes y videos externos; key en `VITE_RAPIDAPI_KEY` (client-side por ahora, proxy en Fase 3) |
+| 2026-07-09 | Sección `/library/*` con hub + catálogos (partes/equipo/tipos/músculos) + listado filtrable; submenú solo en esas rutas | Exponer todos los filtros/catálogos del API sin mezclarlos en Inicio/Admin; deep-link via query params |
+| 2026-07-09 | Chat IA en `/library/ia`: backend propone rutina, cliente resuelve cada ejercicio con ExerciseDB (`search`) y guarda `exerciseDbId` | Preparar puente a Supabase; UI multi-turno en Biblioteca; redirect desde `/admin/rutina-ia` |
+| 2026-07-10 | Tres formularios `/library/rutina/basica|intermedia|avanzada` con campos progresivos + ExerciseDB picker; extensión `Rutina` con `tipo`, `rest_between_sets`, `notes`, `rpe`, `grupo_superset` | Crear rutinas desde Biblioteca sin perder campos capturados; puente a Fase 2.5 |
+| 2026-07-10 | Catálogo `routinePresets` (~20 plantillas: Hyrox, isométricos, pliometría…) + galería `/library/rutina/plantillas` con resolución ExerciseDB | Rutinas preestablecidas seleccionables; migrable a Supabase en Fase 3 |
+| 2026-07-10 | Admin y Biblioteca unificados: `AppShell` compartido, builder 2 pasos (editar + revisión/heatmap), `/admin/rutina` → redirect al builder; edit con `?id=` | Una sola app; mismo flujo crear/editar desde Admin o Biblioteca |
+| 2026-07-10 | Backend `fitpro_api` (FastAPI) + DeepSeek en `POST /api/ai/routine`; key solo servidor (`DEEPSEEK_API_KEY`); frontend en `/library/ia` sin cambios de UI | Completar flujo chat IA → rutina → ExerciseDB → guardar |
 
 ---
 

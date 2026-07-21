@@ -9,7 +9,7 @@ interface DataStore {
   rutinas: Rutina[];
   ejercicios: Ejercicio[];
   unidades: Unidad[];
-  addRutina: (rutina: Omit<Rutina, 'id'>) => void;
+  addRutina: (rutina: Omit<Rutina, 'id'>) => number;
   updateRutina: (id: number, rutina: Partial<Rutina>) => void;
   deleteRutina: (id: number) => void;
   addEjercicio: (ejercicio: Omit<Ejercicio, 'id'>) => void;
@@ -36,6 +36,7 @@ export const useDataStore = create<DataStore>()(
       addRutina: (rutina) => {
         const id = getMaxId(get().rutinas) + 1;
         set((state) => ({ rutinas: [...state.rutinas, { ...rutina, id }] }));
+        return id;
       },
 
       updateRutina: (id, rutina) => {

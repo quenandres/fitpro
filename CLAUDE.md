@@ -30,7 +30,7 @@ clientes los ejecutan y ven progreso. Modelo comercial por nº de clientes
 | Estado UI efímero | Zustand 5 | Zustand (solo UI) |
 | Estado servidor | — (stores con `persist` en localStorage) | TanStack Query |
 | Validación runtime | — | Zod |
-| Backend | **ninguno** (cliente Supabase comentado) | Supabase (Postgres + Auth + Storage + Edge Functions) |
+| Backend | **FastAPI** (`../fitpro_api`) para IA; Supabase comentado | Supabase (Postgres + Auth + Storage + Edge Functions) |
 | Estilos | Tailwind 4 + inline styles + tokens CSS (mezclados) | Unificar (pendiente D8) |
 | Pagos | — | Stripe |
 | Observabilidad | — | Sentry + PostHog |
@@ -58,7 +58,7 @@ fitpro/
 │   │   ├── dashboard/
 │   │   ├── exercise/
 │   │   ├── layout/        # Navbar, ThemeToggle
-│   │   ├── library/       # (vacía)
+│   │   ├── library/       # LibraryLayout, LibrarySubNav (rutas API)
 │   │   ├── player/        # (vacía)
 │   │   └── workout/       # (vacía)
 │   ├── context/           # AuthContext (MOCK), ThemeContext
@@ -74,9 +74,14 @@ fitpro/
 ├── create-admin.js        # Script legacy (candidato a borrar)
 ├── docker-compose.yml
 └── Dockerfile
+
+fitpro_api/                  # Hermano del repo — FastAPI + DeepSeek
+├── app/main.py              # GET /health, POST /api/ai/routine
+├── app/services/deepseek.py
+└── requirements.txt
 ```
 
-Carpetas vacías (`common/`, `library/`, `player/`, `workout/`,
+Carpetas vacías (`common/`, `player/`, `workout/`,
 `admin/lists/`) y stubs de 2-3 líneas (`RoutineWizard.tsx`,
 `WizardProgress.tsx`, `UnitManager.tsx`) son **código muerto** — ver
 `CONTEXT.md §10`.
@@ -93,10 +98,16 @@ npm run lint                # ESLint
 npm run preview
 npm run download:anatomy    # descarga SVGs de anatomía
 
-docker-compose up --build   # alternativa en contenedor
+docker-compose up --build   # frontend en :5174
+docker-compose up api       # solo backend IA en :8000
+
+# Backend IA (local sin Docker):
+# cd ../fitpro_api && uvicorn app.main:app --reload --port 8000
 ```
 
 Variables de entorno: copiar `.env.example` → `.env`. Ver
+`VITE_API_URL` (backend IA, default `http://localhost:8000`),
+`VITE_RAPIDAPI_KEY` (ExerciseDB). En `fitpro_api/.env`: `DEEPSEEK_API_KEY`.
 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (hoy **no se usan** porque el
 cliente Supabase está comentado).
 
@@ -177,9 +188,14 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 Definidas en `src/App.tsx`:
 
 - Públicas: `/login`, `/register`.
-- Protegidas: `/` (Dashboard), `/admin`, `/admin/rutina`, `/admin/planes`,
-  `/admin/unidades`, `/library`, `/workout/:id`, `/workout/:id/play`,
-  `/anatomy`.
+- Protegidas: `/` (Dashboard), `/admin/*`, `/workout/:id`, `/anatomytracker`.
+- Admin (shell unificado con Biblioteca): `/admin` (rutinas), `/admin/ejercicios`, `/admin/catalogo`,
+  `/admin/planes`, `/admin/unidades`, `/admin/datos`; páginas completas en `/admin/planes/full`, `/admin/unidades/full`.
+- Crear/editar rutina (flujo unificado): `/library/rutina` → formularios + revisión con heatmap;
+  `/admin/rutina?id=` redirige al builder. Soporta `?id=` para editar.
+- Biblioteca ExerciseDB: `/library` (hub), `/library/ejercicios`, `/library/rutina/plantillas`,
+  `/library/rutina/basica|intermedia|avanzada`, `/library/ia`, catálogos `/library/partes|equipo|tipos|musculos`.
+- Redirect: `/admin/rutina-ia` → `/library/ia`.
 
 Hoy sin gating por rol — pendiente tras Fase 3.
 

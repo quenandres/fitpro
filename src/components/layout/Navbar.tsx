@@ -63,7 +63,10 @@ export const BottomNav = () => {
     >
       <div className="max-w-md mx-auto px-4 h-full flex items-center justify-around">
         {NAV_ITEMS.map(({ path, Icon, label, accent }) => {
-          const active = location.pathname === path;
+          const active =
+            path === '/'
+              ? location.pathname === '/'
+              : location.pathname === path || location.pathname.startsWith(`${path}/`);
           return (
             <Link
               key={path}

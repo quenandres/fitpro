@@ -188,7 +188,7 @@ const UserPlansPage = () => {
           />
         </div>
         <button
-          onClick={() => navigate('/admin/rutina-ia')}
+          onClick={() => navigate('/library/ia')}
           className="fp-btn fp-btn-secondary"
           style={{ gap: 6, fontSize: 12 }}
         >

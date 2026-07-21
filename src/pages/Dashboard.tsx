@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Search, Zap, Target, Flame, Clock } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { WorkoutCard } from '../components/dashboard/WorkoutCard';
-import { Navbar, BottomNav } from '../components/layout/Navbar';
+import { AppShell } from '../components/layout/AppShell';
 
 export const Dashboard = () => {
   const [search, setSearch] = useState('');
@@ -26,15 +26,7 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
-      <Navbar />
-      <BottomNav />
-
-      <main
-        className="max-w-md mx-auto"
-        style={{ paddingTop: 70, paddingBottom: 80, paddingLeft: 16, paddingRight: 16 }}
-      >
-
+    <AppShell>
         {/* ── Hero ─────────────────────────────────────── */}
         <section className="animate-slide-up" style={{ paddingTop: 20, paddingBottom: 16 }}>
           {/* Eyebrow badge */}
@@ -138,7 +130,6 @@ export const Dashboard = () => {
           </div>
         )}
 
-      </main>
-    </div>
+    </AppShell>
   );
 };

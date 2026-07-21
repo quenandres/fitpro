@@ -33,6 +33,7 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
   const cat   = getCat(rutina.categoria);
   const diff  = getDiff(rutina.dificultad);
   const total = rutina.ejercicios.reduce((a, e) => a + e.series, 0);
+  const hasExerciseDb = rutina.ejercicios.some((e) => e.exerciseDbId);
 
   return (
     <article className="fp-card fp-card-hover relative overflow-hidden">
@@ -50,6 +51,14 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
                 {rutina.categoria}
               </span>
               <span className={`badge ${diff.cls}`}>{rutina.dificultad}</span>
+              {hasExerciseDb && (
+                <span
+                  className="badge badge-blue"
+                  style={{ fontSize: 9, padding: '1px 5px' }}
+                >
+                  ExerciseDB
+                </span>
+              )}
             </div>
             <p className="font-sora" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
               {rutina.nombre}

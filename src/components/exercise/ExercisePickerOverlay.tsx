@@ -13,11 +13,14 @@ import {
   useBodyParts,
   useEquipments,
   useExerciseTypes,
+  useMuscles,
 } from '../../lib/exercisedb';
 import type { ExerciseListItem, ExerciseSearchItem, ReferenceItem } from '../../lib/exercisedb';
+import { getExerciseById } from '../../lib/exercisedb';
 import { useExerciseBrowse } from '../../hooks/useExerciseBrowse';
 import { useDataStore } from '../../store/useDataStore';
 import type { Ejercicio } from '../../types';
+import { musclesFromExerciseDb, musclesFromGrupoMuscular } from '../../utils/muscleCanonicalMap';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
 import { SkeletonCard } from '../admin/common/Skeleton';
 
@@ -26,6 +29,8 @@ export interface PickedExercise {
   unidad_id_default: number;
   ejercicio_id?: number;
   exerciseDbId?: string;
+  imageUrl?: string;
+  musculos_anatomia?: string[];
 }
 
 type Tab = 'api' | 'local';
@@ -58,14 +63,21 @@ export const ExercisePickerOverlay = ({
   const [bodyPart, setBodyPart] = useState('');
   const [equip, setEquip] = useState('');
   const [exerciseType, setExerciseType] = useState('');
+  const [muscle, setMuscle] = useState('');
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [localSearch, setLocalSearch] = useState('');
 
   const { data: exerciseTypes = [] } = useExerciseTypes();
   const { data: bodyParts = [] } = useBodyParts();
   const { data: equipments = [] } = useEquipments();
+  const { data: muscles = [] } = useMuscles();
 
-  const browse = useExerciseBrowse(search, { exerciseType, bodyPart, equipment: equip });
+  const browse = useExerciseBrowse(search, {
+    exerciseType,
+    bodyPart,
+    equipment: equip,
+    muscle,
+  });
 
   const localFiltered = localList.filter((ej) => {
     const term = localSearch.toLowerCase().trim();
@@ -77,22 +89,42 @@ export const ExercisePickerOverlay = ({
     );
   });
 
-  const handleSelectApi = (item: ExerciseListItem | ExerciseSearchItem) => {
+  const handleSelectApi = async (item: ExerciseListItem | ExerciseSearchItem) => {
     if (selectedNames.includes(item.name)) return;
+
+    let musculos_anatomia: string[] | undefined;
+    if ('targetMuscles' in item) {
+      musculos_anatomia = musclesFromExerciseDb(item.targetMuscles, item.secondaryMuscles);
+    } else {
+      try {
+        const detail = await getExerciseById(item.exerciseId);
+        musculos_anatomia = musclesFromExerciseDb(detail.targetMuscles, detail.secondaryMuscles);
+      } catch {
+        musculos_anatomia = undefined;
+      }
+    }
+
     onSelect({
       nombre: item.name,
       unidad_id_default: 1,
       exerciseDbId: item.exerciseId,
+      imageUrl: item.imageUrl,
+      musculos_anatomia,
     });
     onClose();
   };
 
   const handleSelectLocal = (ej: Ejercicio) => {
     if (selectedNames.includes(ej.nombre)) return;
+    const musculos_anatomia =
+      ej.musculos_anatomia?.length
+        ? ej.musculos_anatomia
+        : musclesFromGrupoMuscular(ej.grupo_muscular);
     onSelect({
       nombre: ej.nombre,
       unidad_id_default: ej.unidad_id_default,
       ejercicio_id: ej.id,
+      musculos_anatomia: musculos_anatomia.length ? musculos_anatomia : undefined,
     });
     onClose();
   };
@@ -433,6 +465,19 @@ export const ExercisePickerOverlay = ({
                     >
                       <option value="">Equipo</option>
                       {equipments.map((o: ReferenceItem) => (
+                        <option key={o.name} value={o.name}>
+                          {o.name}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="fp-input"
+                      style={{ padding: '7px 10px', fontSize: 12, gridColumn: '1 / -1' }}
+                      value={muscle}
+                      onChange={(e) => setMuscle(e.target.value)}
+                    >
+                      <option value="">Músculo</option>
+                      {muscles.map((o: ReferenceItem) => (
                         <option key={o.name} value={o.name}>
                           {o.name}
                         </option>

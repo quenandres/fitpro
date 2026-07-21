@@ -1,8 +1,19 @@
+export type RoutineTipo = 'estandar' | 'emom' | 'amrap' | 'fortime' | 'circuit';
+
 export interface EjercicioRutina {
   nombre: string;
   series: number;
   valor: number;
   unidad_id: number;
+  /** ID ExerciseDB (exr_…) — preparado para migración a Supabase */
+  exerciseDbId?: string;
+  imageUrl?: string;
+  /** Esfuerzo percibido 1–10 (formulario avanzado) */
+  rpe?: number;
+  /** Mismo valor en 2+ ejercicios = superset */
+  grupo_superset?: string;
+  /** Músculos canónicos para heatmap (ExerciseDB o locales) */
+  musculos_anatomia?: string[];
 }
 
 export interface Rutina {
@@ -13,6 +24,28 @@ export interface Rutina {
   duracion_min: number;
   descripcion: string;
   ejercicios: EjercicioRutina[];
+  tipo?: RoutineTipo;
+  rest_between_sets?: number;
+  notes?: string;
+}
+
+export type RoutineFormLevel = 'basica' | 'intermedia' | 'avanzada';
+
+export interface RoutineFormExercise extends EjercicioRutina {
+  /** Clave interna para edición en UI */
+  _key?: string;
+}
+
+export interface RoutineFormData {
+  nombre: string;
+  categoria: string;
+  descripcion: string;
+  dificultad: string;
+  duracion_min: number;
+  tipo: RoutineTipo;
+  ejercicios: RoutineFormExercise[];
+  rest_between_sets: number;
+  notes: string;
 }
 
 export interface Ejercicio {
@@ -113,6 +146,26 @@ export interface GenerateRoutineExercise {
   valor: number;
   unidad_id?: number;
   motivo?: string;
+}
+
+export interface ResolvedExercise {
+  nombre: string;
+  series: number;
+  valor: number;
+  unidad_id: number;
+  exerciseDbId?: string;
+  imageUrl?: string;
+  matchStatus: 'matched' | 'unmatched';
+  /** Nombre original propuesto por la IA si difiere del match */
+  proposedName?: string;
+  musculos_anatomia?: string[];
+}
+
+export interface ResolvedRoutineDraft {
+  rutina: Omit<Rutina, 'id'>;
+  dias_entrenamiento: string[];
+  razonamiento?: string;
+  exercises: ResolvedExercise[];
 }
 
 export interface GenerateRoutineResponse {
