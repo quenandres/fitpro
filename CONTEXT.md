@@ -429,6 +429,25 @@ Consolidar:
 
 _(vacío — agrega aquí contexto nuevo a medida que aparezca)_
 
+### 2026-08-18 — Mapeo general de la app vs fases (ver HISTORIAL.md)
+
+Se hizo un mapeo puntual del código real (commit `b005893`) contra las fases
+de este documento. Detalle completo en [HISTORIAL.md](./HISTORIAL.md#2026-08-18--mapeo-1).
+Resumen:
+- Fase 2.5 (modelo de datos) sigue en 0%, pero la superficie que escribe
+  contra el modelo viejo (`EjercicioRutina` plano) creció mucho: Biblioteca,
+  3 formularios de rutina por nivel, chat IA, galería de presets. Cada
+  feature nueva sobre el modelo plano encarece la migración pendiente.
+- **Hallazgo a confirmar:** en `src/App.tsx`, todas las rutas (incluido
+  `/admin/*`, `/library/*`, `/player`) están envueltas en `PublicRoute` en
+  vez de `ProtectedRoute` — si no es intencional, un usuario autenticado no
+  puede acceder a esas rutas (rebote a `/`). Revisar antes de seguir
+  agregando features ahí.
+- `scripts/init.sql` (Postgres para `exercises` de `fitpro_api`) no equivale
+  a integración de Supabase; Fase 3 sigue en 0%.
+- RBAC mencionado en el mensaje del commit `b005893` no tiene implementación
+  encontrada en `src/`.
+
 ---
 
 ## 13. Bitácora de decisiones (ADR ligero)
