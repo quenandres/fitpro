@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -96,11 +96,11 @@ function AppRoutes() {
 
         {/* Dominio: IA (backend FastAPI) */}
         <Route path="ia" element={<AIRoutineChatPage />} />
-      </Route>
 
-      {/* Páginas de gestión con layout propio (desktop-first) */}
-      <Route path={lib.planes} element={<ProtectedRoute><UserPlansPage /></ProtectedRoute>} />
-      <Route path={lib.unidades} element={<ProtectedRoute><UnitPage /></ProtectedRoute>} />
+        {/* Gestión del entrenador */}
+        <Route path="planes" element={<UserPlansPage />} />
+        <Route path="unidades" element={<UnitPage />} />
+      </Route>
 
       {/* Redirects legacy */}
       {LEGACY_LIBRARY_REDIRECTS.map(({ from, to }) => (

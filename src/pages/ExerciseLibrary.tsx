@@ -334,10 +334,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
       )}
 
       {!isLoading && !isError && displayItems.length > 0 && (
-        <div
-          className="animate-slide-up delay-200"
-          style={{ display: 'flex', flexDirection: 'column', gap: 7 }}
-        >
+        <div className="animate-slide-up delay-200 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
           {displayItems.map((item, i) => (
             <div
               key={item.exerciseId}

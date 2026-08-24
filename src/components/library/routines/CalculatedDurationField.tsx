@@ -61,10 +61,18 @@ export const CalculatedDurationField = ({
           >
             {hasExercises ? `${breakdown.totalMinutes} min` : '—'}
           </p>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-            {hasExercises
-              ? `Trabajo ${formatMinutes(breakdown.workSeconds)} · Descanso ${formatMinutes(breakdown.restSeconds)} · Cambios ${formatMinutes(breakdown.transitionSeconds)}`
-              : 'Se calcula al añadir ejercicios'}
+          <p className="text-[11px] text-muted mt-1 flex flex-wrap gap-x-1 gap-y-0.5">
+            {hasExercises ? (
+              <>
+                <span>Trabajo {formatMinutes(breakdown.workSeconds)}</span>
+                <span className="text-muted/60">·</span>
+                <span>Descanso {formatMinutes(breakdown.restSeconds)}</span>
+                <span className="text-muted/60">·</span>
+                <span>Cambios {formatMinutes(breakdown.transitionSeconds)}</span>
+              </>
+            ) : (
+              'Se calcula al añadir ejercicios'
+            )}
           </p>
         </div>
       </div>

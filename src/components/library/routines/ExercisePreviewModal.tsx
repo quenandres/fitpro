@@ -5,6 +5,7 @@ import { useDataStore } from '../../../store/useDataStore';
 import type { RoutineFormExercise } from '../../../types';
 import { calculateExerciseDuration } from '../../../utils/calculateRoutineDuration';
 import { Skeleton } from '../../common/Skeleton';
+import { Sheet } from '../../common/Sheet';
 
 interface Props {
   ejercicio: RoutineFormExercise | null;
@@ -118,24 +119,7 @@ export const ExercisePreviewModal = ({
   const showMedia = waitingApi || showVideo || Boolean(motionImage);
 
   return (
-    <div
-      className="animate-fade-in fixed inset-0 z-50 flex items-end justify-center"
-      style={{
-        background: 'rgba(0,0,0,.75)',
-        backdropFilter: 'blur(8px)',
-        padding: 16,
-      }}
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        className="fp-card animate-slide-up w-full max-w-md overflow-hidden"
-        style={{ borderRadius: 20, maxHeight: '85vh', overflowY: 'auto' }}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="exercise-preview-title"
-      >
+    <Sheet open ariaLabel="Previsualización del ejercicio" onClose={onClose}>
         <div
           style={{
             height: 3,
@@ -331,7 +315,6 @@ export const ExercisePreviewModal = ({
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 };

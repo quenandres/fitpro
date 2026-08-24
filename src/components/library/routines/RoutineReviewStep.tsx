@@ -124,15 +124,10 @@ export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) =>
             {form.ejercicios.map((ej) => (
               <div
                 key={ej._key ?? ej.nombre}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: 12,
-                  color: 'var(--text-secondary)',
-                }}
+                className="flex justify-between gap-2 text-xs text-secondary min-w-0"
               >
-                <span>{ej.nombre}</span>
-                <span style={{ color: 'var(--text-muted)' }}>
+                <span className="min-w-0 truncate">{ej.nombre}</span>
+                <span className="shrink-0 text-muted">
                   {ej.series}×{ej.valor}
                 </span>
               </div>
@@ -161,7 +156,9 @@ export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) =>
             </p>
           ) : hasMuscleData ? (
             <>
-              <AnatomyMuscleHeatmap counts={muscleCounts} />
+              <div className="max-h-[38vh] md:max-h-[52vh] overflow-hidden">
+                <AnatomyMuscleHeatmap counts={muscleCounts} compact />
+              </div>
               <div
                 style={{
                   display: 'flex',

@@ -46,7 +46,7 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
             {cat.emoji}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+            <div className="flex flex-wrap items-center gap-1.5 mb-0.5 min-w-0">
               <span style={{ fontSize: 10, fontWeight: 600, color: cat.accent, textTransform: 'uppercase' as const, letterSpacing: '.05em' }}>
                 {rutina.categoria}
               </span>

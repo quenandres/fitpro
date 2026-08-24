@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Users, Search, ChevronLeft, Plus, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, ChevronLeft, Plus, Sparkles } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -146,16 +146,7 @@ const UserPlansPage = () => {
   }, [activeDragId, selectedUser]);
 
   const renderListaUsuarios = () => (
-    <div
-      style={{
-        maxWidth: 1400,
-        margin: '0 auto',
-        paddingTop: 20,
-        paddingRight: 20,
-        paddingBottom: 20,
-        paddingLeft: 20,
-      }}
-    >
+    <div>
       <div
         className="fp-card"
         style={{
@@ -328,46 +319,22 @@ const UserPlansPage = () => {
     if (!selectedUser) return null;
 
     return (
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: '0 auto',
-          paddingTop: 20,
-          paddingRight: 20,
-          paddingBottom: 100,
-          paddingLeft: 20,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 12,
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            onClick={handleBack}
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: 8 }}
-            aria-label={view === 'dia' ? 'Volver a la vista anterior' : 'Volver a usuarios'}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h2
-              className="font-sora"
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.01em',
-              }}
+      <div>
+        <div className="flex flex-col gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={handleBack}
+              className="fp-btn fp-btn-ghost shrink-0 p-2"
+              aria-label={view === 'dia' ? 'Volver a la vista anterior' : 'Volver a usuarios'}
             >
-              {selectedUser.nombre}
-            </h2>
-            <p style={{ fontSize: 12, color: ACCENT }}>{selectedUser.plan.nombre}</p>
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-sora text-base font-bold text-primary tracking-tight truncate">
+                {selectedUser.nombre}
+              </h2>
+              <p className="text-xs truncate" style={{ color: ACCENT }}>{selectedUser.plan.nombre}</p>
+            </div>
           </div>
           <PlanViewSwitcher
             view={view}
@@ -506,83 +473,23 @@ const UserPlansPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
-      <header className="fp-glass sticky top-0 z-50">
-        <div
-          style={{
-            maxWidth: 1400,
-            margin: '0 auto',
-            padding: '0 20px',
-            height: 58,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link
-              to={ROUTES.library.root}
-              className="fp-btn fp-btn-ghost"
-              style={{
-                padding: '7px 9px',
-                borderRadius: 10,
-                background: 'var(--bg-overlay)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <ChevronLeft size={16} />
-            </Link>
-            <div style={{ width: 1, height: 26, background: 'var(--border)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 9,
-                  background: 'linear-gradient(135deg,#a371f7,#7c3aed)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Users size={15} color="#fff" />
-              </div>
-              <div>
-                <p
-                  className="font-sora"
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: 'var(--text-primary)',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Planes de Entrenamiento
-                </p>
-                <p style={{ fontSize: 10, color: ACCENT, fontWeight: 600 }}>
-                  Calendario y gestión
-                </p>
-              </div>
-            </div>
+    <>
+      {!selectedUser && (
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="min-w-0">
+            <p className="font-sora text-sm font-bold text-primary leading-tight">
+              Planes de Entrenamiento
+            </p>
+            <p className="text-[10px] font-semibold" style={{ color: ACCENT }}>
+              Calendario y gestión
+            </p>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: '4px 9px',
-              borderRadius: 8,
-              background: 'var(--bg-overlay)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {usuarios.length}
-            </span>
+          <div className="flex items-center gap-1.5 shrink-0 rounded-lg border border-line bg-overlay px-2.5 py-1">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: ACCENT }} />
+            <span className="text-[11px] font-semibold text-secondary">{usuarios.length}</span>
           </div>
         </div>
-      </header>
+      )}
 
       {selectedUser ? renderCalendario() : renderListaUsuarios()}
 
@@ -594,7 +501,7 @@ const UserPlansPage = () => {
           onCreate={handleCreateUser}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -115,12 +115,7 @@ export const ReferenceCatalogPage = ({
 
     {!isLoading && !isError && items.length > 0 && (
       <div
-        className="animate-slide-up delay-100"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 8,
-        }}
+        className="animate-slide-up delay-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2"
       >
         {items.map((item, i) => (
           <Link

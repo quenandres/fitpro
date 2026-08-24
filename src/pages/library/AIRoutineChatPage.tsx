@@ -419,15 +419,7 @@ export const AIRoutineChatPage = () => {
       )}
 
       <div
-        className="fp-card"
-        style={{
-          borderRadius: 14,
-          padding: 10,
-          position: 'sticky',
-          bottom: 72,
-          zIndex: 10,
-          background: 'var(--bg-card)',
-        }}
+        className="fp-card sticky bottom-[72px] md:bottom-4 z-10 bg-card rounded-[14px] p-2.5"
       >
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
           <textarea

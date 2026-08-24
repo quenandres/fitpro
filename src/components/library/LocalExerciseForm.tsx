@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import type { Ejercicio } from '../../types';
 import { AnatomyMuscleSelector, canonicalsToGrupos } from '../anatomy';
+import { Sheet } from '../common/Sheet';
 
 /* ── Constants ───────────────────────────────────────────── */
 const EQUIPAMIENTOS = [
@@ -161,16 +162,14 @@ export const LocalExerciseForm: React.FC<ExerciseFormProps> = ({
   const inpErr: React.CSSProperties = { ...inp, borderColor: 'rgba(248,81,73,.5)' };
 
   return (
-    <div
-      className="animate-fade-in"
-      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)' }}
-      onClick={onClose}
+    <Sheet
+      open
+      onClose={onClose}
+      flexColumn
+      ariaLabel={editingEjercicio ? 'Editar ejercicio' : 'Nuevo ejercicio'}
+      panelClassName="md:max-w-2xl"
+      panelStyle={{ maxHeight: '92vh' }}
     >
-      <div
-        className="fp-card animate-slide-up"
-        style={{ width: '100%', maxWidth: 680, maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: 20, overflow: 'hidden' }}
-        onClick={(e) => e.stopPropagation()}
-      >
 
         {/* ── Top accent ──────────────────────────────── */}
         <div style={{ height: 3, background: 'linear-gradient(90deg,var(--brand),var(--accent-blue))', flexShrink: 0 }} />
@@ -477,7 +476,6 @@ export const LocalExerciseForm: React.FC<ExerciseFormProps> = ({
           </button>
         </div>
 
-      </div>
-    </div>
+    </Sheet>
   );
 };

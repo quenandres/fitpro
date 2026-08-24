@@ -237,10 +237,7 @@ export const RoutinePresetGalleryPage = () => {
         </div>
       )}
 
-      <div
-        className="animate-slide-up delay-150"
-        style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-      >
+      <div className="animate-slide-up delay-150 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
         {presets.map((preset, i) => (
           <div key={preset.id} style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
             <PresetCard

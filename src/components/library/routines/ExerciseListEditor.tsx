@@ -137,7 +137,7 @@ export const ExerciseListEditor = ({
           return (
             <div
               key={key}
-              className="fp-card"
+              className="fp-card relative"
               style={{
                 padding: 10,
                 borderRadius: 12,
@@ -145,99 +145,68 @@ export const ExerciseListEditor = ({
                 background: inSuperset ? 'rgba(163,113,247,.06)' : undefined,
               }}
             >
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div className="flex flex-col gap-2">
+              <div className="flex gap-2.5 items-start">
                 {ej.imageUrl && (
                   <button
                     type="button"
                     onClick={() => setPreviewKey(key)}
                     aria-label={`Previsualizar ${ej.nombre}`}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 9,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                      border: '1px solid rgba(88,166,255,.2)',
-                      padding: 0,
-                      background: 'transparent',
-                      cursor: 'pointer',
-                    }}
+                    className="shrink-0 w-11 h-11 rounded-[9px] overflow-hidden border border-[rgba(88,166,255,.2)] p-0 bg-transparent cursor-pointer"
                   >
                     <img
                       src={ej.imageUrl}
                       alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      className="w-full h-full object-cover"
                     />
                   </button>
                 )}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="flex-1 min-w-0">
                   <button
                     type="button"
-                    className="font-sora truncate"
+                    className="font-sora truncate block w-full text-left text-[13px] font-semibold text-primary mb-2 p-0 bg-transparent border-none cursor-pointer"
                     onClick={() => setPreviewKey(key)}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      textAlign: 'left',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      marginBottom: 8,
-                      padding: 0,
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
                   >
                     {ej.nombre}
                   </button>
                   <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: showRpe ? '1fr 1fr 1fr' : '1fr 1fr',
-                      gap: 8,
-                    }}
+                    className={`grid gap-2 ${showRpe ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}
                   >
                     <div>
-                      <label style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-                        Series
-                      </label>
+                      <label className="text-[10px] text-muted font-semibold">Series</label>
                       <input
-                        className="fp-input"
+                        className="fp-input mt-1 py-1.5 px-2.5"
                         type="number"
+                        inputMode="numeric"
                         min={1}
                         max={20}
                         value={ej.series}
                         onChange={(e) =>
                           onUpdate(key, { series: Number(e.target.value) || 1 })
                         }
-                        style={{ padding: '7px 10px', marginTop: 4 }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-                        Reps
-                      </label>
+                      <label className="text-[10px] text-muted font-semibold">Reps</label>
                       <input
-                        className="fp-input"
+                        className="fp-input mt-1 py-1.5 px-2.5"
                         type="number"
+                        inputMode="numeric"
                         min={1}
                         max={1000}
                         value={ej.valor}
                         onChange={(e) =>
                           onUpdate(key, { valor: Number(e.target.value) || 1 })
                         }
-                        style={{ padding: '7px 10px', marginTop: 4 }}
                       />
                     </div>
                     {showRpe && (
-                      <div>
-                        <label style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-                          RPE
-                        </label>
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="text-[10px] text-muted font-semibold">RPE</label>
                         <input
-                          className="fp-input"
+                          className="fp-input mt-1 py-1.5 px-2.5"
                           type="number"
+                          inputMode="numeric"
                           min={1}
                           max={10}
                           placeholder="—"
@@ -246,17 +215,14 @@ export const ExerciseListEditor = ({
                             const v = e.target.value;
                             onUpdate(key, { rpe: v === '' ? undefined : Number(v) });
                           }}
-                          style={{ padding: '7px 10px', marginTop: 4 }}
                         />
                       </div>
                     )}
                   </div>
                   {inSuperset && (
                     <span
-                      className="badge"
+                      className="badge inline-block mt-2 text-[9px]"
                       style={{
-                        marginTop: 8,
-                        fontSize: 9,
                         background: 'rgba(163,113,247,.14)',
                         color: '#a371f7',
                         border: '1px solid rgba(163,113,247,.3)',
@@ -266,11 +232,11 @@ export const ExerciseListEditor = ({
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              </div>
+              <div className="flex gap-1 justify-end sm:flex-col sm:absolute sm:top-2.5 sm:right-2.5">
                   <button
                     type="button"
-                    className="fp-btn fp-btn-ghost"
-                    style={{ padding: 6, borderRadius: 8 }}
+                    className="fp-btn fp-btn-ghost p-1.5 rounded-lg"
                     onClick={() => setPreviewKey(key)}
                     aria-label="Previsualizar ejercicio"
                   >
@@ -279,10 +245,8 @@ export const ExerciseListEditor = ({
                   {showSuperset && (
                     <button
                       type="button"
-                      className="fp-btn fp-btn-ghost"
+                      className="fp-btn fp-btn-ghost p-1.5 rounded-lg"
                       style={{
-                        padding: 6,
-                        borderRadius: 8,
                         borderColor: supersetSelected ? 'rgba(163,113,247,.4)' : undefined,
                       }}
                       onClick={() => toggleSupersetSelect(key)}
@@ -293,8 +257,7 @@ export const ExerciseListEditor = ({
                   )}
                   <button
                     type="button"
-                    className="fp-btn fp-btn-ghost"
-                    style={{ padding: 6, borderRadius: 8, color: 'var(--accent-red)' }}
+                    className="fp-btn fp-btn-ghost p-1.5 rounded-lg text-[var(--accent-red)]"
                     onClick={() => onRemove(key)}
                     aria-label="Eliminar"
                   >

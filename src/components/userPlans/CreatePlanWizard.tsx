@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, X, Dumbbell, Check, Sparkles } from 'l
 import type { Rutina, Usuario, SemanaPlan, DiaSemana } from '../../types';
 import { DIAS_SEMANA } from './diasSemana';
 import { distribuirEjercicios } from '../../utils/distributeExercises';
+import { Sheet } from '../common/Sheet';
 
 interface Props {
   rutinas: Rutina[];
@@ -166,18 +167,15 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
   );
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'var(--bg-app)',
-        zIndex: 100,
-        overflow: 'auto',
-        padding: 20,
-      }}
-      className="animate-fade-in"
+    <Sheet
+      open
+      onClose={onClose}
+      immersive
+      zIndex={100}
+      ariaLabel="Crear nuevo plan"
+      panelClassName="p-5 md:p-6"
     >
-      <div style={{ maxWidth: 520, margin: '0 auto' }}>
+      <div className="max-w-[520px] mx-auto w-full">
         <div
           style={{
             display: 'flex',
@@ -550,6 +548,6 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
           )}
         </div>
       </div>
-    </div>
+    </Sheet>
   );
 };

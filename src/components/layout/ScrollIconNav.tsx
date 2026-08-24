@@ -37,17 +37,11 @@ export const ScrollIconNav = ({
   }, [location.pathname]);
 
   return (
-    <nav aria-label={ariaLabel} style={{ marginLeft: -16, marginRight: -16 }}>
+    <nav aria-label={ariaLabel} className="-mx-4 md:mx-0">
       <div
         ref={scrollRef}
-        className="scrollbar-hide"
-        style={{
-          display: 'flex',
-          gap: 5,
-          overflowX: 'auto',
-          padding: '2px 16px 4px',
-          WebkitOverflowScrolling: 'touch',
-        }}
+        className="scrollbar-hide flex gap-1.5 overflow-x-auto px-4 py-0.5 md:flex-wrap md:overflow-visible md:px-0 md:gap-2"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {items.map(({ to, end, Icon, label }) => (
           <NavLink
@@ -77,18 +71,17 @@ export const ScrollIconNav = ({
               transition:
                 'background .15s, color .15s, border-color .15s, padding .2s ease, gap .2s ease, min-width .2s ease',
             })}
+            className="md:!gap-1.5 md:!px-3"
           >
             {({ isActive }) => (
               <>
                 <Icon size={14} strokeWidth={isActive ? 2.25 : 2} aria-hidden />
                 <span
-                  style={{
-                    display: 'inline-block',
-                    maxWidth: isActive ? 120 : 0,
-                    opacity: isActive ? 1 : 0,
-                    overflow: 'hidden',
-                    transition: 'max-width .2s ease, opacity .15s ease',
-                  }}
+                  className={`inline-block overflow-hidden transition-[max-width,opacity] duration-200 ${
+                    isActive
+                      ? 'max-w-[120px] opacity-100'
+                      : 'max-w-0 opacity-0 md:max-w-[120px] md:opacity-100'
+                  }`}
                 >
                   {label}
                 </span>

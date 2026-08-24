@@ -8,7 +8,8 @@ import type { CSSProperties } from 'react';
 export const styles = {
   root: {
     fontFamily: 'inherit',
-    maxWidth: 480,
+    width: '100%',
+    maxWidth: '100%',
     margin: '0 auto',
     padding: '12px 14px 24px',
     display: 'flex',
@@ -255,7 +256,7 @@ export const styles = {
   },
   quickRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(5, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(56px, 1fr))',
     gap: 6,
   },
   quickChip: {

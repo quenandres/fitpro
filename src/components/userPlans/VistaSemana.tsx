@@ -68,22 +68,16 @@ export const VistaSemana = ({ user, selectedWeek, onSelectWeek, onOpenDia, rutin
             <ChevronRight size={16} />
           </button>
         </div>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="scrollbar-hide flex gap-1 overflow-x-auto pb-0.5 max-w-full">
           {user.plan.programacion_semanal.map((s) => (
             <button
               key={s.semana}
               onClick={() => onSelectWeek(s.semana)}
+              className="shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold cursor-pointer"
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                border:
-                  selectedWeek === s.semana ? '2px solid #a371f7' : '1px solid var(--border)',
+                border: selectedWeek === s.semana ? '2px solid #a371f7' : '1px solid var(--border)',
                 background: selectedWeek === s.semana ? '#a371f720' : 'transparent',
-                fontSize: 11,
-                fontWeight: 600,
                 color: selectedWeek === s.semana ? '#a371f7' : 'var(--text-muted)',
-                cursor: 'pointer',
               }}
             >
               {s.semana}

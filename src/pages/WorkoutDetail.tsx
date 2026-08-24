@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, Target, Layers, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Target, Layers } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { useUnits } from '../hooks/useUnits';
-import { Navbar } from '../components/layout/Navbar';
+import { AppShell } from '../components/layout/AppShell';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 
 function getDiff(dif: string) {
@@ -32,9 +32,11 @@ export const WorkoutDetail = () => {
 
   if (!rutina) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-app)' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Rutina no encontrada</p>
-      </div>
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[50dvh]">
+          <p className="text-secondary">Rutina no encontrada</p>
+        </div>
+      </AppShell>
     );
   }
 
@@ -45,10 +47,7 @@ export const WorkoutDetail = () => {
   const handleStart = () => { iniciarWorkout(rutina); navigate('/player'); };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
-      <Navbar />
-      <main className="max-w-md mx-auto" style={{ paddingTop: 70, paddingBottom: 32, paddingLeft: 16, paddingRight: 16 }}>
-
+    <AppShell>
         {/* Back */}
         <button
           onClick={() => navigate(-1)}
@@ -177,7 +176,6 @@ export const WorkoutDetail = () => {
           Iniciar Entrenamiento
         </button>
 
-      </main>
-    </div>
+    </AppShell>
   );
 };

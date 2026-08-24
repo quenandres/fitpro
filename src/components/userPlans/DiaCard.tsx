@@ -167,8 +167,8 @@ export const DiaCard = ({
         borderRadius: 12,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {draggable && (
             <button
               {...attributes}
@@ -204,13 +204,11 @@ export const DiaCard = ({
               <Calendar size={18} color={isNueva ? NUEVA : 'var(--text-muted)'} />
             )}
           </div>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {dia.nombre}
-            </p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-primary">{dia.nombre}</p>
             <p
+              className="text-[11px] truncate"
               style={{
-                fontSize: 11,
                 color: isEntreno ? ENTRENO : isNueva ? NUEVA : 'var(--text-muted)',
               }}
             >
@@ -218,7 +216,7 @@ export const DiaCard = ({
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
           {driftActivo && (
             <span
               style={{

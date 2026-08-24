@@ -144,7 +144,7 @@ const HubSection = ({
         {title}
       </p>
     )}
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: title ? 16 : 0 }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
       {sections.map(({ to, Icon, title: sectionTitle, desc, accent, bg }) => (
         <Link
           key={to}
@@ -198,20 +198,10 @@ export const LibraryHub = () => (
           Biblioteca
         </span>
       </div>
-      <h1
-        className="font-sora"
-        style={{
-          fontSize: 28,
-          fontWeight: 700,
-          lineHeight: 1.2,
-          letterSpacing: '-.02em',
-          color: 'var(--text-primary)',
-          marginBottom: 4,
-        }}
-      >
+      <h1 className="font-sora text-2xl md:text-[28px] font-bold leading-tight tracking-tight text-primary mb-1">
         Biblioteca
       </h1>
-      <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+      <p className="text-sm text-secondary">
         Catálogo ExerciseDB, creación de rutinas e IA. Tus datos se sincronizan con el backend.
       </p>
     </section>

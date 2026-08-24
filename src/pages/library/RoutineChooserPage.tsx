@@ -125,7 +125,7 @@ export const RoutineChooserPage = () => (
       O crea desde cero
     </p>
 
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
       {LEVELS.map(({ to, title, desc, badge, accent, bg }, i) => (
         <Link
           key={to}

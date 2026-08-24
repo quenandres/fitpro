@@ -23,6 +23,7 @@ import type { Ejercicio } from '../../types';
 import { musclesFromExerciseDb, musclesFromGrupoMuscular } from '../../utils/muscleCanonicalMap';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
 import { SkeletonCard } from '../common/Skeleton';
+import { Sheet } from '../common/Sheet';
 
 export interface PickedExercise {
   nombre: string;
@@ -273,33 +274,14 @@ export const ExercisePickerOverlay = ({
 
   return (
     <>
-      <div
-        className="animate-fade-in"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 60,
-          background: 'rgba(0,0,0,.75)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-        }}
-        onClick={onClose}
+      <Sheet
+        open
+        onClose={onClose}
+        zIndex={60}
+        flexColumn
+        ariaLabel={title}
+        panelStyle={{ maxHeight: '85vh' }}
       >
-        <div
-          className="fp-card animate-slide-up"
-          style={{
-            width: '100%',
-            maxWidth: 480,
-            borderRadius: '20px 20px 0 0',
-            maxHeight: '85vh',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
           <div
             style={{
               width: 36,
@@ -307,6 +289,7 @@ export const ExercisePickerOverlay = ({
               borderRadius: 2,
               background: 'var(--border)',
               margin: '12px auto 0',
+              flexShrink: 0,
             }}
           />
 
@@ -589,8 +572,7 @@ export const ExercisePickerOverlay = ({
               </>
             )}
           </div>
-        </div>
-      </div>
+      </Sheet>
 
       <ExerciseDetailModal exerciseId={previewId} onClose={() => setPreviewId(null)} />
     </>

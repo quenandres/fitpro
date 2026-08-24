@@ -372,7 +372,7 @@ Reglas:
 | D5 | RLS obligatorio desde día 1 | Primera barrera; client-side gating es secundaria |
 | D6 | Ejercicios referenciados por ID, no nombre | Integridad referencial |
 | D7 | Modelo `Bloque → BloqueItem → SerieDef` | Soporta 100% de patrones de entrenamiento modernos |
-| D8 | Unificar estilos (elegir Tailwind o inline) | **Pendiente de decidir explícitamente** |
+| D8 | Unificar estilos: **Tailwind 4 + tokens `@theme`**; migración oportunista de inline styles | Decidido 2026-08-24 — ver §13 |
 | D9 | Tests con Vitest + @testing-library/react | Validators y stores primero |
 | D10 | Observabilidad desde prod-day-1: Sentry + PostHog | No subir nada a prod sin esto |
 
@@ -465,6 +465,7 @@ Resumen:
 | 2026-07-10 | Catálogo `routinePresets` (~20 plantillas: Hyrox, isométricos, pliometría…) + galería `/library/rutina/plantillas` con resolución ExerciseDB | Rutinas preestablecidas seleccionables; migrable a Supabase en Fase 3 |
 | 2026-07-10 | Admin y Biblioteca unificados: `AppShell` compartido, builder 2 pasos (editar + revisión/heatmap), `/admin/rutina` → redirect al builder; edit con `?id=` | Una sola app; mismo flujo crear/editar desde Admin o Biblioteca |
 | 2026-07-10 | Backend `fitpro_api` (FastAPI) + DeepSeek en `POST /api/ai/routine`; key solo servidor (`DEEPSEEK_API_KEY`); frontend en `/library/ia` sin cambios de UI | Completar flujo chat IA → rutina → ExerciseDB → guardar |
+| 2026-08-24 | **D8 resuelto:** Tailwind 4 como sistema responsive; tokens de `index.css` expuestos vía `@theme`; layout mobile-first con `AppShell` progresivo (`narrow`/`default`/`wide`); bottom nav móvil + nav desktop en `Navbar`; componente `Sheet` unificado para overlays | Eliminar deuda de estilos (inline + `tailwind.config.js` muerto); UX móvil/tablet/escritorio coherente |
 
 ---
 

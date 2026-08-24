@@ -65,7 +65,7 @@ export const IntermediateRoutineForm = () => {
         </FormField>
 
         <FormField label="Categoría" required error={getFieldError(errors, 'categoria')}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {categoryOptions.map((cat) => {
               const sel = form.categoria === cat.value;
               return (
@@ -73,14 +73,10 @@ export const IntermediateRoutineForm = () => {
                   key={cat.value}
                   type="button"
                   onClick={() => setField('categoria', cat.value)}
+                  className="rounded-[10px] cursor-pointer text-xs font-semibold py-2 px-1"
                   style={{
-                    padding: '8px 4px',
-                    borderRadius: 10,
                     border: `1px solid ${sel ? 'rgba(88,166,255,.4)' : 'var(--border)'}`,
                     background: sel ? 'rgba(88,166,255,.12)' : 'var(--bg-elevated)',
-                    cursor: 'pointer',
-                    fontSize: 10,
-                    fontWeight: 600,
                     color: sel ? accent : 'var(--text-muted)',
                   }}
                 >

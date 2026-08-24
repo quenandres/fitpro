@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, Plus, Pencil, Trash2, Save, Ruler, X, Check } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, Save, Ruler, X, Check } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import type { Unidad } from '../types';
 import { ROUTES } from '../routes/paths';
@@ -297,48 +297,33 @@ export const UnitPage = () => {
   unidades.forEach((u) => { counts[u.tipo] = (counts[u.tipo] ?? 0) + 1; });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
-
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="fp-glass sticky top-0 z-50">
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 16px', height: 58, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: '7px 9px', borderRadius: 10, background: 'var(--bg-overlay)', border: '1px solid var(--border)', flexShrink: 0 }}
-            onClick={() => navigate(ROUTES.library.root)}
-          >
-            <ChevronLeft size={16} />
-          </button>
-
-          <div style={{ width: 1, height: 26, background: 'var(--border)' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg,#a371f7,#58a6ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(163,113,247,.25)', flexShrink: 0 }}>
-              <Ruler size={15} color="#fff" />
-            </div>
-            <div>
-              <p className="font-sora" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                Unidades de medida
-              </p>
-              <p style={{ fontSize: 10, color: 'var(--accent-purple)', fontWeight: 600 }}>
-                {unidades.length} configuradas
-              </p>
-            </div>
+    <>
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 shrink-0 rounded-[9px] flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#a371f7,#58a6ff)', boxShadow: '0 4px 12px rgba(163,113,247,.25)' }}>
+            <Ruler size={15} color="#fff" />
           </div>
-
-          {!showForm && (
-            <button
-              className="fp-btn fp-btn-primary"
-              style={{ gap: 6, fontSize: 12, padding: '8px 14px', flexShrink: 0 }}
-              onClick={handleNew}
-            >
-              <Plus size={14} /> Nueva
-            </button>
-          )}
+          <div className="min-w-0">
+            <p className="font-sora text-sm font-bold text-primary leading-tight">
+              Unidades de medida
+            </p>
+            <p className="text-[10px] font-semibold text-accent-purple">
+              {unidades.length} configuradas
+            </p>
+          </div>
         </div>
-      </header>
 
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '20px 16px 40px' }}>
+        {!showForm && (
+          <button
+            className="fp-btn fp-btn-primary shrink-0 gap-1.5 text-xs px-3.5 py-2"
+            onClick={handleNew}
+          >
+            <Plus size={14} /> Nueva
+          </button>
+        )}
+      </div>
+
+      <div>
 
         {/* ── Form ───────────────────────────────────────── */}
         {showForm && (
@@ -420,6 +405,6 @@ export const UnitPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };

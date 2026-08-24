@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { useExercise } from '../../lib/exercisedb';
 import { Skeleton } from '../common/Skeleton';
+import { Sheet } from '../common/Sheet';
 
 interface Props {
   exerciseId: string | null;
@@ -69,20 +70,7 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
   const fallbackImage = data?.imageUrls?.['720p'] ?? data?.imageUrl;
 
   return (
-    <div
-      className="animate-fade-in fixed inset-0 z-50 flex items-end justify-center"
-      style={{
-        background: 'rgba(0,0,0,.75)',
-        backdropFilter: 'blur(8px)',
-        padding: 16,
-      }}
-      onClick={onClose}
-    >
-      <div
-        className="fp-card animate-slide-up w-full max-w-md overflow-hidden"
-        style={{ borderRadius: 20, maxHeight: '85vh', overflowY: 'auto' }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Sheet open ariaLabel="Detalle del ejercicio" onClose={onClose}>
         <div
           style={{
             height: 3,
@@ -334,7 +322,6 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Sheet>
   );
 };

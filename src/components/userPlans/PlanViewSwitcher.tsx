@@ -20,15 +20,7 @@ const TABS: { id: PlanView; label: string; icon: typeof CalendarDays }[] = [
 export const PlanViewSwitcher = ({ view, onChange, totalSemanas }: Props) => {
   return (
     <div
-      style={{
-        display: 'flex',
-        gap: 4,
-        padding: 4,
-        borderRadius: 12,
-        background: 'var(--bg-overlay)',
-        border: '1px solid var(--border)',
-        width: 'fit-content',
-      }}
+      className="flex gap-1 p-1 rounded-xl bg-overlay border border-line w-full sm:w-fit overflow-x-auto scrollbar-hide"
     >
       {TABS.map((tab) => {
         const disabled = tab.id === 'mes' && totalSemanas < 1;
@@ -39,21 +31,16 @@ export const PlanViewSwitcher = ({ view, onChange, totalSemanas }: Props) => {
             key={tab.id}
             onClick={() => !disabled && onChange(tab.id)}
             disabled={disabled}
-            className="fp-btn fp-btn-ghost"
+            className="fp-btn fp-btn-ghost shrink-0 gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold border-none rounded-[9px] transition-all duration-150"
             style={{
-              padding: '6px 12px',
-              fontSize: 12,
-              fontWeight: 600,
               background: activo ? `${ACCENT}20` : 'transparent',
               color: activo ? ACCENT : 'var(--text-secondary)',
-              border: 'none',
-              borderRadius: 9,
-              gap: 6,
-              transition: 'all .15s',
             }}
+            aria-label={tab.label}
+            title={tab.label}
           >
             <Icon size={13} />
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         );
       })}

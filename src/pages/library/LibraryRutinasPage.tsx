@@ -46,39 +46,30 @@ export const LibraryRutinasPage = () => {
           </p>
         </section>
 
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 8,
-            marginBottom: 14,
-            justifyContent: 'flex-end',
-          }}
-        >
+        <div className="flex flex-col sm:flex-row gap-2 mb-3.5">
           <button
-            className="fp-btn fp-btn-secondary"
-            style={{ gap: 6, fontSize: 12 }}
-            onClick={() => navigate(lib.rutinasPlantillas)}
-          >
-            <LayoutTemplate size={14} /> Plantillas
-          </button>
-          <button
-            className="fp-btn fp-btn-secondary"
-            style={{ gap: 6, fontSize: 12 }}
-            onClick={() => navigate(lib.ia)}
-          >
-            <Sparkles size={14} /> Rutina IA
-          </button>
-          <button
-            className="fp-btn fp-btn-primary"
-            style={{ gap: 6, fontSize: 12 }}
+            className="fp-btn fp-btn-primary w-full sm:w-auto sm:order-3 gap-1.5 text-xs"
             onClick={() => navigate(lib.rutinasNueva)}
           >
             <Plus size={14} /> Nueva rutina
           </button>
+          <div className="flex gap-2 sm:ml-auto">
+            <button
+              className="fp-btn fp-btn-secondary flex-1 sm:flex-none gap-1.5 text-xs"
+              onClick={() => navigate(lib.rutinasPlantillas)}
+            >
+              <LayoutTemplate size={14} /> Plantillas
+            </button>
+            <button
+              className="fp-btn fp-btn-secondary flex-1 sm:flex-none gap-1.5 text-xs"
+              onClick={() => navigate(lib.ia)}
+            >
+              <Sparkles size={14} /> Rutina IA
+            </button>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
           {rutinas.map((r) => (
             <RoutineCard
               key={r.id}

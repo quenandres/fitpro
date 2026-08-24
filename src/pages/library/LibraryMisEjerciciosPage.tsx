@@ -126,7 +126,7 @@ export const LibraryMisEjerciciosPage = () => {
               </p>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">
               {filtered.map((ej) => (
                 <LocalExerciseCard key={ej.id} ejercicio={ej} onEdit={handleEdit} onDelete={handleDelete} />
               ))}
