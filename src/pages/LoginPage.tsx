@@ -44,7 +44,7 @@ export const LoginPage = () => {
             <Dumbbell size={22} color="#fff" />
           </div>
           <h1 className="font-sora auth-title">FitPro</h1>
-          <p className="auth-subtitle">Inicia sesión para continuar</p>
+          <p className="auth-subtitle">Accede al panel de administración</p>
         </div>
 
         {/* Social buttons */}
@@ -168,14 +168,14 @@ export const LoginPage = () => {
         {/* Footer */}
         <p className="auth-footer">
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="auth-link">
-            Regístrate gratis
+          <Link to={ROUTES.register} className="auth-link">
+            Crear cuenta
           </Link>
         </p>
       </div>
 
       <p className="auth-copyright">
-        FitPro &copy; {new Date().getFullYear()} &middot; Tu entrenamiento inteligente
+        FitPro &copy; {new Date().getFullYear()} &middot; Panel de administración
       </p>
     </div>
   );

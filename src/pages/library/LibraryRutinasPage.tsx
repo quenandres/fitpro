@@ -26,7 +26,7 @@ export const LibraryRutinasPage = () => {
         <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
           <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
             <Dumbbell size={10} style={{ marginRight: 3 }} />
-            Mis rutinas
+            Rutinas
           </span>
           <h1
             className="font-sora"
@@ -39,10 +39,10 @@ export const LibraryRutinasPage = () => {
               marginBottom: 4,
             }}
           >
-            Rutinas guardadas
+            Rutinas
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            Edita, elimina o crea nuevas rutinas desde plantilla, IA o formulario.
+            Inventario de rutinas: edita, elimina o crea desde plantilla, IA o formulario.
           </p>
         </section>
 

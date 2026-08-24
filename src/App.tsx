@@ -19,7 +19,6 @@ import { AdvancedRoutineForm } from './pages/library/routines/AdvancedRoutineFor
 import { RoutinePresetGalleryPage } from './pages/library/RoutinePresetGalleryPage';
 import { WorkoutPlayer } from './pages/WorkoutPlayer';
 import { RoutinePageRedirect } from './pages/RoutinePage';
-import { UnitPage } from './pages/UnitPage';
 import { UserPlansPage } from './pages/UserPlansPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -99,7 +98,6 @@ function AppRoutes() {
 
         {/* Gestión del entrenador */}
         <Route path="planes" element={<UserPlansPage />} />
-        <Route path="unidades" element={<UnitPage />} />
       </Route>
 
       {/* Redirects legacy */}

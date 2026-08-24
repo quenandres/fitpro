@@ -88,15 +88,7 @@ const CATALOGO_SECTIONS = [
   },
 ] as const;
 
-const GESTION_SECTIONS = [
-  {
-    to: lib.rutinas,
-    Icon: ClipboardList,
-    title: 'Mis rutinas',
-    desc: 'Lista, edita y elimina rutinas guardadas',
-    accent: '#58a6ff',
-    bg: 'rgba(88,166,255,.12)',
-  },
+const GESTION_SECTIONS = [  
   {
     to: lib.planes,
     Icon: Users,
@@ -104,15 +96,7 @@ const GESTION_SECTIONS = [
     desc: 'Asigna rutinas semanales a clientes',
     accent: '#a371f7',
     bg: 'rgba(163,113,247,.12)',
-  },
-  {
-    to: lib.unidades,
-    Icon: Ruler,
-    title: 'Unidades',
-    desc: 'Conteo, peso, tiempo, distancia…',
-    accent: '#58a6ff',
-    bg: 'rgba(88,166,255,.12)',
-  },
+  }  
 ] as const;
 
 const HubSection = ({
@@ -195,21 +179,21 @@ export const LibraryHub = () => (
       <div style={{ marginBottom: 10 }}>
         <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
           <BookOpen size={10} style={{ marginRight: 3 }} />
-          Biblioteca
+          Datos
         </span>
       </div>
       <h1 className="font-sora text-2xl md:text-[28px] font-bold leading-tight tracking-tight text-primary mb-1">
-        Biblioteca
+        Datos
       </h1>
       <p className="text-sm text-secondary">
-        Catálogo ExerciseDB, creación de rutinas e IA. Tus datos se sincronizan con el backend.
+        Administra el catálogo, las rutinas y los recursos persistidos.
       </p>
     </section>
 
     <div className="animate-slide-up delay-100">
-      <HubSection sections={CREAR_SECTIONS} />
-      <HubSection title="Catálogo ExerciseDB" sections={CATALOGO_SECTIONS} />
       <HubSection title="Gestión" sections={GESTION_SECTIONS} />
+      <HubSection title="Catálogo ExerciseDB" sections={CATALOGO_SECTIONS} />
+      <HubSection title="Crear" sections={CREAR_SECTIONS} />
     </div>
   </div>
 );

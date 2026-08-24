@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, Target, Layers } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Target, Layers, Pencil } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { useUnits } from '../hooks/useUnits';
 import { AppShell } from '../components/layout/AppShell';
 import { useWorkoutStore } from '../store/useWorkoutStore';
+import { routineEditPath } from '../utils/inferRoutineFormLevel';
 
 function getDiff(dif: string) {
   const d = dif.toLowerCase();
@@ -45,6 +46,7 @@ export const WorkoutDetail = () => {
   const total = rutina.ejercicios.reduce((a, e) => a + e.series, 0);
 
   const handleStart = () => { iniciarWorkout(rutina); navigate('/player'); };
+  const handleEdit = () => navigate(routineEditPath(rutina));
 
   return (
     <AppShell>
@@ -166,15 +168,26 @@ export const WorkoutDetail = () => {
           ))}
         </div>
 
-        {/* Start button */}
-        <button
-          onClick={handleStart}
-          className="fp-btn fp-btn-primary w-full animate-slide-up delay-200"
-          style={{ width: '100%', padding: '14px', fontSize: 14, borderRadius: 13, gap: 8 }}
-        >
-          <Play size={16} />
-          Iniciar Entrenamiento
-        </button>
+        <div className="animate-slide-up delay-200 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="fp-btn fp-btn-primary w-full"
+            style={{ width: '100%', padding: '14px', fontSize: 14, borderRadius: 13, gap: 8 }}
+          >
+            <Pencil size={16} />
+            Editar rutina
+          </button>
+          <button
+            type="button"
+            onClick={handleStart}
+            className="fp-btn fp-btn-secondary w-full"
+            style={{ width: '100%', padding: '12px', fontSize: 13, borderRadius: 13, gap: 8 }}
+          >
+            <Play size={15} />
+            Vista previa del player
+          </button>
+        </div>
 
     </AppShell>
   );

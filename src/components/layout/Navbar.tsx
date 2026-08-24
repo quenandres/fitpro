@@ -7,7 +7,7 @@ import { SHELL_WIDTH_CLASS, type ShellWidth } from './shellWidth';
 
 const NAV_ITEMS = [
   { path: ROUTES.home,               Icon: Home,          label: 'Inicio',     accent: '#22c55e' },
-  { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Biblioteca', accent: '#58a6ff' },
+  { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Datos',      accent: '#58a6ff' },
   { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',    accent: '#a371f7' },
 ] as const;
 
@@ -49,6 +49,9 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
           </div>
           <span className="font-sora font-bold text-lg text-primary">
             Fit<span className="text-gradient-brand">Pro</span>
+          </span>
+          <span className="badge badge-brand hidden sm:inline" style={{ fontSize: 10, padding: '2px 7px' }}>
+            Admin
           </span>
         </Link>
 

@@ -108,7 +108,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
         <div style={{ marginBottom: 10 }}>
           <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
             <BookOpen size={10} style={{ marginRight: 3 }} />
-            Biblioteca ExerciseDB
+            Catálogo
           </span>
         </div>
         <h1
@@ -122,7 +122,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
             marginBottom: 4,
           }}
         >
-          Ejercicios
+          Catálogo de ejercicios
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
           {isLoading

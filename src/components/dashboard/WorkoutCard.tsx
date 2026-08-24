@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Clock, ChevronRight, Target, Layers } from 'lucide-react';
 import type { Rutina } from '../../types';
+import { routineEditPath } from '../../utils/inferRoutineFormLevel';
 
 /* ── Helpers ─────────────────────────────────────────────── */
 function getCat(cat: string) {
@@ -36,7 +37,7 @@ export const WorkoutCard = ({ rutina }: { rutina: Rutina }) => {
   const totalSeries = rutina.ejercicios.reduce((a, e) => a + e.series, 0);
 
   return (
-    <Link to={`/workout/${rutina.id}`} className="block group">
+    <Link to={routineEditPath(rutina)} className="block group">
       <article className="fp-card fp-card-hover relative overflow-hidden">
         {/* Accent bar */}
         <div className="fp-accent-bar" style={{ background: cat.accent }} />

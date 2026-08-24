@@ -85,7 +85,7 @@ export const RegisterPage = () => {
           </button>
         </div>
         <p className="auth-copyright">
-          FitPro &copy; {new Date().getFullYear()} &middot; Tu entrenamiento inteligente
+          FitPro &copy; {new Date().getFullYear()} &middot; Panel de administración
         </p>
       </div>
     );
@@ -101,8 +101,8 @@ export const RegisterPage = () => {
           <div className="auth-logo-icon">
             <Dumbbell size={22} color="#fff" />
           </div>
-          <h1 className="font-sora auth-title">Crear cuenta</h1>
-          <p className="auth-subtitle">Empieza tu transformación hoy</p>
+          <h1 className="font-sora auth-title">Crear cuenta de staff</h1>
+          <p className="auth-subtitle">Gestiona el catálogo y las rutinas del gym</p>
         </div>
 
         {/* Social */}
@@ -251,7 +251,7 @@ export const RegisterPage = () => {
               <Loader2 size={16} className="auth-spinner" />
             ) : (
               <>
-                Crear mi cuenta
+                Crear cuenta
                 <ArrowRight size={15} />
               </>
             )}
@@ -261,14 +261,14 @@ export const RegisterPage = () => {
         {/* Footer */}
         <p className="auth-footer">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="auth-link">
+          <Link to={ROUTES.login} className="auth-link">
             Inicia sesión
           </Link>
         </p>
       </div>
 
       <p className="auth-copyright">
-        FitPro &copy; {new Date().getFullYear()} &middot; Tu entrenamiento inteligente
+        FitPro &copy; {new Date().getFullYear()} &middot; Panel de administración
       </p>
     </div>
   );
