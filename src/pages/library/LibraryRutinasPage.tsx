@@ -4,11 +4,13 @@ import { useDataStore } from '../../store/useDataStore';
 import { RoutineCard } from '../../components/library/RoutineCard';
 import { SimpleToast, useToast } from '../../components/common/Toast';
 import { routineEditPath } from '../../utils/inferRoutineFormLevel';
+import { ROUTES } from '../../routes/paths';
 
 export const LibraryRutinasPage = () => {
   const navigate = useNavigate();
   const rutinas = useDataStore((s) => s.rutinas);
   const { toast, showToast } = useToast();
+  const { library: lib } = ROUTES;
 
   const handleDelete = (id: number) => {
     if (window.confirm('¿Eliminar esta rutina?')) {
@@ -56,21 +58,21 @@ export const LibraryRutinasPage = () => {
           <button
             className="fp-btn fp-btn-secondary"
             style={{ gap: 6, fontSize: 12 }}
-            onClick={() => navigate('/library/rutina/plantillas')}
+            onClick={() => navigate(lib.rutinasPlantillas)}
           >
             <LayoutTemplate size={14} /> Plantillas
           </button>
           <button
             className="fp-btn fp-btn-secondary"
             style={{ gap: 6, fontSize: 12 }}
-            onClick={() => navigate('/library/ia')}
+            onClick={() => navigate(lib.ia)}
           >
             <Sparkles size={14} /> Rutina IA
           </button>
           <button
             className="fp-btn fp-btn-primary"
             style={{ gap: 6, fontSize: 12 }}
-            onClick={() => navigate('/library/rutina')}
+            onClick={() => navigate(lib.rutinasNueva)}
           >
             <Plus size={14} /> Nueva rutina
           </button>
@@ -113,14 +115,14 @@ export const LibraryRutinasPage = () => {
               <button
                 className="fp-btn fp-btn-primary"
                 style={{ gap: 6 }}
-                onClick={() => navigate('/library/rutina')}
+                onClick={() => navigate(lib.rutinasNueva)}
               >
                 <Plus size={15} /> Crear rutina
               </button>
               <button
                 className="fp-btn fp-btn-secondary"
                 style={{ gap: 6 }}
-                onClick={() => navigate('/library/rutina/plantillas')}
+                onClick={() => navigate(lib.rutinasPlantillas)}
               >
                 <LayoutTemplate size={15} /> Ver plantillas
               </button>

@@ -7,6 +7,7 @@ import { RoutineBuilderShell } from '../../../components/library/routines/Routin
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
 import { categoryOptions, restOptions } from '../../../utils/validators';
 import { getFieldError } from '../../../utils/routineFormValidators';
+import { ROUTES } from '../../../routes/paths';
 
 export const IntermediateRoutineForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
@@ -159,7 +160,7 @@ export const IntermediateRoutineForm = () => {
 
       {savedId !== null && step === 2 && (
         <Link
-          to="/library/rutinas"
+          to={ROUTES.library.rutinas}
           className="fp-btn fp-btn-secondary"
           style={{ width: '100%', justifyContent: 'center', gap: 7, marginTop: 8, textDecoration: 'none' }}
         >

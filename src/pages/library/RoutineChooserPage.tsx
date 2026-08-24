@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, ClipboardList, LayoutTemplate } from 'lucide-react';
+import { ROUTES } from '../../routes/paths';
+
+const { library: lib } = ROUTES;
 
 const PRESET_CARD = {
-  to: '/library/rutina/plantillas',
+  to: lib.rutinasPlantillas,
   title: 'Desde plantilla',
   desc: 'Hyrox, isométricos, pliometría, HIIT y más — ejercicios resueltos con ExerciseDB',
   badge: '20+ presets',
@@ -12,7 +15,7 @@ const PRESET_CARD = {
 
 const LEVELS = [
   {
-    to: '/library/rutina/basica',
+    to: lib.rutinaNueva('basica'),
     title: 'Básica',
     desc: 'Nombre + ejercicios (ExerciseDB) + series/reps',
     badge: 'Principiante',
@@ -20,7 +23,7 @@ const LEVELS = [
     bg: 'rgba(34,197,94,.12)',
   },
   {
-    to: '/library/rutina/intermedia',
+    to: lib.rutinaNueva('intermedia'),
     title: 'Intermedia',
     desc: 'Categoría, duración, descanso, notas y filtros API',
     badge: 'Intermedio',
@@ -28,7 +31,7 @@ const LEVELS = [
     bg: 'rgba(88,166,255,.12)',
   },
   {
-    to: '/library/rutina/avanzada',
+    to: lib.rutinaNueva('avanzada'),
     title: 'Avanzada',
     desc: 'Tipo EMOM/AMRAP/circuito, RPE y supersets',
     badge: 'Avanzado',
@@ -98,10 +101,7 @@ export const RoutineChooserPage = () => (
           >
             {PRESET_CARD.title}
           </p>
-          <span
-            className="badge badge-blue"
-            style={{ fontSize: 9, padding: '2px 6px' }}
-          >
+          <span className="badge badge-blue" style={{ fontSize: 9, padding: '2px 6px' }}>
             {PRESET_CARD.badge}
           </span>
         </div>

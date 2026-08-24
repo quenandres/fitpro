@@ -1,21 +1,23 @@
-import {  
+import {
   BookOpen,
   ClipboardList,
-  Dumbbell,  
+  Dumbbell,
   LayoutTemplate,
   Sparkles,
 } from 'lucide-react';
 import { ScrollIconNav } from '../layout/ScrollIconNav';
+import { ROUTES } from '../../routes/paths';
 
 const LIBRARY_ACCENT = '#58a6ff';
+const { library: lib } = ROUTES;
 
 const SUB_ITEMS = [
-  { to: '/library', end: true, Icon: BookOpen, label: 'Inicio' },
-  { to: '/library/rutinas', end: false, Icon: ClipboardList, label: 'Rutinas' },
-  { to: '/library/ejercicios', end: false, Icon: Dumbbell, label: 'Ejercicios' },
-  { to: '/library/rutina/plantillas', end: false, Icon: LayoutTemplate, label: 'Plantillas' },
-  { to: '/library/rutina', end: true, Icon: ClipboardList, label: 'Crear' },
-  { to: '/library/ia', end: false, Icon: Sparkles, label: 'IA' },
+  { to: lib.root, end: true, Icon: BookOpen, label: 'Inicio' },
+  { to: lib.rutinas, end: false, Icon: ClipboardList, label: 'Rutinas' },
+  { to: lib.catalogo.ejercicios, end: false, Icon: Dumbbell, label: 'Catálogo' },
+  { to: lib.rutinasPlantillas, end: false, Icon: LayoutTemplate, label: 'Plantillas' },
+  { to: lib.rutinasNueva, end: true, Icon: ClipboardList, label: 'Crear' },
+  { to: lib.ia, end: false, Icon: Sparkles, label: 'IA' },
 ] as const;
 
 export const LibrarySubNav = () => (

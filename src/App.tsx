@@ -7,8 +7,6 @@ import { ExerciseLibrary } from './pages/ExerciseLibrary';
 import { LibraryLayout } from './components/library/LibraryLayout';
 import { LibraryHub } from './pages/library/LibraryHub';
 import { LibraryRutinasPage } from './pages/library/LibraryRutinasPage';
-import { LibraryMisEjerciciosPage } from './pages/library/LibraryMisEjerciciosPage';
-import { LibraryDatosPage } from './pages/library/LibraryDatosPage';
 import { BodyPartsCatalogPage } from './pages/library/BodyPartsCatalogPage';
 import { EquipmentsCatalogPage } from './pages/library/EquipmentsCatalogPage';
 import { ExerciseTypesCatalogPage } from './pages/library/ExerciseTypesCatalogPage';
@@ -26,6 +24,8 @@ import { UserPlansPage } from './pages/UserPlansPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
+import { LEGACY_LIBRARY_REDIRECTS, LEGACY_ROUTINE_FORM_LEVELS, ROUTES } from './routes/paths';
+import { LegacyRoutineFormRedirect } from './routes/LegacyRoutineFormRedirect';
 import type { ReactNode } from 'react';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -33,69 +33,89 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--bg-app)',
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-app)',
+        }}
+      >
         <div className="auth-spinner-lg" />
       </div>
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <>{children}</> : <Navigate to={ROUTES.login} replace />;
 };
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
-  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+  return isAuthenticated ? <Navigate to={ROUTES.home} replace /> : <>{children}</>;
 };
 
 function AppRoutes() {
+  const { library: lib } = ROUTES;
+
   return (
     <Routes>
-      <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      {/* Auth */}
+      <Route path={ROUTES.login} element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path={ROUTES.register} element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-      <Route path="/"               element={<PublicRoute><Dashboard /></PublicRoute>} />
-      <Route path="/workout/:id"    element={<PublicRoute><WorkoutDetail /></PublicRoute>} />
-      <Route path="/library" element={<PublicRoute><LibraryLayout /></PublicRoute>}>
+      {/* App principal */}
+      <Route path={ROUTES.home} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
+      <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
+      <Route path={ROUTES.anatomy} element={<ProtectedRoute><AnatomyRecoveryTracker /></ProtectedRoute>} />
+
+      {/*
+        Biblioteca — recursos del usuario + catálogo de referencia.
+        Todo bajo auth; los datos vendrán del gateway (TanStack Query en Fase 3).
+      */}
+      <Route path={lib.root} element={<ProtectedRoute><LibraryLayout /></ProtectedRoute>}>
         <Route index element={<LibraryHub />} />
+
+        {/* Dominio: rutinas (CRUD vía API) */}
         <Route path="rutinas" element={<LibraryRutinasPage />} />
-        <Route path="mis-ejercicios" element={<LibraryMisEjerciciosPage />} />
-        <Route path="ejercicios" element={<ExerciseLibrary />} />
-        <Route path="partes" element={<BodyPartsCatalogPage />} />
-        <Route path="equipo" element={<EquipmentsCatalogPage />} />
-        <Route path="tipos" element={<ExerciseTypesCatalogPage />} />
-        <Route path="musculos" element={<MusclesCatalogPage />} />
+        <Route path="rutinas/nueva" element={<RoutineChooserPage />} />
+        <Route path="rutinas/plantillas" element={<RoutinePresetGalleryPage />} />
+        <Route path="rutinas/nueva/basica" element={<BasicRoutineForm />} />
+        <Route path="rutinas/nueva/intermedia" element={<IntermediateRoutineForm />} />
+        <Route path="rutinas/nueva/avanzada" element={<AdvancedRoutineForm />} />
+
+        {/* Dominio: catálogo ExerciseDB (referencia externa) */}
+        <Route path="catalogo" element={<Navigate to={lib.catalogo.ejercicios} replace />} />
+        <Route path="catalogo/ejercicios" element={<ExerciseLibrary />} />
+        <Route path="catalogo/partes" element={<BodyPartsCatalogPage />} />
+        <Route path="catalogo/equipo" element={<EquipmentsCatalogPage />} />
+        <Route path="catalogo/tipos" element={<ExerciseTypesCatalogPage />} />
+        <Route path="catalogo/musculos" element={<MusclesCatalogPage />} />
+
+        {/* Dominio: IA (backend FastAPI) */}
         <Route path="ia" element={<AIRoutineChatPage />} />
-        <Route path="rutina" element={<RoutineChooserPage />} />
-        <Route path="rutina/plantillas" element={<RoutinePresetGalleryPage />} />
-        <Route path="rutina/basica" element={<BasicRoutineForm />} />
-        <Route path="rutina/intermedia" element={<IntermediateRoutineForm />} />
-        <Route path="rutina/avanzada" element={<AdvancedRoutineForm />} />
-        <Route path="datos" element={<LibraryDatosPage />} />
       </Route>
-      <Route path="/library/planes" element={<PublicRoute><UserPlansPage /></PublicRoute>} />
-      <Route path="/library/unidades" element={<PublicRoute><UnitPage /></PublicRoute>} />
-      <Route path="/player" element={<PublicRoute><WorkoutPlayer /></PublicRoute>} />
 
-      {/* Redirects legacy /admin → library */}
-      <Route path="/admin" element={<Navigate to="/library/rutinas" replace />} />
-      <Route path="/admin/ejercicios" element={<Navigate to="/library/mis-ejercicios" replace />} />
-      <Route path="/admin/catalogo" element={<Navigate to="/library" replace />} />
-      <Route path="/admin/planes" element={<Navigate to="/library/planes" replace />} />
-      <Route path="/admin/planes/full" element={<Navigate to="/library/planes" replace />} />
-      <Route path="/admin/unidades" element={<Navigate to="/library/unidades" replace />} />
-      <Route path="/admin/unidades/full" element={<Navigate to="/library/unidades" replace />} />
-      <Route path="/admin/datos" element={<Navigate to="/library/datos" replace />} />
-      <Route path="/admin/rutina" element={<PublicRoute><RoutinePageRedirect /></PublicRoute>} />
-      <Route path="/admin/rutina-ia" element={<Navigate to="/library/ia" replace />} />
+      {/* Páginas de gestión con layout propio (desktop-first) */}
+      <Route path={lib.planes} element={<ProtectedRoute><UserPlansPage /></ProtectedRoute>} />
+      <Route path={lib.unidades} element={<ProtectedRoute><UnitPage /></ProtectedRoute>} />
 
-      <Route path="/anatomytracker" element={<PublicRoute><AnatomyRecoveryTracker /></PublicRoute>} />
+      {/* Redirects legacy */}
+      {LEGACY_LIBRARY_REDIRECTS.map(({ from, to }) => (
+        <Route key={from} path={from} element={<Navigate to={to} replace />} />
+      ))}
+      {LEGACY_ROUTINE_FORM_LEVELS.map((level) => (
+        <Route
+          key={`legacy-rutina-${level}`}
+          path={`/library/rutina/${level}`}
+          element={<LegacyRoutineFormRedirect level={level} />}
+        />
+      ))}
+      <Route path="/admin/rutina" element={<ProtectedRoute><RoutinePageRedirect /></ProtectedRoute>} />
+
+      <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
     </Routes>
   );
 }

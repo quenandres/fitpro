@@ -1,4 +1,5 @@
 import type { Rutina, RoutineFormData, RoutineFormLevel } from '../types';
+import { ROUTES } from '../routes/paths';
 
 const uid = (): string =>
   `ex_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -41,10 +42,8 @@ export const inferRoutineFormLevel = (rutina: Rutina): RoutineFormLevel => {
   return 'basica';
 };
 
-export const routineFormPath = (level: RoutineFormLevel, id?: number): string => {
-  const base = `/library/rutina/${level}`;
-  return id != null ? `${base}?id=${id}` : base;
-};
+export const routineFormPath = (level: RoutineFormLevel, id?: number): string =>
+  ROUTES.library.rutinaNueva(level, id);
 
 export const routineEditPath = (rutina: Rutina): string =>
   routineFormPath(inferRoutineFormLevel(rutina), rutina.id);

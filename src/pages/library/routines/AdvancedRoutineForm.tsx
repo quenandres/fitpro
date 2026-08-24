@@ -11,6 +11,7 @@ import {
   routineTypeOptions,
 } from '../../../utils/validators';
 import { getFieldError } from '../../../utils/routineFormValidators';
+import { ROUTES } from '../../../routes/paths';
 
 export const AdvancedRoutineForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
@@ -193,7 +194,7 @@ export const AdvancedRoutineForm = () => {
 
       {savedId !== null && step === 2 && (
         <Link
-          to="/library/rutinas"
+          to={ROUTES.library.rutinas}
           className="fp-btn fp-btn-secondary"
           style={{ width: '100%', justifyContent: 'center', gap: 7, marginTop: 8, textDecoration: 'none' }}
         >

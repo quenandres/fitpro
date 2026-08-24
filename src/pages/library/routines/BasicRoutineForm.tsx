@@ -6,6 +6,7 @@ import { ExerciseListEditor } from '../../../components/library/routines/Exercis
 import { RoutineBuilderShell } from '../../../components/library/routines/RoutineBuilderShell';
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
 import { getFieldError } from '../../../utils/routineFormValidators';
+import { ROUTES } from '../../../routes/paths';
 
 export const BasicRoutineForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
@@ -82,7 +83,7 @@ export const BasicRoutineForm = () => {
 
       {savedId !== null && step === 2 && (
         <Link
-          to="/library/rutinas"
+          to={ROUTES.library.rutinas}
           className="fp-btn fp-btn-secondary"
           style={{ width: '100%', justifyContent: 'center', gap: 7, marginTop: 8, textDecoration: 'none' }}
         >

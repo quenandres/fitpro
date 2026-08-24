@@ -6,6 +6,8 @@ import type { ValidationError } from '../../../utils/validators';
 import { getFieldError } from '../../../utils/routineFormValidators';
 import { PresetBanner } from './PresetBanner';
 
+import { ROUTES } from '../../../routes/paths';
+
 const LEVEL_META: Record<
   RoutineFormLevel,
   { title: string; badge: string; accent: string; backTo: string }
@@ -14,19 +16,19 @@ const LEVEL_META: Record<
     title: 'Rutina básica',
     badge: 'Principiante',
     accent: '#22c55e',
-    backTo: '/library/rutina',
+    backTo: ROUTES.library.rutinasNueva,
   },
   intermedia: {
     title: 'Rutina intermedia',
     badge: 'Intermedio',
     accent: '#58a6ff',
-    backTo: '/library/rutina',
+    backTo: ROUTES.library.rutinasNueva,
   },
   avanzada: {
     title: 'Rutina avanzada',
     badge: 'Avanzado',
     accent: '#a371f7',
-    backTo: '/library/rutina',
+    backTo: ROUTES.library.rutinasNueva,
   },
 };
 

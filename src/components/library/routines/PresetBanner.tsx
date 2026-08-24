@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LayoutTemplate, X } from 'lucide-react';
+import { ROUTES } from '../../../routes/paths';
 
 interface Props {
   presetName: string;
@@ -29,7 +30,7 @@ export const PresetBanner = ({ presetName }: Props) => (
       </p>
     </div>
     <Link
-      to="/library/rutina/plantillas"
+      to={ROUTES.library.rutinasPlantillas}
       className="fp-btn fp-btn-ghost"
       style={{ gap: 4, fontSize: 11, padding: '5px 8px', flexShrink: 0 }}
     >

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Plus, Pencil, Trash2, Save, Ruler, X, Check } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import type { Unidad } from '../types';
+import { ROUTES } from '../routes/paths';
 
 /* ── Type config ─────────────────────────────────────────── */
 const TIPOS = [
@@ -258,7 +259,7 @@ export const UnitPage = () => {
     setErrors({});
     setShowForm(false);
     // Remove id param if present
-    if (editId) navigate('/library/unidades', { replace: true });
+    if (editId) navigate(ROUTES.library.unidades, { replace: true });
   };
 
   const handleEdit = (u: Unidad) => {
@@ -304,7 +305,7 @@ export const UnitPage = () => {
           <button
             className="fp-btn fp-btn-ghost"
             style={{ padding: '7px 9px', borderRadius: 10, background: 'var(--bg-overlay)', border: '1px solid var(--border)', flexShrink: 0 }}
-            onClick={() => navigate('/library')}
+            onClick={() => navigate(ROUTES.library.root)}
           >
             <ChevronLeft size={16} />
           </button>

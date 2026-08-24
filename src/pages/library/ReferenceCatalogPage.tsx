@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, RefreshCw, Search } from 'lucide-react';
 import type { ReferenceItem } from '../../lib/exercisedb';
 import { SkeletonCard } from '../../components/common/Skeleton';
+import { ROUTES } from '../../routes/paths';
 
 export type CatalogFilterKey = 'bodyPart' | 'equipment' | 'exerciseType' | 'muscle';
 
@@ -124,7 +125,7 @@ export const ReferenceCatalogPage = ({
         {items.map((item, i) => (
           <Link
             key={item.name}
-            to={`/library/ejercicios?${filterKey}=${encodeURIComponent(item.name)}`}
+            to={`${ROUTES.library.catalogo.ejercicios}?${filterKey}=${encodeURIComponent(item.name)}`}
             className="fp-card fp-card-hover animate-slide-up"
             style={{
               textDecoration: 'none',

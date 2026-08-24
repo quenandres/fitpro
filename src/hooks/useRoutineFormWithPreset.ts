@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { useDataStore } from '../store/useDataStore';
 import { useRoutineForm } from './useRoutineForm';
 import { rutinaToFormData } from '../utils/inferRoutineFormLevel';
+import { ROUTES } from '../routes/paths';
 import type { RoutineFormData, RoutineFormLevel } from '../types';
 
 export interface RoutinePresetLocationState {
@@ -35,7 +36,7 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
 };
 
 export const LEVEL_ROUTES: Record<RoutineFormLevel, string> = {
-  basica: '/library/rutina/basica',
-  intermedia: '/library/rutina/intermedia',
-  avanzada: '/library/rutina/avanzada',
+  basica: ROUTES.library.rutinaNueva('basica'),
+  intermedia: ROUTES.library.rutinaNueva('intermedia'),
+  avanzada: ROUTES.library.rutinaNueva('avanzada'),
 };

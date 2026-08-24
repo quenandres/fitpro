@@ -10,6 +10,7 @@ import {
 } from '../../data/routinePresets';
 import { applyRoutinePreset } from '../../utils/applyRoutinePreset';
 import { LEVEL_ROUTES } from '../../hooks/useRoutineFormWithPreset';
+import { ROUTES } from '../../routes/paths';
 
 const LIBRARY_ACCENT = '#58a6ff';
 
@@ -142,7 +143,7 @@ export const RoutinePresetGalleryPage = () => {
   return (
     <div>
       <Link
-        to="/library/rutina"
+        to={ROUTES.library.rutinasNueva}
         className="fp-btn fp-btn-ghost animate-slide-up"
         style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
       >

@@ -25,6 +25,7 @@ import { VistaDia } from '../components/userPlans/VistaDia';
 import { DiaCard } from '../components/userPlans/DiaCard';
 import { parseDragId, parseEjId } from '../components/userPlans/dragIds';
 import { usePlanMutations, type DiaRef } from '../hooks/usePlanMutations';
+import { ROUTES } from '../routes/paths';
 
 const ACCENT = '#a371f7';
 
@@ -188,7 +189,7 @@ const UserPlansPage = () => {
           />
         </div>
         <button
-          onClick={() => navigate('/library/ia')}
+          onClick={() => navigate(ROUTES.library.ia)}
           className="fp-btn fp-btn-secondary"
           style={{ gap: 6, fontSize: 12 }}
         >
@@ -520,7 +521,7 @@ const UserPlansPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link
-              to="/library"
+              to={ROUTES.library.root}
               className="fp-btn fp-btn-ghost"
               style={{
                 padding: '7px 9px',

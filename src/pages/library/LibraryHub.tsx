@@ -6,7 +6,6 @@ import {
   BookOpen,
   ChevronRight,
   ClipboardList,
-  Database,
   Dumbbell,
   Layers,
   LayoutTemplate,
@@ -14,12 +13,14 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { ROUTES } from '../../routes/paths';
 
 const LIBRARY_ACCENT = '#58a6ff';
+const { library: lib } = ROUTES;
 
-const SECTIONS = [
+const CREAR_SECTIONS = [
   {
-    to: '/library/rutina/plantillas',
+    to: lib.rutinasPlantillas,
     Icon: LayoutTemplate,
     title: 'Plantillas',
     desc: 'Hyrox, isométricos, pliometría, HIIT y más',
@@ -27,7 +28,7 @@ const SECTIONS = [
     bg: 'rgba(88,166,255,.12)',
   },
   {
-    to: '/library/rutina',
+    to: lib.rutinasNueva,
     Icon: ClipboardList,
     title: 'Crear rutina',
     desc: 'Formularios básico, intermedio y avanzado con ExerciseDB',
@@ -35,23 +36,26 @@ const SECTIONS = [
     bg: 'rgba(88,166,255,.12)',
   },
   {
-    to: '/library/ia',
+    to: lib.ia,
     Icon: Sparkles,
     title: 'Rutina con IA',
     desc: 'Chat multi-turno: propone ejercicios y los enlaza con ExerciseDB',
     accent: '#22c55e',
     bg: 'rgba(34,197,94,.12)',
   },
+] as const;
+
+const CATALOGO_SECTIONS = [
   {
-    to: '/library/ejercicios',
+    to: lib.catalogo.ejercicios,
     Icon: Dumbbell,
     title: 'Explorar ejercicios',
-    desc: 'Busca y filtra por tipo, parte, equipo o músculo',
+    desc: 'Busca y filtra por tipo, parte, equipo o músculo (ExerciseDB)',
     accent: LIBRARY_ACCENT,
     bg: 'rgba(88,166,255,.12)',
   },
   {
-    to: '/library/partes',
+    to: lib.catalogo.partes,
     Icon: Layers,
     title: 'Partes del cuerpo',
     desc: 'Catálogo de body parts de ExerciseDB',
@@ -59,7 +63,7 @@ const SECTIONS = [
     bg: 'rgba(34,197,94,.12)',
   },
   {
-    to: '/library/equipo',
+    to: lib.catalogo.equipo,
     Icon: Armchair,
     title: 'Equipamiento',
     desc: 'Filtra ejercicios por material disponible',
@@ -67,7 +71,7 @@ const SECTIONS = [
     bg: 'rgba(163,113,247,.12)',
   },
   {
-    to: '/library/tipos',
+    to: lib.catalogo.tipos,
     Icon: Activity,
     title: 'Tipos de ejercicio',
     desc: 'Fuerza, cardio, yoga, stretching…',
@@ -75,7 +79,7 @@ const SECTIONS = [
     bg: 'rgba(245,158,11,.12)',
   },
   {
-    to: '/library/musculos',
+    to: lib.catalogo.musculos,
     Icon: BicepsFlexed,
     title: 'Músculos',
     desc: 'Objetivos musculares del catálogo',
@@ -86,7 +90,7 @@ const SECTIONS = [
 
 const GESTION_SECTIONS = [
   {
-    to: '/library/rutinas',
+    to: lib.rutinas,
     Icon: ClipboardList,
     title: 'Mis rutinas',
     desc: 'Lista, edita y elimina rutinas guardadas',
@@ -94,15 +98,7 @@ const GESTION_SECTIONS = [
     bg: 'rgba(88,166,255,.12)',
   },
   {
-    to: '/library/mis-ejercicios',
-    Icon: Activity,
-    title: 'Mis ejercicios',
-    desc: 'Ejercicios personalizados fuera de ExerciseDB',
-    accent: '#22c55e',
-    bg: 'rgba(34,197,94,.12)',
-  },
-  {
-    to: '/library/planes',
+    to: lib.planes,
     Icon: Users,
     title: 'Planes de usuario',
     desc: 'Asigna rutinas semanales a clientes',
@@ -110,113 +106,46 @@ const GESTION_SECTIONS = [
     bg: 'rgba(163,113,247,.12)',
   },
   {
-    to: '/library/unidades',
+    to: lib.unidades,
     Icon: Ruler,
     title: 'Unidades',
     desc: 'Conteo, peso, tiempo, distancia…',
     accent: '#58a6ff',
     bg: 'rgba(88,166,255,.12)',
   },
-  {
-    to: '/library/datos',
-    Icon: Database,
-    title: 'Datos locales',
-    desc: 'Exportar, importar o restaurar backup JSON',
-    accent: '#f0883e',
-    bg: 'rgba(240,136,62,.12)',
-  },
 ] as const;
 
-export const LibraryHub = () => (
-  <div>
-    <section className="animate-slide-up" style={{ paddingBottom: 16 }}>
-      <div style={{ marginBottom: 10 }}>
-        <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-          <BookOpen size={10} style={{ marginRight: 3 }} />
-          ExerciseDB
-        </span>
-      </div>
-      <h1
-        className="font-sora"
+const HubSection = ({
+  title,
+  sections,
+}: {
+  title?: string;
+  sections: ReadonlyArray<{
+    to: string;
+    Icon: typeof BookOpen;
+    title: string;
+    desc: string;
+    accent: string;
+    bg: string;
+  }>;
+}) => (
+  <>
+    {title && (
+      <p
         style={{
-          fontSize: 28,
-          fontWeight: 700,
-          lineHeight: 1.2,
-          letterSpacing: '-.02em',
-          color: 'var(--text-primary)',
-          marginBottom: 4,
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '.06em',
+          margin: '0 0 8px',
         }}
       >
-        Biblioteca
-      </h1>
-      <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-        Explora el catálogo externo: ejercicios, partes, equipo, tipos y músculos.
+        {title}
       </p>
-    </section>
-
-    <div
-      className="animate-slide-up delay-100"
-      style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-    >
-      {SECTIONS.map(({ to, Icon, title, desc, accent, bg }, i) => (
-        <Link
-          key={to}
-          to={to}
-          className="fp-card fp-card-hover animate-slide-up"
-          style={{
-            textDecoration: 'none',
-            padding: '14px 14px 14px 16px',
-            borderRadius: 14,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            animationDelay: `${i * 40}ms`,
-          }}
-        >
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 11,
-              background: bg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Icon size={18} color={accent} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p
-              className="font-sora"
-              style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}
-            >
-              {title}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.35 }}>
-              {desc}
-            </p>
-          </div>
-          <ChevronRight size={16} color="var(--text-muted)" className="shrink-0" />
-        </Link>
-      ))}
-    </div>
-
-    <p
-      style={{
-        fontSize: 11,
-        fontWeight: 600,
-        color: 'var(--text-muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '.06em',
-        margin: '20px 0 8px',
-      }}
-    >
-      Gestión
-    </p>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {GESTION_SECTIONS.map(({ to, Icon, title, desc, accent, bg }) => (
+    )}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: title ? 16 : 0 }}>
+      {sections.map(({ to, Icon, title: sectionTitle, desc, accent, bg }) => (
         <Link
           key={to}
           to={to}
@@ -249,15 +178,48 @@ export const LibraryHub = () => (
               className="font-sora"
               style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}
             >
-              {title}
+              {sectionTitle}
             </p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.35 }}>
-              {desc}
-            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.35 }}>{desc}</p>
           </div>
           <ChevronRight size={16} color="var(--text-muted)" className="shrink-0" />
         </Link>
       ))}
+    </div>
+  </>
+);
+
+export const LibraryHub = () => (
+  <div>
+    <section className="animate-slide-up" style={{ paddingBottom: 16 }}>
+      <div style={{ marginBottom: 10 }}>
+        <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
+          <BookOpen size={10} style={{ marginRight: 3 }} />
+          Biblioteca
+        </span>
+      </div>
+      <h1
+        className="font-sora"
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          lineHeight: 1.2,
+          letterSpacing: '-.02em',
+          color: 'var(--text-primary)',
+          marginBottom: 4,
+        }}
+      >
+        Biblioteca
+      </h1>
+      <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+        Catálogo ExerciseDB, creación de rutinas e IA. Tus datos se sincronizan con el backend.
+      </p>
+    </section>
+
+    <div className="animate-slide-up delay-100">
+      <HubSection sections={CREAR_SECTIONS} />
+      <HubSection title="Catálogo ExerciseDB" sections={CATALOGO_SECTIONS} />
+      <HubSection title="Gestión" sections={GESTION_SECTIONS} />
     </div>
   </div>
 );
