@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, LayoutTemplate, Loader2 } from 'lucide-react';
 import {
   PRESET_CATEGORY_LABELS,
@@ -112,8 +112,6 @@ const PresetCard = ({
 
 export const RoutinePresetGalleryPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const fromAdmin = searchParams.get('from') === 'admin';
   const [category, setCategory] = useState<PresetCategory | 'all'>('all');
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -130,7 +128,6 @@ export const RoutinePresetGalleryPage = () => {
           presetForm: form,
           presetName: preset.nombre,
           matchInfo: { matched: matchedCount, total: totalCount },
-          fromAdmin,
         },
       });
     } catch (err) {
@@ -145,11 +142,11 @@ export const RoutinePresetGalleryPage = () => {
   return (
     <div>
       <Link
-        to={fromAdmin ? '/admin' : '/library/rutina'}
+        to="/library/rutina"
         className="fp-btn fp-btn-ghost animate-slide-up"
         style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
       >
-        <ChevronLeft size={14} /> {fromAdmin ? 'Volver a Admin' : 'Volver a crear rutina'}
+        <ChevronLeft size={14} /> Volver a crear rutina
       </Link>
 
       <section className="animate-slide-up" style={{ paddingBottom: 14 }}>

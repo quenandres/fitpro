@@ -22,7 +22,7 @@ import { useDataStore } from '../../store/useDataStore';
 import type { Ejercicio } from '../../types';
 import { musclesFromExerciseDb, musclesFromGrupoMuscular } from '../../utils/muscleCanonicalMap';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
-import { SkeletonCard } from '../admin/common/Skeleton';
+import { SkeletonCard } from '../common/Skeleton';
 
 export interface PickedExercise {
   nombre: string;

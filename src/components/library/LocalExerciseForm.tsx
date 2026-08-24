@@ -83,7 +83,7 @@ const EMPTY_FORM = {
   unidad_id_default: 1,
 };
 
-export const ExerciseForm: React.FC<ExerciseFormProps> = ({
+export const LocalExerciseForm: React.FC<ExerciseFormProps> = ({
   isOpen, onClose, editingEjercicio, onSave,
 }) => {
   const [form,              setForm]              = useState(EMPTY_FORM);

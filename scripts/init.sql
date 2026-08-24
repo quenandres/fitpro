@@ -1,5 +1,10 @@
 -- FitPro Database Schema
 -- Ejecutado automáticamente al crear el contenedor PostgreSQL
+-- Compatible con migración futura a Supabase (mismo Postgres 16)
+
+-- Extensiones necesarias para Supabase (UUID, crypto)
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Tabla de ejercicios
 CREATE TABLE IF NOT EXISTS exercises (

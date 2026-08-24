@@ -6,6 +6,9 @@ import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
 import { LibraryLayout } from './components/library/LibraryLayout';
 import { LibraryHub } from './pages/library/LibraryHub';
+import { LibraryRutinasPage } from './pages/library/LibraryRutinasPage';
+import { LibraryMisEjerciciosPage } from './pages/library/LibraryMisEjerciciosPage';
+import { LibraryDatosPage } from './pages/library/LibraryDatosPage';
 import { BodyPartsCatalogPage } from './pages/library/BodyPartsCatalogPage';
 import { EquipmentsCatalogPage } from './pages/library/EquipmentsCatalogPage';
 import { ExerciseTypesCatalogPage } from './pages/library/ExerciseTypesCatalogPage';
@@ -17,12 +20,6 @@ import { IntermediateRoutineForm } from './pages/library/routines/IntermediateRo
 import { AdvancedRoutineForm } from './pages/library/routines/AdvancedRoutineForm';
 import { RoutinePresetGalleryPage } from './pages/library/RoutinePresetGalleryPage';
 import { WorkoutPlayer } from './pages/WorkoutPlayer';
-import { AdminShell } from './pages/admin/AdminShell';
-import { AdminRutinasPage } from './pages/admin/AdminRutinasPage';
-import { AdminDatosPage } from './pages/admin/AdminDatosPage';
-import { AdminCatalogoTab } from './pages/admin/AdminCatalogoTab';
-import { AdminPlanesTab, AdminUnidadesTab } from './pages/admin/AdminPlanesTab';
-import { ExerciseManager } from './components/admin/ExerciseManager';
 import { RoutinePageRedirect } from './pages/RoutinePage';
 import { UnitPage } from './pages/UnitPage';
 import { UserPlansPage } from './pages/UserPlansPage';
@@ -67,6 +64,8 @@ function AppRoutes() {
       <Route path="/workout/:id"    element={<PublicRoute><WorkoutDetail /></PublicRoute>} />
       <Route path="/library" element={<PublicRoute><LibraryLayout /></PublicRoute>}>
         <Route index element={<LibraryHub />} />
+        <Route path="rutinas" element={<LibraryRutinasPage />} />
+        <Route path="mis-ejercicios" element={<LibraryMisEjerciciosPage />} />
         <Route path="ejercicios" element={<ExerciseLibrary />} />
         <Route path="partes" element={<BodyPartsCatalogPage />} />
         <Route path="equipo" element={<EquipmentsCatalogPage />} />
@@ -78,21 +77,24 @@ function AppRoutes() {
         <Route path="rutina/basica" element={<BasicRoutineForm />} />
         <Route path="rutina/intermedia" element={<IntermediateRoutineForm />} />
         <Route path="rutina/avanzada" element={<AdvancedRoutineForm />} />
+        <Route path="datos" element={<LibraryDatosPage />} />
       </Route>
+      <Route path="/library/planes" element={<PublicRoute><UserPlansPage /></PublicRoute>} />
+      <Route path="/library/unidades" element={<PublicRoute><UnitPage /></PublicRoute>} />
       <Route path="/player" element={<PublicRoute><WorkoutPlayer /></PublicRoute>} />
 
-      <Route path="/admin" element={<PublicRoute><AdminShell /></PublicRoute>}>
-        <Route index element={<AdminRutinasPage />} />
-        <Route path="ejercicios" element={<ExerciseManager />} />
-        <Route path="catalogo" element={<AdminCatalogoTab />} />
-        <Route path="planes" element={<AdminPlanesTab />} />
-        <Route path="unidades" element={<AdminUnidadesTab />} />
-        <Route path="datos" element={<AdminDatosPage />} />
-      </Route>
-      <Route path="/admin/planes/full" element={<PublicRoute><UserPlansPage /></PublicRoute>} />
-      <Route path="/admin/unidades/full" element={<PublicRoute><UnitPage /></PublicRoute>} />
+      {/* Redirects legacy /admin → library */}
+      <Route path="/admin" element={<Navigate to="/library/rutinas" replace />} />
+      <Route path="/admin/ejercicios" element={<Navigate to="/library/mis-ejercicios" replace />} />
+      <Route path="/admin/catalogo" element={<Navigate to="/library" replace />} />
+      <Route path="/admin/planes" element={<Navigate to="/library/planes" replace />} />
+      <Route path="/admin/planes/full" element={<Navigate to="/library/planes" replace />} />
+      <Route path="/admin/unidades" element={<Navigate to="/library/unidades" replace />} />
+      <Route path="/admin/unidades/full" element={<Navigate to="/library/unidades" replace />} />
+      <Route path="/admin/datos" element={<Navigate to="/library/datos" replace />} />
       <Route path="/admin/rutina" element={<PublicRoute><RoutinePageRedirect /></PublicRoute>} />
       <Route path="/admin/rutina-ia" element={<Navigate to="/library/ia" replace />} />
+
       <Route path="/anatomytracker" element={<PublicRoute><AnatomyRecoveryTracker /></PublicRoute>} />
     </Routes>
   );

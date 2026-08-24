@@ -50,6 +50,22 @@ const singleExerciseSeconds = (
   return { work, rest };
 };
 
+/** Duración estimada de un ejercicio aislado (trabajo + descansos entre series). */
+export const calculateExerciseDuration = (
+  ej: RoutineFormExercise,
+  restBetweenSetsSec: number,
+): Pick<RoutineDurationBreakdown, 'workSeconds' | 'restSeconds' | 'totalSeconds' | 'totalMinutes'> => {
+  const { work, rest } = singleExerciseSeconds(ej, restBetweenSetsSec);
+  const totalSeconds = work + rest;
+  const totalMinutes = totalSeconds === 0 ? 0 : Math.max(1, Math.ceil(totalSeconds / 60));
+  return {
+    workSeconds: work,
+    restSeconds: rest,
+    totalSeconds,
+    totalMinutes,
+  };
+};
+
 const supersetBlockSeconds = (
   group: RoutineFormExercise[],
   restBetweenSetsSec: number,

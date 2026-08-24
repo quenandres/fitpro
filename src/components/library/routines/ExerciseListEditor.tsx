@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Link2, Unlink } from 'lucide-react';
+import { Eye, Plus, Trash2, Link2, Unlink } from 'lucide-react';
 import {
   ExercisePickerOverlay,
   type PickedExercise,
@@ -7,12 +7,14 @@ import {
 import type { RoutineFormExercise, RoutineFormLevel } from '../../../types';
 import { getFieldError } from '../../../utils/routineFormValidators';
 import type { ValidationError } from '../../../utils/validators';
+import { ExercisePreviewModal } from './ExercisePreviewModal';
 
 interface Props {
   level: RoutineFormLevel;
   ejercicios: RoutineFormExercise[];
   errors: ValidationError[];
   selectedNames: string[];
+  restBetweenSetsSec?: number;
   showRpe?: boolean;
   showSuperset?: boolean;
   onAdd: (picked: PickedExercise) => void;
@@ -27,6 +29,7 @@ export const ExerciseListEditor = ({
   ejercicios,
   errors,
   selectedNames,
+  restBetweenSetsSec = 60,
   showRpe = false,
   showSuperset = false,
   onAdd,
@@ -37,6 +40,7 @@ export const ExerciseListEditor = ({
 }: Props) => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedForSuperset, setSelectedForSuperset] = useState<string[]>([]);
+  const [previewKey, setPreviewKey] = useState<string | null>(null);
 
   const ejerciciosError = getFieldError(errors, 'ejercicios');
   const exerciseKey = (ej: RoutineFormExercise) => ej._key ?? ej.nombre;
@@ -143,7 +147,10 @@ export const ExerciseListEditor = ({
             >
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 {ej.imageUrl && (
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => setPreviewKey(key)}
+                    aria-label={`Previsualizar ${ej.nombre}`}
                     style={{
                       width: 44,
                       height: 44,
@@ -151,6 +158,9 @@ export const ExerciseListEditor = ({
                       overflow: 'hidden',
                       flexShrink: 0,
                       border: '1px solid rgba(88,166,255,.2)',
+                      padding: 0,
+                      background: 'transparent',
+                      cursor: 'pointer',
                     }}
                   >
                     <img
@@ -158,15 +168,29 @@ export const ExerciseListEditor = ({
                       alt=""
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                  </div>
+                  </button>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
+                  <button
+                    type="button"
                     className="font-sora truncate"
-                    style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}
+                    onClick={() => setPreviewKey(key)}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      marginBottom: 8,
+                      padding: 0,
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
                   >
                     {ej.nombre}
-                  </p>
+                  </button>
                   <div
                     style={{
                       display: 'grid',
@@ -243,6 +267,15 @@ export const ExerciseListEditor = ({
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <button
+                    type="button"
+                    className="fp-btn fp-btn-ghost"
+                    style={{ padding: 6, borderRadius: 8 }}
+                    onClick={() => setPreviewKey(key)}
+                    aria-label="Previsualizar ejercicio"
+                  >
+                    <Eye size={14} color="var(--text-muted)" />
+                  </button>
                   {showSuperset && (
                     <button
                       type="button"
@@ -286,6 +319,12 @@ export const ExerciseListEditor = ({
           onSelect={onAdd}
         />
       )}
+
+      <ExercisePreviewModal
+        ejercicio={ejercicios.find((ej) => exerciseKey(ej) === previewKey) ?? null}
+        restBetweenSetsSec={restBetweenSetsSec}
+        onClose={() => setPreviewKey(null)}
+      />
     </div>
   );
 };

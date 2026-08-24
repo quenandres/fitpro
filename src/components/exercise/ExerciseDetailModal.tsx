@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { useExercise } from '../../lib/exercisedb';
-import { Skeleton } from '../admin/common/Skeleton';
+import { Skeleton } from '../common/Skeleton';
 
 interface Props {
   exerciseId: string | null;

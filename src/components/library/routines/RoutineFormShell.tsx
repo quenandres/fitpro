@@ -8,28 +8,25 @@ import { PresetBanner } from './PresetBanner';
 
 const LEVEL_META: Record<
   RoutineFormLevel,
-  { title: string; badge: string; accent: string; backTo: string; adminBackTo: string }
+  { title: string; badge: string; accent: string; backTo: string }
 > = {
   basica: {
     title: 'Rutina básica',
     badge: 'Principiante',
     accent: '#22c55e',
     backTo: '/library/rutina',
-    adminBackTo: '/admin',
   },
   intermedia: {
     title: 'Rutina intermedia',
     badge: 'Intermedio',
     accent: '#58a6ff',
     backTo: '/library/rutina',
-    adminBackTo: '/admin',
   },
   avanzada: {
     title: 'Rutina avanzada',
     badge: 'Avanzado',
     accent: '#a371f7',
     backTo: '/library/rutina',
-    adminBackTo: '/admin',
   },
 };
 
@@ -39,7 +36,6 @@ interface Props {
   errors: ValidationError[];
   presetName?: string;
   matchInfo?: { matched: number; total: number };
-  fromAdmin?: boolean;
   isEdit?: boolean;
   hideActions?: boolean;
   footer?: ReactNode;
@@ -51,20 +47,18 @@ export const RoutineFormShell = ({
   errors,
   presetName,
   matchInfo,
-  fromAdmin,
   isEdit,
   hideActions,
   footer,
 }: Props) => {
   const meta = LEVEL_META[level];
-  const backTo = fromAdmin ? meta.adminBackTo : meta.backTo;
-  const backLabel = fromAdmin ? 'Volver a Admin' : 'Elegir otro nivel';
+  const backLabel = 'Elegir otro nivel';
   const nombreError = getFieldError(errors, 'nombre');
 
   return (
     <div>
       <Link
-        to={backTo}
+        to={meta.backTo}
         className="fp-btn fp-btn-ghost animate-slide-up"
         style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
       >

@@ -258,7 +258,7 @@ export const UnitPage = () => {
     setErrors({});
     setShowForm(false);
     // Remove id param if present
-    if (editId) navigate('/admin/unidades', { replace: true });
+    if (editId) navigate('/library/unidades', { replace: true });
   };
 
   const handleEdit = (u: Unidad) => {
@@ -304,7 +304,7 @@ export const UnitPage = () => {
           <button
             className="fp-btn fp-btn-ghost"
             style={{ padding: '7px 9px', borderRadius: 10, background: 'var(--bg-overlay)', border: '1px solid var(--border)', flexShrink: 0 }}
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/library')}
           >
             <ChevronLeft size={16} />
           </button>

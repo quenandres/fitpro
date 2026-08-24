@@ -1,5 +1,5 @@
-import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ClipboardList, LayoutTemplate } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronRight, ClipboardList, LayoutTemplate } from 'lucide-react';
 
 const PRESET_CARD = {
   to: '/library/rutina/plantillas',
@@ -37,23 +37,8 @@ const LEVELS = [
   },
 ] as const;
 
-export const RoutineChooserPage = () => {
-  const [searchParams] = useSearchParams();
-  const fromAdmin = searchParams.get('from') === 'admin';
-  const qs = fromAdmin ? '?from=admin' : '';
-  const backTo = fromAdmin ? '/admin' : '/library';
-
-  return (
+export const RoutineChooserPage = () => (
   <div>
-    {fromAdmin && (
-      <Link
-        to={backTo}
-        className="fp-btn fp-btn-ghost"
-        style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
-      >
-        <ChevronLeft size={14} /> Volver a Admin
-      </Link>
-    )}
     <section className="animate-slide-up" style={{ paddingBottom: 16 }}>
       <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
         <ClipboardList size={10} style={{ marginRight: 3 }} />
@@ -78,7 +63,7 @@ export const RoutineChooserPage = () => {
     </section>
 
     <Link
-      to={`${PRESET_CARD.to}${qs}`}
+      to={PRESET_CARD.to}
       className="fp-card fp-card-hover animate-slide-up"
       style={{
         textDecoration: 'none',
@@ -144,7 +129,7 @@ export const RoutineChooserPage = () => {
       {LEVELS.map(({ to, title, desc, badge, accent, bg }, i) => (
         <Link
           key={to}
-          to={`${to}${qs}`}
+          to={to}
           className="fp-card fp-card-hover animate-slide-up"
           style={{
             textDecoration: 'none',
@@ -198,5 +183,4 @@ export const RoutineChooserPage = () => {
       ))}
     </div>
   </div>
-  );
-};
+);

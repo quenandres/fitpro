@@ -9,14 +9,14 @@ export const RoutinePageRedirect = () => {
   const rutinas = useDataStore((s) => s.rutinas);
 
   if (id == null) {
-    return <Navigate to="/library/rutina?from=admin" replace />;
+    return <Navigate to="/library/rutina" replace />;
   }
 
   const rutina = rutinas.find((r) => r.id === id);
   if (!rutina) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/library/rutinas" replace />;
   }
 
   const level = inferRoutineFormLevel(rutina);
-  return <Navigate to={`${routineFormPath(level, id)}&from=admin`} replace />;
+  return <Navigate to={routineFormPath(level, id)} replace />;
 };

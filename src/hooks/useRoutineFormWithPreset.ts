@@ -9,7 +9,6 @@ export interface RoutinePresetLocationState {
   presetForm?: RoutineFormData;
   presetName?: string;
   matchInfo?: { matched: number; total: number };
-  fromAdmin?: boolean;
 }
 
 export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
@@ -19,7 +18,6 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
 
   const state = (location.state ?? {}) as RoutinePresetLocationState;
   const editingId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
-  const fromAdmin = searchParams.get('from') === 'admin' || state.fromAdmin;
 
   const editingRutina = useMemo(
     () => (editingId != null ? rutinas.find((r) => r.id === editingId) ?? null : null),
@@ -32,7 +30,6 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
     ...useRoutineForm(level, initialForm, editingId),
     presetName: state.presetName,
     matchInfo: state.matchInfo,
-    fromAdmin,
     editingRutina,
   };
 };

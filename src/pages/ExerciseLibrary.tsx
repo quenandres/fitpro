@@ -11,7 +11,7 @@ import type { ReferenceItem } from '../lib/exercisedb';
 import { useExerciseBrowse } from '../hooks/useExerciseBrowse';
 import { ExerciseCard } from '../components/exercise/ExerciseCard';
 import { ExerciseDetailModal } from '../components/exercise/ExerciseDetailModal';
-import { SkeletonCard } from '../components/admin/common/Skeleton';
+import { SkeletonCard } from '../components/common/Skeleton';
 
 const FILTER_KEYS = ['bodyPart', 'equipment', 'exerciseType', 'muscle'] as const;
 

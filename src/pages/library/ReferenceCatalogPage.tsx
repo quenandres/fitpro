@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, RefreshCw, Search } from 'lucide-react';
 import type { ReferenceItem } from '../../lib/exercisedb';
-import { SkeletonCard } from '../../components/admin/common/Skeleton';
+import { SkeletonCard } from '../../components/common/Skeleton';
 
 export type CatalogFilterKey = 'bodyPart' | 'equipment' | 'exerciseType' | 'muscle';
 

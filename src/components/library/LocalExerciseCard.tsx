@@ -24,7 +24,7 @@ function getDiffCls(dif: string) {
   return 'diff-beginner';
 }
 
-export const AdminExerciseCard = ({ ejercicio, onEdit, onDelete }: Props) => {
+export const LocalExerciseCard = ({ ejercicio, onEdit, onDelete }: Props) => {
   const cat = getCat(ejercicio.categoria);
 
   return (

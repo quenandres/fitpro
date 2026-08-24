@@ -520,7 +520,7 @@ const UserPlansPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link
-              to="/admin"
+              to="/library"
               className="fp-btn fp-btn-ghost"
               style={{
                 padding: '7px 9px',

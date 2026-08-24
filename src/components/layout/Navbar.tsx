@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Dumbbell, Home, BookOpen, LayoutGrid } from 'lucide-react';
+import { Dumbbell, Home, BookOpen, ClipboardList } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 /* ── Top Navbar ─────────────────────────────────────────── */
@@ -29,11 +29,11 @@ export const Navbar = () => (
 
       <div className="flex items-center gap-1">
         <Link
-          to="/admin"
+          to="/library/rutinas"
           className="fp-btn fp-btn-ghost"
           style={{ padding: '6px 8px', borderRadius: 9 }}
         >
-          <LayoutGrid size={16} />
+          <ClipboardList size={16} />
         </Link>
         <ThemeToggle />
       </div>
@@ -43,9 +43,9 @@ export const Navbar = () => (
 
 /* ── Bottom Nav ─────────────────────────────────────────── */
 const NAV_ITEMS = [
-  { path: '/',        Icon: Home,      label: 'Inicio',     accent: '#22c55e' },
-  { path: '/library', Icon: BookOpen,  label: 'Ejercicios', accent: '#58a6ff' },
-  { path: '/admin',   Icon: LayoutGrid,label: 'Admin',      accent: '#a371f7' },
+  { path: '/',                 Icon: Home,          label: 'Inicio',     accent: '#22c55e' },
+  { path: '/library',          Icon: BookOpen,      label: 'Biblioteca', accent: '#58a6ff' },
+  { path: '/library/rutinas',  Icon: ClipboardList, label: 'Rutinas',    accent: '#a371f7' },
 ] as const;
 
 export const BottomNav = () => {

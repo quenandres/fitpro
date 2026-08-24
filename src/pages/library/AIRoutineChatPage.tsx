@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAiRoutineChat } from '../../hooks/useAiRoutineChat';
 import { useDataStore } from '../../store/useDataStore';
 import { draftToRutinaPayload } from '../../utils/resolveExercisesAgainstApi';
+import { routineEditPath } from '../../utils/inferRoutineFormLevel';
 import { ExerciseDetailModal } from '../../components/exercise/ExerciseDetailModal';
 import type { ResolvedExercise } from '../../types';
 
@@ -107,6 +108,7 @@ const ExerciseRow = ({
 export const AIRoutineChatPage = () => {
   const navigate = useNavigate();
   const addRutina = useDataStore((s) => s.addRutina);
+  const rutinas = useDataStore((s) => s.rutinas);
   const {
     messages,
     prefs,
@@ -398,17 +400,21 @@ export const AIRoutineChatPage = () => {
             <Save size={14} />
             Guardar rutina
           </button>
-          {savedRoutineId !== null && (
+          {savedRoutineId !== null && (() => {
+            const saved = rutinas.find((r) => r.id === savedRoutineId);
+            if (!saved) return null;
+            return (
             <button
               type="button"
               className="fp-btn fp-btn-secondary"
               style={{ width: '100%', justifyContent: 'center', gap: 7 }}
-              onClick={() => navigate(`/admin/rutina?id=${savedRoutineId}`)}
+              onClick={() => navigate(routineEditPath(saved))}
             >
               <PencilLine size={14} />
               Editar rutina
             </button>
-          )}
+            );
+          })()}
         </div>
       )}
 

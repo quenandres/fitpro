@@ -20,7 +20,6 @@ export const AdvancedRoutineForm = () => {
     savedId,
     presetName,
     matchInfo,
-    fromAdmin,
     isEdit,
     setField,
     addExercise,
@@ -43,7 +42,6 @@ export const AdvancedRoutineForm = () => {
       errors={errors}
       presetName={presetName}
       matchInfo={matchInfo}
-      fromAdmin={fromAdmin}
       isEdit={isEdit}
       hideActions
     >
@@ -178,6 +176,7 @@ export const AdvancedRoutineForm = () => {
           ejercicios={form.ejercicios}
           errors={errors}
           selectedNames={selectedNames}
+          restBetweenSetsSec={form.rest_between_sets}
           showRpe
           showSuperset
           onAdd={addExercise}
@@ -194,11 +193,11 @@ export const AdvancedRoutineForm = () => {
 
       {savedId !== null && step === 2 && (
         <Link
-          to="/admin"
+          to="/library/rutinas"
           className="fp-btn fp-btn-secondary"
           style={{ width: '100%', justifyContent: 'center', gap: 7, marginTop: 8, textDecoration: 'none' }}
         >
-          Ver en Admin
+          Ver mis rutinas
         </Link>
       )}
     </RoutineFormShell>

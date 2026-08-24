@@ -15,7 +15,6 @@ export const BasicRoutineForm = () => {
     savedId,
     presetName,
     matchInfo,
-    fromAdmin,
     isEdit,
     setField,
     addExercise,
@@ -38,7 +37,6 @@ export const BasicRoutineForm = () => {
       errors={errors}
       presetName={presetName}
       matchInfo={matchInfo}
-      fromAdmin={fromAdmin}
       isEdit={isEdit}
       hideActions
     >
@@ -69,6 +67,7 @@ export const BasicRoutineForm = () => {
           ejercicios={form.ejercicios}
           errors={errors}
           selectedNames={selectedNames}
+          restBetweenSetsSec={form.rest_between_sets}
           onAdd={addExercise}
           onUpdate={updateExercise}
           onRemove={removeExercise}
@@ -83,11 +82,11 @@ export const BasicRoutineForm = () => {
 
       {savedId !== null && step === 2 && (
         <Link
-          to="/admin"
+          to="/library/rutinas"
           className="fp-btn fp-btn-secondary"
           style={{ width: '100%', justifyContent: 'center', gap: 7, marginTop: 8, textDecoration: 'none' }}
         >
-          Ver en Admin
+          Ver mis rutinas
         </Link>
       )}
     </RoutineFormShell>
