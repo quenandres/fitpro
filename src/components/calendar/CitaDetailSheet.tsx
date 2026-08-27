@@ -37,7 +37,7 @@ export function CitaDetailSheet({ event, usuarios, rutinas, onClose }: CitaDetai
   };
 
   return (
-    <Sheet open ariaLabel="Detalle del evento" onClose={onClose} immersive>
+    <Sheet open ariaLabel="Detalle del evento" onClose={onClose}>
       <div className="fp-cal-detail">
         <div className="fp-cal-detail-header">
           <h2 className="font-sora">{event.kind === 'cita' ? event.title : event.title}</h2>

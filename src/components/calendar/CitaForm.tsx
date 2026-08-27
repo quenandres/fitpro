@@ -1,7 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import type { Rutina, Usuario } from '../../types';
 import { useCitasStore } from '../../store/useCitasStore';
-import { fechaLocalISO } from './calendarUtils';
+import { TimeSlotChips } from './TimeSlotChips';
+import {
+  fechaLocalISO,
+  getDefaultTimeRange,
+  minutesToTime,
+  type SchedulerTimeRange,
+} from './calendarUtils';
 
 interface CitaFormProps {
   selectedDate: Date;
@@ -10,15 +16,12 @@ interface CitaFormProps {
   defaultClienteId: number | null;
   defaultHora?: string;
   onCreated?: () => void;
+  isMobile?: boolean;
+  timeRange?: SchedulerTimeRange;
 }
 
 const DEFAULT_DURACION = 60;
-
-function minutesToTime(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
+const DURACION_OPTIONS = [30, 45, 60, 90] as const;
 
 export function CitaForm({
   selectedDate,
@@ -27,8 +30,11 @@ export function CitaForm({
   defaultClienteId,
   defaultHora = '10:00',
   onCreated,
+  isMobile = false,
+  timeRange = getDefaultTimeRange(),
 }: CitaFormProps) {
   const addCita = useCitasStore((s) => s.addCita);
+  const citas = useCitasStore((s) => s.citas);
   const [clienteId, setClienteId] = useState(
     () => String(defaultClienteId ?? usuarios[0]?.id ?? ''),
   );
@@ -38,11 +44,16 @@ export function CitaForm({
   const [notas, setNotas] = useState('');
   const [error, setError] = useState('');
 
+  const parsedClienteId = Number(clienteId);
+  const clienteCitas = useMemo(
+    () => citas.filter((c) => c.cliente_id === parsedClienteId),
+    [citas, parsedClienteId],
+  );
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     setError('');
 
-    const parsedClienteId = Number(clienteId);
     if (!parsedClienteId || !usuarios.some((u) => u.id === parsedClienteId)) {
       setError('Selecciona un cliente válido.');
       return;
@@ -76,14 +87,14 @@ export function CitaForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 fp-cal-form">
       <div>
         <label htmlFor="cita-cliente" className="fp-cal-label">
           Cliente
         </label>
         <select
           id="cita-cliente"
-          className="fp-input w-full"
+          className="fp-input w-full fp-cal-touch-input"
           value={clienteId}
           onChange={(e) => setClienteId(e.target.value)}
         >
@@ -95,35 +106,64 @@ export function CitaForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="cita-hora" className="fp-cal-label">
-            Hora
-          </label>
-          <input
-            id="cita-hora"
-            type="time"
-            className="fp-input w-full"
+      {isMobile ? (
+        <>
+          <TimeSlotChips
+            selectedDate={selectedDate}
             value={horaInicio}
-            onChange={(e) => setHoraInicio(e.target.value)}
-            required
+            onChange={setHoraInicio}
+            timeRange={timeRange}
+            duracionMin={duracionMin}
+            clienteId={parsedClienteId}
+            citas={clienteCitas}
           />
+          <div>
+            <p className="fp-cal-chip-section-label">Duración</p>
+            <div className="fp-cal-chip-row fp-cal-duration-row">
+              {DURACION_OPTIONS.map((mins) => (
+                <button
+                  key={mins}
+                  type="button"
+                  className={`fp-cal-duration-chip${duracionMin === mins ? ' is-active' : ''}`}
+                  onClick={() => setDuracionMin(mins)}
+                >
+                  {mins} min
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="cita-hora" className="fp-cal-label">
+              Hora
+            </label>
+            <input
+              id="cita-hora"
+              type="time"
+              className="fp-input w-full fp-cal-touch-input"
+              value={horaInicio}
+              onChange={(e) => setHoraInicio(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="cita-duracion" className="fp-cal-label">
+              Duración (min)
+            </label>
+            <input
+              id="cita-duracion"
+              type="number"
+              min={15}
+              step={15}
+              className="fp-input w-full fp-cal-touch-input"
+              value={duracionMin}
+              onChange={(e) => setDuracionMin(Number(e.target.value))}
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor="cita-duracion" className="fp-cal-label">
-            Duración (min)
-          </label>
-          <input
-            id="cita-duracion"
-            type="number"
-            min={15}
-            step={15}
-            className="fp-input w-full"
-            value={duracionMin}
-            onChange={(e) => setDuracionMin(Number(e.target.value))}
-          />
-        </div>
-      </div>
+      )}
 
       <div>
         <label htmlFor="cita-rutina" className="fp-cal-label">
@@ -131,7 +171,7 @@ export function CitaForm({
         </label>
         <select
           id="cita-rutina"
-          className="fp-input w-full"
+          className="fp-input w-full fp-cal-touch-input"
           value={rutinaId}
           onChange={(e) => setRutinaId(e.target.value)}
         >
@@ -150,7 +190,7 @@ export function CitaForm({
         </label>
         <textarea
           id="cita-notas"
-          className="fp-input w-full"
+          className="fp-input w-full fp-cal-touch-input"
           rows={2}
           placeholder="Objetivo de la sesión, recordatorios…"
           value={notas}
@@ -162,7 +202,7 @@ export function CitaForm({
         <p style={{ fontSize: 12, color: 'var(--accent-red)' }}>{error}</p>
       ) : null}
 
-      <button type="submit" className="fp-btn fp-btn-primary w-full">
+      <button type="submit" className="fp-btn fp-btn-primary w-full fp-cal-touch-btn">
         Crear cita
       </button>
     </form>

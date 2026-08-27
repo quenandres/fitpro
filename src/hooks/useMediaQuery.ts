@@ -27,3 +27,8 @@ export function useMediaQuery(query: string): boolean {
 export function useIsLargeScreen(): boolean {
   return useMediaQuery('(min-width: 1024px)');
 }
+
+/** Mobile breakpoint — below 768px. */
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 767px)');
+}

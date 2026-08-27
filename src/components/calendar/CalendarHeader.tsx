@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import type { CalendarViewMode } from './calendarUtils';
+import { ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from 'lucide-react';
+import type { CalendarViewMode, MobileCalendarView } from './calendarUtils';
 import { formatMonthYear } from './calendarUtils';
 
 interface CalendarHeaderProps {
@@ -10,12 +10,21 @@ interface CalendarHeaderProps {
   onNext: () => void;
   onToday: () => void;
   onCreateCita: () => void;
+  isMobile?: boolean;
+  mobileView?: MobileCalendarView;
+  onMobileViewChange?: (view: MobileCalendarView) => void;
+  onOpenFilters?: () => void;
 }
 
-const VIEW_OPTIONS: { id: CalendarViewMode; label: string }[] = [
+const DESKTOP_VIEW_OPTIONS: { id: CalendarViewMode; label: string }[] = [
   { id: 'month', label: 'Mes' },
   { id: 'week', label: 'Semana' },
   { id: 'day', label: 'Día' },
+];
+
+const MOBILE_VIEW_OPTIONS: { id: MobileCalendarView; label: string }[] = [
+  { id: 'day', label: 'Agenda' },
+  { id: 'month', label: 'Mes' },
 ];
 
 export function CalendarHeader({
@@ -26,6 +35,10 @@ export function CalendarHeader({
   onNext,
   onToday,
   onCreateCita,
+  isMobile = false,
+  mobileView = 'day',
+  onMobileViewChange,
+  onOpenFilters,
 }: CalendarHeaderProps) {
   return (
     <header className="fp-cal-header">
@@ -43,27 +56,66 @@ export function CalendarHeader({
               <ChevronRight size={18} />
             </button>
           </div>
+          {!isMobile && onOpenFilters ? (
+            <button
+              type="button"
+              className="fp-cal-nav-btn fp-cal-filter-btn-tablet lg:hidden"
+              onClick={onOpenFilters}
+              aria-label="Filtros"
+            >
+              <SlidersHorizontal size={18} />
+            </button>
+          ) : null}
         </div>
 
         <div className="fp-cal-header-actions">
-          <div className="fp-cal-view-switch" role="tablist" aria-label="Vista del calendario">
-            {VIEW_OPTIONS.map(({ id, label }) => (
+          {isMobile ? (
+            <>
               <button
-                key={id}
                 type="button"
-                role="tab"
-                aria-selected={viewMode === id}
-                className={`fp-cal-view-pill${viewMode === id ? ' is-active' : ''}`}
-                onClick={() => onViewChange(id)}
+                className="fp-cal-nav-btn"
+                onClick={onOpenFilters}
+                aria-label="Filtros"
               >
-                {label}
+                <SlidersHorizontal size={18} />
               </button>
-            ))}
-          </div>
-          <button type="button" className="fp-cal-create-btn" onClick={onCreateCita}>
-            <Plus size={16} />
-            <span className="hidden sm:inline">Nueva cita</span>
-          </button>
+              <div className="fp-cal-view-switch" role="tablist" aria-label="Vista del calendario">
+                {MOBILE_VIEW_OPTIONS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={mobileView === id}
+                    className={`fp-cal-view-pill${mobileView === id ? ' is-active' : ''}`}
+                    onClick={() => onMobileViewChange?.(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="fp-cal-view-switch" role="tablist" aria-label="Vista del calendario">
+                {DESKTOP_VIEW_OPTIONS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={viewMode === id}
+                    className={`fp-cal-view-pill${viewMode === id ? ' is-active' : ''}`}
+                    onClick={() => onViewChange(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="fp-cal-create-btn" onClick={onCreateCita}>
+                <Plus size={16} />
+                <span className="hidden sm:inline">Nueva cita</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

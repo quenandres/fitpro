@@ -4,14 +4,17 @@ import { SCHEDULER_TIME_RANGES } from './calendarUtils';
 interface TimeRangeSelectorProps {
   value: SchedulerTimeRange;
   onChange: (range: SchedulerTimeRange) => void;
+  compact?: boolean;
 }
 
 const RANGE_OPTIONS: SchedulerTimeRange[] = ['morning', 'afternoon'];
 
-export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
+export function TimeRangeSelector({ value, onChange, compact = false }: TimeRangeSelectorProps) {
   return (
-    <div className="fp-cal-time-range-bar">
-      <span className="fp-cal-time-range-label">Horario</span>
+    <div className={`fp-cal-time-range-bar${compact ? ' is-compact' : ''}`}>
+      {!compact ? (
+        <span className="fp-cal-time-range-label">Horario</span>
+      ) : null}
       <div className="fp-cal-time-range-switch" role="tablist" aria-label="Rango horario">
         {RANGE_OPTIONS.map((rangeId) => {
           const { label, sublabel } = SCHEDULER_TIME_RANGES[rangeId];
@@ -27,7 +30,13 @@ export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
               onClick={() => onChange(rangeId)}
             >
               <span className="fp-cal-time-range-pill-title">{label}</span>
-              <span className="fp-cal-time-range-pill-sub">{sublabel}</span>
+              {!compact ? (
+                <span className="fp-cal-time-range-pill-sub">{sublabel}</span>
+              ) : (
+                <span className="fp-cal-time-range-pill-sub fp-cal-time-range-pill-sub-compact">
+                  {sublabel}
+                </span>
+              )}
             </button>
           );
         })}

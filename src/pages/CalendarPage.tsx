@@ -1,18 +1,23 @@
 import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { CalendarSidebar } from '../components/calendar/CalendarSidebar';
 import { CalendarHeader } from '../components/calendar/CalendarHeader';
+import { CalendarFiltersSheet } from '../components/calendar/CalendarFiltersSheet';
 import { WeekStrip } from '../components/calendar/WeekStrip';
 import { WeekScheduler } from '../components/calendar/WeekScheduler';
 import { FitProCalendar } from '../components/calendar/FitProCalendar';
 import { CitaDetailSheet } from '../components/calendar/CitaDetailSheet';
 import { TimeRangeSelector } from '../components/calendar/TimeRangeSelector';
+import { MobileDateStrip } from '../components/calendar/MobileDateStrip';
+import { MobileDayAgenda } from '../components/calendar/MobileDayAgenda';
 import { Sheet } from '../components/common/Sheet';
 import { CitaForm, minutesToTime } from '../components/calendar/CitaForm';
 import {
   buildCalendarEvents,
   fechaLocalISO,
   getDefaultTimeRange,
+  getDayWindow,
   getEntrenoWeekdays,
   getSchedulerRange,
   getWeekDays,
@@ -20,29 +25,35 @@ import {
   parseFechaLocal,
   type CalendarEvent,
   type CalendarViewMode,
+  type MobileCalendarView,
   type SchedulerTimeRange,
 } from '../components/calendar/calendarUtils';
+import { useIsLargeScreen, useIsMobile } from '../hooks/useMediaQuery';
 import usuariosData from '../data/usuarios.json';
 import { useDataStore } from '../store/useDataStore';
 import { useCitasStore } from '../store/useCitasStore';
 import type { Usuario } from '../types';
 
 export function CalendarPage() {
+  const isMobile = useIsMobile();
+  const isLargeScreen = useIsLargeScreen();
   const [selected, setSelected] = useState<Date>(() => new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
+  const [mobileView, setMobileView] = useState<MobileCalendarView>('day');
   const [timeRange, setTimeRange] = useState<SchedulerTimeRange>(() => getDefaultTimeRange());
   const [visibleClientIds, setVisibleClientIds] = useState<number[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [createSlot, setCreateSlot] = useState<{ date: Date; minutes: number } | null>(null);
   const [usuarios] = useState<Usuario[]>(() => usuariosData as Usuario[]);
   const citas = useCitasStore((s) => s.citas);
   const rutinas = useDataStore((s) => s.rutinas);
 
   const weekDays = useMemo(() => {
-    if (viewMode === 'day') return [selected];
+    if (isMobile || viewMode === 'day') return [selected];
     return getWeekDays(selected);
-  }, [selected, viewMode]);
+  }, [selected, viewMode, isMobile]);
 
   const entrenoWeekdays = useMemo(
     () => getEntrenoWeekdays(usuarios, visibleClientIds),
@@ -59,6 +70,17 @@ export function CalendarPage() {
   const events = useMemo(
     () => buildCalendarEvents(usuarios, citas, visibleClientIds, weekDays, rutinas),
     [usuarios, citas, visibleClientIds, weekDays, rutinas],
+  );
+
+  const allEvents = useMemo(
+    () => buildCalendarEvents(
+      usuarios,
+      citas,
+      visibleClientIds,
+      getDayWindow(selected, 7),
+      rutinas,
+    ),
+    [usuarios, citas, visibleClientIds, selected, rutinas],
   );
 
   const toggleClient = (clienteId: number) => {
@@ -83,70 +105,162 @@ export function CalendarPage() {
     setShowCreate(true);
   };
 
+  const handleMobileViewChange = (view: MobileCalendarView) => {
+    setMobileView(view);
+    if (view === 'day') {
+      setViewMode('day');
+    } else {
+      setViewMode('month');
+    }
+  };
+
+  const handleMonthDaySelect = (date: Date) => {
+    setSelected(date);
+    if (isMobile) {
+      setMobileView('day');
+      setViewMode('day');
+    }
+  };
+
+  const handleNavigate = (direction: -1 | 1) => {
+    if (isMobile) {
+      const mode = mobileView === 'month' ? 'month' : 'day';
+      setSelected((d) => navigateDate(d, mode, direction));
+      return;
+    }
+    setSelected((d) => navigateDate(d, viewMode, direction));
+  };
+
+  const sidebarProps = {
+    selected,
+    onSelectDate: setSelected,
+    entrenoWeekdays,
+    citaDates,
+    usuarios,
+    visibleClientIds,
+    onToggleClient: toggleClient,
+    onShowAllClients: () => setVisibleClientIds([]),
+  };
+
   const createDate = createSlot?.date ?? selected;
   const createHora = createSlot ? minutesToTime(createSlot.minutes) : '10:00';
   const defaultClienteId = visibleClientIds.length === 1 ? visibleClientIds[0] : null;
 
+  const showDesktopSidebar = isLargeScreen;
+  const showFiltersSheet = !isLargeScreen;
+
   return (
     <AppShell width="wide" hideBottomNav={false}>
-      <div className="fp-cal-page animate-slide-up">
+      <div className="fp-cal-page fp-cal-page-responsive animate-slide-up">
         <div className="fp-cal-layout">
-          <CalendarSidebar
-            selected={selected}
-            onSelectDate={setSelected}
-            entrenoWeekdays={entrenoWeekdays}
-            citaDates={citaDates}
-            usuarios={usuarios}
-            visibleClientIds={visibleClientIds}
-            onToggleClient={toggleClient}
-            onShowAllClients={() => setVisibleClientIds([])}
-          />
+          {showDesktopSidebar ? <CalendarSidebar {...sidebarProps} /> : null}
 
           <div className="fp-cal-main">
             <CalendarHeader
               selected={selected}
               viewMode={viewMode}
               onViewChange={setViewMode}
-              onPrev={() => setSelected((d) => navigateDate(d, viewMode, -1))}
-              onNext={() => setSelected((d) => navigateDate(d, viewMode, 1))}
+              onPrev={() => handleNavigate(-1)}
+              onNext={() => handleNavigate(1)}
               onToday={() => setSelected(new Date())}
               onCreateCita={() => openCreate()}
+              isMobile={isMobile}
+              mobileView={mobileView}
+              onMobileViewChange={handleMobileViewChange}
+              onOpenFilters={() => setShowFilters(true)}
             />
 
-            {viewMode !== 'month' ? (
-              <WeekStrip
-                days={weekDays}
-                selected={selected}
-                onSelect={setSelected}
-              />
-            ) : null}
-
-            {viewMode === 'month' ? (
-              <div className="fp-cal-month-view">
-                <FitProCalendar
-                  selected={selected}
-                  onSelect={(date) => date && setSelected(date)}
-                  entrenoWeekdays={entrenoWeekdays}
-                  citaDates={citaDates}
-                  month={selected}
-                  onMonthChange={setSelected}
-                />
-              </div>
+            {isMobile ? (
+              mobileView === 'month' ? (
+                <div className="fp-cal-month-view fp-cal-month-view-mobile">
+                  <FitProCalendar
+                    selected={selected}
+                    onSelect={(date) => date && handleMonthDaySelect(date)}
+                    entrenoWeekdays={entrenoWeekdays}
+                    citaDates={citaDates}
+                    month={selected}
+                    onMonthChange={setSelected}
+                  />
+                </div>
+              ) : (
+                <>
+                  <MobileDateStrip
+                    selected={selected}
+                    onSelect={setSelected}
+                    events={allEvents}
+                  />
+                  <TimeRangeSelector
+                    value={timeRange}
+                    onChange={setTimeRange}
+                    compact
+                  />
+                  <MobileDayAgenda
+                    selected={selected}
+                    events={events}
+                    timeRange={timeRange}
+                    rutinas={rutinas}
+                    onEventClick={setSelectedEvent}
+                    onCreateCita={() => openCreate()}
+                  />
+                </>
+              )
             ) : (
               <>
-                <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
-                <WeekScheduler
-                  days={weekDays}
-                  events={events}
-                  timeRange={timeRange}
-                  onEventClick={setSelectedEvent}
-                  onSlotClick={(date, startMinutes) => openCreate(date, startMinutes)}
-                />
+                {viewMode !== 'month' ? (
+                  <WeekStrip
+                    days={weekDays}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                ) : null}
+
+                {viewMode === 'month' ? (
+                  <div className="fp-cal-month-view">
+                    <FitProCalendar
+                      selected={selected}
+                      onSelect={(date) => date && setSelected(date)}
+                      entrenoWeekdays={entrenoWeekdays}
+                      citaDates={citaDates}
+                      month={selected}
+                      onMonthChange={setSelected}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+                    <WeekScheduler
+                      days={weekDays}
+                      events={events}
+                      timeRange={timeRange}
+                      onEventClick={setSelectedEvent}
+                      onSlotClick={(date, startMinutes) => openCreate(date, startMinutes)}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>
         </div>
       </div>
+
+      {isMobile ? (
+        <button
+          type="button"
+          className="fp-cal-fab"
+          onClick={() => openCreate()}
+          aria-label="Nueva cita"
+        >
+          <Plus size={22} />
+        </button>
+      ) : null}
+
+      {showFiltersSheet ? (
+        <CalendarFiltersSheet
+          open={showFilters}
+          onClose={() => setShowFilters(false)}
+          {...sidebarProps}
+        />
+      ) : null}
 
       <CitaDetailSheet
         event={selectedEvent}
@@ -179,6 +293,8 @@ export function CalendarPage() {
             rutinas={rutinas}
             defaultClienteId={defaultClienteId}
             defaultHora={createHora}
+            timeRange={timeRange}
+            isMobile={isMobile}
             onCreated={() => setShowCreate(false)}
           />
         </div>

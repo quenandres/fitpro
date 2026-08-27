@@ -43,13 +43,14 @@ export function WeekScheduler({
   const gridHeight = (endHour - startHour) * SCHEDULER_HOUR_HEIGHT;
 
   return (
-    <div className="fp-cal-scheduler">
+    <div className="fp-cal-scheduler fp-cal-scheduler-tablet">
       <div className="fp-cal-scheduler-scroll">
         <div
           className="fp-cal-scheduler-grid"
           style={{
             minHeight: gridHeight + 24,
             ['--cal-cols' as string]: String(days.length),
+            minWidth: days.length > 1 ? `${52 + days.length * 96}px` : undefined,
           }}
         >
           <div className="fp-cal-time-axis">
