@@ -1,0 +1,72 @@
+[
+  {
+    "id": "evt-1",
+    "comunidadId": "com-crossfit-box",
+    "titulo": "WOD de Aniversario",
+    "descripcion": "Entrenamiento especial por el aniversario del box, seguido de compartir entre miembros.",
+    "lugar": "Box Norte, Sala principal",
+    "imagenUrl": "https://picsum.photos/seed/evt-1/800/500",
+    "inicioEn": "2026-09-02T09:00:00.000Z",
+    "finEn": "2026-09-02T11:00:00.000Z",
+    "cupoMax": 5,
+    "participantes": [
+      { "miembroId": "mem-ana", "estado": "confirmado" },
+      { "miembroId": "mem-bruno", "estado": "confirmado" },
+      { "miembroId": "mem-diego", "estado": "confirmado" },
+      { "miembroId": "mem-fer", "estado": "confirmado" },
+      { "miembroId": "mem-gus", "estado": "confirmado" },
+      { "miembroId": "mem-irene", "estado": "lista_espera" }
+    ],
+    "creadoPorId": "mem-ana"
+  },
+  {
+    "id": "evt-2",
+    "comunidadId": "com-crossfit-box",
+    "titulo": "Competencia interna por parejas",
+    "descripcion": "Formato equipos de 2, tres WODs cronometrados.",
+    "lugar": "Box Norte, Patio exterior",
+    "inicioEn": "2026-09-14T15:00:00.000Z",
+    "finEn": "2026-09-14T18:00:00.000Z",
+    "cupoMax": null,
+    "participantes": [
+      { "miembroId": "mem-bruno", "estado": "confirmado" },
+      { "miembroId": "mem-gus", "estado": "confirmado" }
+    ],
+    "creadoPorId": "mem-bruno"
+  },
+  {
+    "id": "evt-3",
+    "comunidadId": "com-running-club",
+    "titulo": "10K por el malecón",
+    "descripcion": "Ruta panorámica junto al mar, ritmo moderado, apta para todos los niveles.",
+    "lugar": "Punto de encuentro: Glorieta del malecón",
+    "imagenUrl": "https://picsum.photos/seed/evt-3/800/500",
+    "inicioEn": "2026-08-30T11:00:00.000Z",
+    "finEn": "2026-08-30T13:00:00.000Z",
+    "cupoMax": 4,
+    "participantes": [
+      { "miembroId": "mem-carlos", "estado": "confirmado" },
+      { "miembroId": "mem-dani", "estado": "confirmado" },
+      { "miembroId": "mem-hugo", "estado": "confirmado" },
+      { "miembroId": "mem-julia", "estado": "confirmado" },
+      { "miembroId": "mem-kevin", "estado": "lista_espera" }
+    ],
+    "creadoPorId": "mem-carlos"
+  },
+  {
+    "id": "evt-4",
+    "comunidadId": "com-yoga-mindful",
+    "titulo": "Sesión de respiración guiada",
+    "descripcion": "Práctica de pranayama y meditación de 45 minutos.",
+    "lugar": "Estudio Mindful, sala 2",
+    "inicioEn": "2026-08-28T22:00:00.000Z",
+    "finEn": "2026-08-28T22:45:00.000Z",
+    "cupoMax": 3,
+    "participantes": [
+      { "miembroId": "mem-elena", "estado": "confirmado" },
+      { "miembroId": "mem-lucas", "estado": "confirmado" },
+      { "miembroId": "mem-mara", "estado": "confirmado" }
+    ],
+    "creadoPorId": "mem-elena"
+  }
+]

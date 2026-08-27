@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mem-ana",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Ana Torres",
+    "avatarUrl": "https://picsum.photos/seed/mem-ana/160/160",
+    "rol": "leader",
+    "bio": "Coach L2, 6 años entrenando CrossFit.",
+    "unidoEn": "2026-02-01T09:00:00.000Z"
+  },
+  {
+    "id": "mem-bruno",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Bruno Salas",
+    "avatarUrl": "https://picsum.photos/seed/mem-bruno/160/160",
+    "rol": "moderator",
+    "bio": "Modero el feed y organizo los WODs de fin de semana.",
+    "unidoEn": "2026-02-03T10:00:00.000Z"
+  },
+  {
+    "id": "mem-diego",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Diego Ramírez",
+    "avatarUrl": "https://picsum.photos/seed/mem-diego/160/160",
+    "rol": "member",
+    "unidoEn": "2026-02-10T12:00:00.000Z"
+  },
+  {
+    "id": "mem-fer",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Fernanda Ruiz",
+    "avatarUrl": "https://picsum.photos/seed/mem-fer/160/160",
+    "rol": "member",
+    "unidoEn": "2026-02-15T12:00:00.000Z"
+  },
+  {
+    "id": "mem-gus",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Gustavo Peña",
+    "avatarUrl": "https://picsum.photos/seed/mem-gus/160/160",
+    "rol": "member",
+    "unidoEn": "2026-03-01T12:00:00.000Z"
+  },
+  {
+    "id": "mem-irene",
+    "comunidadId": "com-crossfit-box",
+    "nombre": "Irene Vidal",
+    "avatarUrl": "https://picsum.photos/seed/mem-irene/160/160",
+    "rol": "member",
+    "unidoEn": "2026-03-05T12:00:00.000Z",
+    "suspendido": true
+  },
+  {
+    "id": "mem-carlos",
+    "comunidadId": "com-running-club",
+    "nombre": "Carlos Medina",
+    "avatarUrl": "https://picsum.photos/seed/mem-carlos/160/160",
+    "rol": "leader",
+    "bio": "Maratonista, organizo las salidas del club.",
+    "unidoEn": "2026-03-10T07:30:00.000Z"
+  },
+  {
+    "id": "mem-dani",
+    "comunidadId": "com-running-club",
+    "nombre": "Daniela Ochoa",
+    "avatarUrl": "https://picsum.photos/seed/mem-dani/160/160",
+    "rol": "moderator",
+    "unidoEn": "2026-03-12T07:30:00.000Z"
+  },
+  {
+    "id": "mem-hugo",
+    "comunidadId": "com-running-club",
+    "nombre": "Hugo Serrano",
+    "avatarUrl": "https://picsum.photos/seed/mem-hugo/160/160",
+    "rol": "member",
+    "unidoEn": "2026-03-15T07:30:00.000Z"
+  },
+  {
+    "id": "mem-julia",
+    "comunidadId": "com-running-club",
+    "nombre": "Julia Nieto",
+    "avatarUrl": "https://picsum.photos/seed/mem-julia/160/160",
+    "rol": "member",
+    "unidoEn": "2026-03-20T07:30:00.000Z"
+  },
+  {
+    "id": "mem-kevin",
+    "comunidadId": "com-running-club",
+    "nombre": "Kevin Ibáñez",
+    "avatarUrl": "https://picsum.photos/seed/mem-kevin/160/160",
+    "rol": "member",
+    "unidoEn": "2026-03-25T07:30:00.000Z"
+  },
+  {
+    "id": "mem-elena",
+    "comunidadId": "com-yoga-mindful",
+    "nombre": "Elena Campos",
+    "avatarUrl": "https://picsum.photos/seed/mem-elena/160/160",
+    "rol": "leader",
+    "bio": "Instructora certificada de Hatha y Vinyasa.",
+    "unidoEn": "2026-04-05T18:00:00.000Z"
+  },
+  {
+    "id": "mem-lucas",
+    "comunidadId": "com-yoga-mindful",
+    "nombre": "Lucas Prada",
+    "avatarUrl": "https://picsum.photos/seed/mem-lucas/160/160",
+    "rol": "moderator",
+    "unidoEn": "2026-04-07T18:00:00.000Z"
+  },
+  {
+    "id": "mem-mara",
+    "comunidadId": "com-yoga-mindful",
+    "nombre": "Mara Solís",
+    "avatarUrl": "https://picsum.photos/seed/mem-mara/160/160",
+    "rol": "member",
+    "unidoEn": "2026-04-10T18:00:00.000Z"
+  },
+  {
+    "id": "mem-nico",
+    "comunidadId": "com-yoga-mindful",
+    "nombre": "Nicolás Rey",
+    "avatarUrl": "https://picsum.photos/seed/mem-nico/160/160",
+    "rol": "member",
+    "unidoEn": "2026-04-12T18:00:00.000Z"
+  }
+]

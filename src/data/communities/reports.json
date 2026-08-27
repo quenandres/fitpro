@@ -1,0 +1,21 @@
+[
+  {
+    "id": "rep-1",
+    "comunidadId": "com-crossfit-box",
+    "postId": "post-4",
+    "reportadoPorId": "mem-diego",
+    "motivo": "spam",
+    "detalle": "Se repite el mismo aviso varias veces en el feed.",
+    "estado": "pendiente",
+    "creadoEn": "2026-08-24T08:00:00.000Z"
+  },
+  {
+    "id": "rep-2",
+    "comunidadId": "com-running-club",
+    "discusionId": "disc-4",
+    "reportadoPorId": "mem-julia",
+    "motivo": "contenido_inapropiado",
+    "estado": "resuelto",
+    "creadoEn": "2026-08-19T10:00:00.000Z"
+  }
+]

@@ -1,0 +1,129 @@
+[
+  {
+    "id": "post-1",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-ana",
+    "tipo": "anuncio",
+    "texto": "¡Bienvenidos al box! Este fin de semana WOD especial de aniversario. Traigan a un invitado 💪",
+    "media": [{ "tipo": "imagen", "url": "https://picsum.photos/seed/post-1-a/800/600" }],
+    "reacciones": [
+      { "tipo": "fuego", "miembroId": "mem-bruno" },
+      { "tipo": "like", "miembroId": "mem-diego" }
+    ],
+    "comentarios": [
+      { "id": "com-p1-1", "postId": "post-1", "autorId": "mem-diego", "texto": "¡Ahí estaré!", "creadoEn": "2026-08-20T10:15:00.000Z" }
+    ],
+    "fijado": true,
+    "creadoEn": "2026-08-19T09:00:00.000Z"
+  },
+  {
+    "id": "post-2",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-diego",
+    "tipo": "logro",
+    "texto": "Nuevo PR en deadlift: 140kg 🎉 Gracias por el apoyo equipo.",
+    "media": [
+      { "tipo": "imagen", "url": "https://picsum.photos/seed/post-2-a/800/600" },
+      { "tipo": "imagen", "url": "https://picsum.photos/seed/post-2-b/800/600" },
+      { "tipo": "imagen", "url": "https://picsum.photos/seed/post-2-c/800/600" }
+    ],
+    "reacciones": [
+      { "tipo": "aplauso", "miembroId": "mem-ana" },
+      { "tipo": "fuego", "miembroId": "mem-fer" },
+      { "tipo": "fuego", "miembroId": "mem-gus" }
+    ],
+    "comentarios": [],
+    "creadoEn": "2026-08-21T16:40:00.000Z"
+  },
+  {
+    "id": "post-3",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-fer",
+    "tipo": "pregunta",
+    "texto": "¿Alguien tiene recomendaciones de cinturón de levantamiento para principiantes?",
+    "media": [],
+    "reacciones": [{ "tipo": "like", "miembroId": "mem-bruno" }],
+    "comentarios": [
+      { "id": "com-p3-1", "postId": "post-3", "autorId": "mem-bruno", "texto": "El de cuero de 10cm, no necesitas más al inicio.", "creadoEn": "2026-08-22T09:05:00.000Z" },
+      { "id": "com-p3-2", "postId": "post-3", "autorId": "mem-gus", "texto": "Confirmo, así empecé yo también.", "creadoEn": "2026-08-22T09:30:00.000Z" }
+    ],
+    "creadoEn": "2026-08-22T08:50:00.000Z"
+  },
+  {
+    "id": "post-4",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-bruno",
+    "tipo": "general",
+    "texto": "Recordatorio: mañana limpieza general del box a las 8am, se agradece apoyo 🧹",
+    "media": [],
+    "reacciones": [],
+    "comentarios": [],
+    "creadoEn": "2026-08-23T20:00:00.000Z"
+  },
+  {
+    "id": "post-5",
+    "comunidadId": "com-running-club",
+    "autorId": "mem-carlos",
+    "tipo": "anuncio",
+    "texto": "Ruta nueva este sábado: 12K por el malecón, salida 6am puntual.",
+    "media": [{ "tipo": "imagen", "url": "https://picsum.photos/seed/post-5-a/800/600" }],
+    "reacciones": [
+      { "tipo": "like", "miembroId": "mem-dani" },
+      { "tipo": "fuego", "miembroId": "mem-hugo" }
+    ],
+    "comentarios": [],
+    "fijado": true,
+    "creadoEn": "2026-08-18T07:00:00.000Z"
+  },
+  {
+    "id": "post-6",
+    "comunidadId": "com-running-club",
+    "autorId": "mem-julia",
+    "tipo": "logro",
+    "texto": "¡Terminé mi primer 10K en 52 minutos! Gracias por el aliento en el km 8 😭🙌",
+    "media": [{ "tipo": "video", "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" }],
+    "reacciones": [
+      { "tipo": "aplauso", "miembroId": "mem-carlos" },
+      { "tipo": "aplauso", "miembroId": "mem-dani" },
+      { "tipo": "fuego", "miembroId": "mem-kevin" }
+    ],
+    "comentarios": [
+      { "id": "com-p6-1", "postId": "post-6", "autorId": "mem-carlos", "texto": "Excelente marca, sigue así 🔥", "creadoEn": "2026-08-24T11:00:00.000Z" }
+    ],
+    "creadoEn": "2026-08-24T10:30:00.000Z"
+  },
+  {
+    "id": "post-7",
+    "comunidadId": "com-running-club",
+    "autorId": "mem-hugo",
+    "tipo": "pregunta",
+    "texto": "¿Qué zapatillas usan para asfalto en distancias largas?",
+    "media": [],
+    "reacciones": [],
+    "comentarios": [],
+    "creadoEn": "2026-08-25T09:00:00.000Z"
+  },
+  {
+    "id": "post-8",
+    "comunidadId": "com-yoga-mindful",
+    "autorId": "mem-elena",
+    "tipo": "anuncio",
+    "texto": "Nueva sesión de respiración guiada este jueves, todos los niveles bienvenidos 🧘",
+    "media": [{ "tipo": "imagen", "url": "https://picsum.photos/seed/post-8-a/800/600" }],
+    "reacciones": [{ "tipo": "like", "miembroId": "mem-lucas" }],
+    "comentarios": [],
+    "fijado": true,
+    "creadoEn": "2026-08-20T18:00:00.000Z"
+  },
+  {
+    "id": "post-9",
+    "comunidadId": "com-yoga-mindful",
+    "autorId": "mem-mara",
+    "tipo": "general",
+    "texto": "La práctica de hoy me dejó con una paz enorme, gracias Elena 🙏",
+    "media": [],
+    "reacciones": [{ "tipo": "aplauso", "miembroId": "mem-elena" }],
+    "comentarios": [],
+    "creadoEn": "2026-08-26T19:30:00.000Z"
+  }
+]

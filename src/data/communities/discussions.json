@@ -1,0 +1,59 @@
+[
+  {
+    "id": "disc-1",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-ana",
+    "titulo": "Reglas actualizadas de convivencia en el box",
+    "texto": "Actualizamos las reglas de convivencia, por favor léanlas y comenten dudas aquí.",
+    "fijada": true,
+    "respuestas": [
+      { "id": "resp-d1-1", "discusionId": "disc-1", "autorId": "mem-bruno", "texto": "Todo claro, gracias por actualizar.", "creadoEn": "2026-08-15T10:00:00.000Z" }
+    ],
+    "creadaEn": "2026-08-14T09:00:00.000Z"
+  },
+  {
+    "id": "disc-2",
+    "comunidadId": "com-crossfit-box",
+    "autorId": "mem-diego",
+    "titulo": "¿Cambiamos el horario de la clase de las 7am?",
+    "texto": "Varios hemos comentado que 6:30am nos vendría mejor por tráfico, ¿qué opinan?",
+    "respuestas": [
+      { "id": "resp-d2-1", "discusionId": "disc-2", "autorId": "mem-fer", "texto": "A mí me da igual, cualquier hora temprano funciona.", "creadoEn": "2026-08-16T08:00:00.000Z" },
+      { "id": "resp-d2-2", "discusionId": "disc-2", "autorId": "mem-gus", "texto": "Prefiero mantener las 7am por el bus.", "creadoEn": "2026-08-16T08:20:00.000Z" }
+    ],
+    "creadaEn": "2026-08-16T07:30:00.000Z"
+  },
+  {
+    "id": "disc-3",
+    "comunidadId": "com-running-club",
+    "autorId": "mem-carlos",
+    "titulo": "Plan de entrenamiento para maratón de octubre",
+    "texto": "Propongo empezar el plan de 12 semanas desde el próximo lunes, ¿se apuntan?",
+    "fijada": true,
+    "respuestas": [
+      { "id": "resp-d3-1", "discusionId": "disc-3", "autorId": "mem-dani", "texto": "Me apunto, ya tengo el calendario listo.", "creadoEn": "2026-08-18T09:00:00.000Z" }
+    ],
+    "creadaEn": "2026-08-17T18:00:00.000Z"
+  },
+  {
+    "id": "disc-4",
+    "comunidadId": "com-running-club",
+    "autorId": "mem-kevin",
+    "titulo": "Grupo de WhatsApp para avisos rápidos",
+    "texto": "¿Creamos un grupo aparte para avisos de última hora sobre cambios de ruta?",
+    "cerrada": true,
+    "respuestas": [
+      { "id": "resp-d4-1", "discusionId": "disc-4", "autorId": "mem-carlos", "texto": "Ya usamos las notificaciones de la app para esto, cerramos el hilo.", "creadoEn": "2026-08-19T09:00:00.000Z" }
+    ],
+    "creadaEn": "2026-08-18T20:00:00.000Z"
+  },
+  {
+    "id": "disc-5",
+    "comunidadId": "com-yoga-mindful",
+    "autorId": "mem-elena",
+    "titulo": "Recomendaciones de lecturas sobre mindfulness",
+    "texto": "Comparto una lista de libros que me han ayudado mucho, siéntanse libres de agregar más.",
+    "respuestas": [],
+    "creadaEn": "2026-08-21T12:00:00.000Z"
+  }
+]

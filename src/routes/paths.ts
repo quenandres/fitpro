@@ -40,6 +40,35 @@ export const ROUTES = {
       musculos: '/library/catalogo/musculos',
     },
   },
+
+  /**
+   * Módulo Comunidades — UI pura sobre datos mock (`useCommunitiesStore`).
+   * Sin backend: ver CONTEXT.md / plan de implementación del módulo.
+   */
+  communities: {
+    root: '/communities',
+    invitations: '/communities/invitations',
+    detail: (id: string) => `/communities/${id}`,
+    home: (id: string) => `/communities/${id}/home`,
+    posts: (id: string) => `/communities/${id}/posts`,
+    postCreate: (id: string) => `/communities/${id}/posts/create`,
+    post: (id: string, postId: string) => `/communities/${id}/posts/${postId}`,
+    events: (id: string) => `/communities/${id}/events`,
+    eventCreate: (id: string) => `/communities/${id}/events/create`,
+    event: (id: string, eventId: string) => `/communities/${id}/events/${eventId}`,
+    eventParticipants: (id: string, eventId: string) =>
+      `/communities/${id}/events/${eventId}/participants`,
+    discussions: (id: string) => `/communities/${id}/discussions`,
+    discussion: (id: string, discussionId: string) =>
+      `/communities/${id}/discussions/${discussionId}`,
+    members: (id: string) => `/communities/${id}/members`,
+    about: (id: string) => `/communities/${id}/about`,
+    admin: (id: string) => `/communities/${id}/admin`,
+    adminMembers: (id: string) => `/communities/${id}/admin/members`,
+    adminModeration: (id: string) => `/communities/${id}/admin/moderation`,
+  },
+
+  notifications: '/notifications',
 } as const;
 
 export const LEGACY_LIBRARY_REDIRECTS: ReadonlyArray<{ from: string; to: string }> = [

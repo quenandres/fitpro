@@ -24,6 +24,26 @@ import { CalendarPage } from './pages/CalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
+import { CommunitiesLayout } from './components/communities/layout/CommunitiesLayout';
+import { CommunityLayout, CommunityDetailRedirect } from './components/communities/layout/CommunityLayout';
+import { CommunitiesExplorePage } from './pages/communities/CommunitiesExplorePage';
+import { CommunityInvitationsPage } from './pages/communities/CommunityInvitationsPage';
+import { CommunityHomePage } from './pages/communities/CommunityHomePage';
+import { CommunityPostsPage } from './pages/communities/CommunityPostsPage';
+import { CommunityPostCreatePage } from './pages/communities/CommunityPostCreatePage';
+import { CommunityPostDetailPage } from './pages/communities/CommunityPostDetailPage';
+import { CommunityEventsPage } from './pages/communities/CommunityEventsPage';
+import { CommunityEventCreatePage } from './pages/communities/CommunityEventCreatePage';
+import { CommunityEventDetailPage } from './pages/communities/CommunityEventDetailPage';
+import { CommunityEventParticipantsPage } from './pages/communities/CommunityEventParticipantsPage';
+import { CommunityDiscussionsPage } from './pages/communities/CommunityDiscussionsPage';
+import { CommunityDiscussionDetailPage } from './pages/communities/CommunityDiscussionDetailPage';
+import { CommunityMembersPage } from './pages/communities/CommunityMembersPage';
+import { CommunityAboutPage } from './pages/communities/CommunityAboutPage';
+import { CommunityAdminPage } from './pages/communities/CommunityAdminPage';
+import { CommunityAdminMembersPage } from './pages/communities/CommunityAdminMembersPage';
+import { CommunityAdminModerationPage } from './pages/communities/CommunityAdminModerationPage';
+import { NotificationsPage } from './pages/communities/NotificationsPage';
 import { LEGACY_LIBRARY_REDIRECTS, LEGACY_ROUTINE_FORM_LEVELS, ROUTES } from './routes/paths';
 import { LegacyRoutineFormRedirect } from './routes/LegacyRoutineFormRedirect';
 import type { ReactNode } from 'react';
@@ -101,6 +121,36 @@ function AppRoutes() {
         {/* Gestión del entrenador */}
         <Route path="planes" element={<UserPlansPage />} />
       </Route>
+
+      {/*
+        Comunidades — módulo UI pura sobre datos mock (`useCommunitiesStore`).
+        Sin backend: ver el plan de implementación del módulo / CONTEXT.md.
+      */}
+      <Route path={ROUTES.communities.root} element={<ProtectedRoute><CommunitiesLayout /></ProtectedRoute>}>
+        <Route index element={<CommunitiesExplorePage />} />
+        <Route path="invitations" element={<CommunityInvitationsPage />} />
+      </Route>
+
+      <Route path="/communities/:id" element={<ProtectedRoute><CommunityLayout /></ProtectedRoute>}>
+        <Route index element={<CommunityDetailRedirect />} />
+        <Route path="home" element={<CommunityHomePage />} />
+        <Route path="posts" element={<CommunityPostsPage />} />
+        <Route path="posts/create" element={<CommunityPostCreatePage />} />
+        <Route path="posts/:postId" element={<CommunityPostDetailPage />} />
+        <Route path="events" element={<CommunityEventsPage />} />
+        <Route path="events/create" element={<CommunityEventCreatePage />} />
+        <Route path="events/:eventId" element={<CommunityEventDetailPage />} />
+        <Route path="events/:eventId/participants" element={<CommunityEventParticipantsPage />} />
+        <Route path="discussions" element={<CommunityDiscussionsPage />} />
+        <Route path="discussions/:discussionId" element={<CommunityDiscussionDetailPage />} />
+        <Route path="members" element={<CommunityMembersPage />} />
+        <Route path="about" element={<CommunityAboutPage />} />
+        <Route path="admin" element={<CommunityAdminPage />} />
+        <Route path="admin/members" element={<CommunityAdminMembersPage />} />
+        <Route path="admin/moderation" element={<CommunityAdminModerationPage />} />
+      </Route>
+
+      <Route path={ROUTES.notifications} element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
       {/* Redirects legacy */}
       {LEGACY_LIBRARY_REDIRECTS.map(({ from, to }) => (

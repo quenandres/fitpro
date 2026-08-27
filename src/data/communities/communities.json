@@ -1,0 +1,58 @@
+[
+  {
+    "id": "com-crossfit-box",
+    "nombre": "CrossFit Box Norte",
+    "descripcion": "Comunidad de entrenamiento funcional de alta intensidad. Compartimos WODs, PRs y quedadas de box.",
+    "categoria": "crossfit",
+    "visibilidad": "publica",
+    "portadaUrl": "https://picsum.photos/seed/com-crossfit-box/1200/400",
+    "avatarUrl": "https://picsum.photos/seed/com-crossfit-box-avatar/200/200",
+    "miembrosCount": 6,
+    "postsCount": 4,
+    "eventosCount": 2,
+    "reglas": [
+      "Respeta a todos los miembros dentro y fuera del box.",
+      "No spam ni promoción de productos externos.",
+      "Comparte solo contenido relacionado con entrenamiento."
+    ],
+    "liderIds": ["mem-ana"],
+    "creadaEn": "2026-02-01T09:00:00.000Z"
+  },
+  {
+    "id": "com-running-club",
+    "nombre": "Running Club Amanecer",
+    "descripcion": "Salidas de running al amanecer, planes de entrenamiento para 10K y maratón, y mucho apoyo mutuo.",
+    "categoria": "running",
+    "visibilidad": "publica",
+    "portadaUrl": "https://picsum.photos/seed/com-running-club/1200/400",
+    "avatarUrl": "https://picsum.photos/seed/com-running-club-avatar/200/200",
+    "miembrosCount": 5,
+    "postsCount": 3,
+    "eventosCount": 1,
+    "reglas": [
+      "Puntualidad en las salidas grupales.",
+      "Usa equipo reflectante en salidas nocturnas o de madrugada.",
+      "Reporta lesiones o molestias al líder antes de un evento."
+    ],
+    "liderIds": ["mem-carlos"],
+    "creadaEn": "2026-03-10T07:30:00.000Z"
+  },
+  {
+    "id": "com-yoga-mindful",
+    "nombre": "Yoga Mindful",
+    "descripcion": "Espacio privado para práctica de yoga, respiración consciente y bienestar integral.",
+    "categoria": "yoga",
+    "visibilidad": "privada",
+    "portadaUrl": "https://picsum.photos/seed/com-yoga-mindful/1200/400",
+    "avatarUrl": "https://picsum.photos/seed/com-yoga-mindful-avatar/200/200",
+    "miembrosCount": 4,
+    "postsCount": 2,
+    "eventosCount": 1,
+    "reglas": [
+      "Mantén un tono respetuoso y sin juicios.",
+      "No se permite contenido comercial no autorizado."
+    ],
+    "liderIds": ["mem-elena"],
+    "creadaEn": "2026-04-05T18:00:00.000Z"
+  }
+]

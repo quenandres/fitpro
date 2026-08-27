@@ -1,0 +1,16 @@
+[
+  {
+    "id": "inv-1",
+    "comunidadId": "com-yoga-mindful",
+    "invitadaPorId": "mem-elena",
+    "estado": "pendiente",
+    "creadaEn": "2026-08-24T12:00:00.000Z"
+  },
+  {
+    "id": "inv-2",
+    "comunidadId": "com-running-club",
+    "invitadaPorId": "mem-carlos",
+    "estado": "pendiente",
+    "creadaEn": "2026-08-25T08:00:00.000Z"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "notif-1",
+    "tipo": "reaccion",
+    "comunidadId": "com-crossfit-box",
+    "texto": "Ana Torres reaccionó a tu publicación",
+    "ruta": "/communities/com-crossfit-box/posts/post-2",
+    "leida": false,
+    "creadaEn": "2026-08-26T08:00:00.000Z"
+  },
+  {
+    "id": "notif-2",
+    "tipo": "comentario",
+    "comunidadId": "com-crossfit-box",
+    "texto": "Bruno Salas comentó tu publicación",
+    "ruta": "/communities/com-crossfit-box/posts/post-3",
+    "leida": false,
+    "creadaEn": "2026-08-26T09:30:00.000Z"
+  },
+  {
+    "id": "notif-3",
+    "tipo": "evento",
+    "comunidadId": "com-running-club",
+    "texto": "Tu evento \"10K por el malecón\" empieza mañana",
+    "ruta": "/communities/com-running-club/events/evt-3",
+    "leida": true,
+    "creadaEn": "2026-08-25T07:00:00.000Z"
+  },
+  {
+    "id": "notif-4",
+    "tipo": "invitacion",
+    "comunidadId": "com-yoga-mindful",
+    "texto": "Elena Campos te invitó a Yoga Mindful",
+    "ruta": "/communities/com-yoga-mindful",
+    "leida": false,
+    "creadaEn": "2026-08-24T12:00:00.000Z"
+  },
+  {
+    "id": "notif-5",
+    "tipo": "discusion",
+    "comunidadId": "com-running-club",
+    "texto": "Nueva respuesta en \"Plan de entrenamiento para maratón de octubre\"",
+    "ruta": "/communities/com-running-club/discussions/disc-3",
+    "leida": true,
+    "creadaEn": "2026-08-18T09:00:00.000Z"
+  }
+]

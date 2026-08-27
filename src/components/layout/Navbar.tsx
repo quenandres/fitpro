@@ -1,15 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Dumbbell, Home, BookOpen, ClipboardList, CalendarDays, LogOut } from 'lucide-react';
+import { Dumbbell, Home, BookOpen, ClipboardList, CalendarDays, Users, Bell, LogOut } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
+import { useCommunitiesStore } from '../../store/useCommunitiesStore';
 import { SHELL_WIDTH_CLASS, type ShellWidth } from './shellWidth';
 
 const NAV_ITEMS = [
-  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',     accent: '#22c55e' },
-  { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Datos',      accent: '#58a6ff' },
-  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',    accent: '#a371f7' },
-  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario', accent: '#f0883e' },
+  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e' },
+  { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Datos',       accent: '#58a6ff' },
+  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7' },
+  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
+  { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },
 ] as const;
 
 interface NavbarProps {
@@ -21,6 +23,7 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const noLeidas = useCommunitiesStore((s) => s.notificaciones.filter((n) => !n.leida).length);
 
   const handleLogout = async () => {
     await logout();
@@ -88,6 +91,22 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
             aria-label="Rutinas"
           >
             <ClipboardList size={16} />
+          </Link>
+          <Link
+            to={ROUTES.notifications}
+            className="fp-btn fp-btn-ghost relative"
+            style={{ padding: '6px 8px', borderRadius: 9 }}
+            aria-label={noLeidas > 0 ? `Notificaciones (${noLeidas} sin leer)` : 'Notificaciones'}
+          >
+            <Bell size={16} />
+            {noLeidas > 0 ? (
+              <span
+                className="absolute top-1 right-1 flex items-center justify-center rounded-full text-[9px] font-bold"
+                style={{ width: 14, height: 14, background: 'var(--accent-pink)', color: '#fff' }}
+              >
+                {noLeidas > 9 ? '9+' : noLeidas}
+              </span>
+            ) : null}
           </Link>
           <ThemeToggle />
           <button
