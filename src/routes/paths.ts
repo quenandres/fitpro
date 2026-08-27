@@ -10,6 +10,7 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   register: '/register',
+  calendar: '/calendario',
   player: '/player',
   anatomy: '/anatomytracker',
   workout: (id: string | number) => `/workout/${id}`,

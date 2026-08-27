@@ -466,6 +466,7 @@ Resumen:
 | 2026-07-10 | Admin y Biblioteca unificados: `AppShell` compartido, builder 2 pasos (editar + revisión/heatmap), `/admin/rutina` → redirect al builder; edit con `?id=` | Una sola app; mismo flujo crear/editar desde Admin o Biblioteca |
 | 2026-07-10 | Backend `fitpro_api` (FastAPI) + DeepSeek en `POST /api/ai/routine`; key solo servidor (`DEEPSEEK_API_KEY`); frontend en `/library/ia` sin cambios de UI | Completar flujo chat IA → rutina → ExerciseDB → guardar |
 | 2026-08-24 | **D8 resuelto:** Tailwind 4 como sistema responsive; tokens de `index.css` expuestos vía `@theme`; layout mobile-first con `AppShell` progresivo (`narrow`/`default`/`wide`); bottom nav móvil + nav desktop en `Navbar`; componente `Sheet` unificado para overlays | Eliminar deuda de estilos (inline + `tailwind.config.js` muerto); UX móvil/tablet/escritorio coherente |
+| 2026-08-27 | Pantalla `/calendario` con `@daypicker/react` v10: citas locales (`Cita` + `useCitasStore` sin persist) y overlay de días de entreno por weekday desde semana 1 del plan; acceso en navbar y dashboard | Complementar Planes (días Lun–Dom sin fecha real) con calendario de fechas; tipo `Cita` alineado a futura tabla Supabase `appointments` |
 
 ---
 

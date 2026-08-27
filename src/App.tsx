@@ -20,6 +20,7 @@ import { RoutinePresetGalleryPage } from './pages/library/RoutinePresetGalleryPa
 import { WorkoutPlayer } from './pages/WorkoutPlayer';
 import { RoutinePageRedirect } from './pages/RoutinePage';
 import { UserPlansPage } from './pages/UserPlansPage';
+import { CalendarPage } from './pages/CalendarPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
@@ -66,6 +67,7 @@ function AppRoutes() {
 
       {/* App principal */}
       <Route path={ROUTES.home} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
       <Route path={ROUTES.anatomy} element={<ProtectedRoute><AnatomyRecoveryTracker /></ProtectedRoute>} />

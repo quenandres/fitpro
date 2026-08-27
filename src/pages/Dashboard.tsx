@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Shield, Target, Flame, Clock, ChevronRight, Users, Ruler, Dumbbell } from 'lucide-react';
+import { Search, Shield, Target, Flame, Clock, ChevronRight, Users, Ruler, Dumbbell, CalendarDays } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { WorkoutCard } from '../components/dashboard/WorkoutCard';
 import { AppShell } from '../components/layout/AppShell';
@@ -10,6 +10,14 @@ import { ROUTES } from '../routes/paths';
 const { library: lib } = ROUTES;
 
 const MODULE_SHORTCUTS = [
+  {
+    to: ROUTES.calendar,
+    Icon: CalendarDays,
+    title: 'Calendario',
+    desc: 'Citas con clientes y días de rutina',
+    accent: '#f0883e',
+    bg: 'rgba(240,136,62,.12)',
+  },
   {
     to: lib.planes,
     Icon: Users,

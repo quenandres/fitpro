@@ -11,6 +11,7 @@ import {
   LayoutTemplate,
   Ruler,
   Sparkles,
+  CalendarDays,
   Users,
 } from 'lucide-react';
 import { ROUTES } from '../../routes/paths';
@@ -89,6 +90,14 @@ const CATALOGO_SECTIONS = [
 ] as const;
 
 const GESTION_SECTIONS = [  
+  {
+    to: ROUTES.calendar,
+    Icon: CalendarDays,
+    title: 'Calendario',
+    desc: 'Citas con clientes y días de entreno',
+    accent: '#f0883e',
+    bg: 'rgba(240,136,62,.12)',
+  },
   {
     to: lib.planes,
     Icon: Users,

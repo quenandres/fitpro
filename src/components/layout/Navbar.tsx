@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Dumbbell, Home, BookOpen, ClipboardList, LogOut } from 'lucide-react';
+import { Dumbbell, Home, BookOpen, ClipboardList, CalendarDays, LogOut } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { path: ROUTES.home,               Icon: Home,          label: 'Inicio',     accent: '#22c55e' },
   { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Datos',      accent: '#58a6ff' },
   { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',    accent: '#a371f7' },
+  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario', accent: '#f0883e' },
 ] as const;
 
 interface NavbarProps {

@@ -122,6 +122,19 @@ export interface Usuario {
   plan: PlanUsuario;
 }
 
+/** Cita entrenador–cliente; shape preparado para tabla Supabase `appointments`. */
+export interface Cita {
+  id: number;
+  cliente_id: number;
+  /** YYYY-MM-DD en zona local */
+  fecha: string;
+  /** HH:mm */
+  hora_inicio: string;
+  duracion_min: number;
+  rutina_id: number | null;
+  notas?: string;
+}
+
 export interface WorkoutState {
   rutinaActual: Rutina | null;
   ejercicioActualIndex: number;

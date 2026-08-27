@@ -23,6 +23,7 @@ export function resolveShellWidth(pathname: string): ShellWidth {
   const { library: lib } = ROUTES;
 
   if (pathname.startsWith(lib.planes)) return 'wide';
+  if (pathname.startsWith(ROUTES.calendar)) return 'wide';
   if (pathname.includes('/rutinas/nueva') || pathname.endsWith('/ia')) return 'narrow';
 
   return 'default';
