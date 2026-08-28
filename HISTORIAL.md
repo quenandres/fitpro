@@ -88,3 +88,107 @@ incrementa el costo de la migración pendiente.
 Fase 2.5 — rediseñar `Rutina → Bloque[] → BloqueItem[] → SerieDef[]`. Antes
 de eso, revisar y confirmar/corregir el hallazgo #1 (routing), porque si es
 un bug real, bloquea el uso de casi toda la app para un usuario autenticado.
+
+---
+
+## 2026-08-27 — Mapeo #2
+
+Auditoría exhaustiva (3 subagentes en paralelo: auth/gateway, rutas/modelo de
+datos, tooling/dependencias) tras implementar el módulo Comunidades. Commit
+HEAD: `a300e00` (2026-08-27, rama `dev-supabase`). Confirma que **el hallazgo
+#1 del Mapeo #1 (routing roto) ya no existe** — fue corregido en algún punto
+entre el 18 y el 24 de agosto.
+
+### 1. Cambios de fondo desde el Mapeo #1
+
+| Área | Mapeo #1 (2026-08-18) | Mapeo #2 (2026-08-27) |
+|---|---|---|
+| Routing | 🔴 Todo envuelto en `PublicRoute`, posible bug crítico | ✅ `ProtectedRoute`/`PublicRoute` correctos |
+| Auth | Mock (`localStorage.setItem('fitpro-auth','true')`) | ✅ Real: `AuthContext` → `gym-gateway` (FastAPI) → Supabase Auth (JWT ES256+JWKS), sesión con refresh automático |
+| RBAC | No encontrado en código | Real **server-side** en `gym-gateway` (`require_role`/`require_admin` contra `users.profiles`); **no conectado al frontend** |
+| Rutas `/admin/*` | Existían (Admin CRUD) | Eliminadas (commits `298ff26`, `604cd38`); solo redirects legacy a `/library/*` |
+| `RoutinePage.tsx` | Wizard monolítico de 683 líneas, con bug de pérdida de datos | Reducido a 23 líneas (solo `RoutinePageRedirect`); bug corregido, guardado real en `useRoutineForm.ts` |
+| Módulo Comunidades | No existía | Implementado completo (22 pantallas, ~20 modales), 100% mock |
+| Supabase | Comentado en frontend, sin uso real en ningún lado | Comentado en frontend (a propósito) pero **real en `gym-gateway`** |
+
+### 2. Backend nuevo no documentado hasta ahora: `gym-gateway`
+
+Repo hermano (`/home/quenandres/Projects/personal/lodem/gymapp/gym-gateway`),
+FastAPI + `supabase-py`, actúa como proxy/gateway entre el frontend y
+Supabase:
+- `app/routes/auth.py` — signup/login/refresh/logout/user, reenvía a
+  Supabase Auth (`/auth/v1/...`).
+- `app/routes/proxy.py` — proxy genérico a PostgREST.
+- `app/core/auth.py` — valida JWT ES256 contra JWKS real de Supabase.
+- `app/core/deps.py` — `require_role`/`require_admin`/`require_admin_or_trainer`,
+  RBAC real consultando `users.profiles`.
+- Rate limiting (`slowapi`) y logging de acceso.
+- **Sin tests.** Migraciones SQL (`sql/001_...`, `sql/002_...`) documentadas
+  en su README pero el directorio `sql/` no existe en el checkout — no
+  versionadas, no verificables desde el código.
+- Posible bug detectado (no confirmado con test): `app/routes/auth.py`, el
+  endpoint de `logout` parece usar el user id (`sub`) como si fuera el access
+  token al llamar a Supabase — revisar si es intencional.
+
+### 3. Estado de dependencias y build
+
+`npm ls @tanstack/react-query @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities @daypicker/react`
+→ las 5 vacías. `npm run build` (`tsc -b && vite build`) **falla hoy** por
+`TS2307: Cannot find module` en esas 5 dependencias, todas declaradas en
+`package.json` pero ausentes de `node_modules` — parece un `npm install`
+pendiente en este entorno, no un problema del código (que está bien
+tipado/estructurado alrededor de ellas). Además: Node local v18.19.1 vs
+`Dockerfile` con `node:20-alpine` vs requisito de Vite 8 (≥20.19/22.12) —
+desalineación a resolver antes de diagnosticar fallos de `vite`/`tsc` como
+bugs de código.
+
+Zod (`^3.24.2`) sí está instalado y en uso real (`lib/gateway/schemas`,
+`lib/exercisedb/schemas`). Cero tests (sin Vitest, sin `*.test.ts`), cero
+Sentry/PostHog — sin cambios respecto al Mapeo #1.
+
+### 4. Hallazgos nuevos menores
+
+1. **Ruta huérfana:** `ROUTES.library.unidades` definida en `paths.ts` y
+   referenciada por redirects legacy, pero sin `<Route>` registrada en
+   `App.tsx` — navegar ahí cae al catch-all (`*` → `/`).
+2. **Páginas huérfanas:** `LibraryDatosPage.tsx` y
+   `LibraryMisEjerciciosPage.tsx` no están enrutadas ni importadas desde
+   ningún otro archivo.
+3. **`useCitasStore` vs `useDataStore` inconsistentes:** el primero (citas
+   del calendario) no persiste y no tiene `updateCita`; el segundo sí
+   persiste con `zustand/persist`. La UI de `CalendarPage.tsx` (304 líneas)
+   es mucho más rica que el store que la respalda.
+4. **`UserPlansPage.tsx`** creció a 508 líneas (vistas día/semana/mes/total +
+   drag&drop con `@dnd-kit`) pero sigue en `useState(usuariosData)` sin
+   persistir — la brecha UI-vs-dato más grande del repo, sin cambios de
+   fondo respecto al Mapeo #1.
+5. **Código muerto ya limpiado** (no repetir en próximas auditorías):
+   `RoutineWizard.tsx`, `WizardProgress.tsx`, `UnitManager.tsx`,
+   `components/admin/` completo. `components/common/` ya no está vacía (10
+   primitivas reales en uso). Sigue pendiente: `create-admin.js`,
+   `components/player/` y `components/workout/` (vacías).
+
+### 5. Módulo Comunidades (nuevo, 2026-08-27)
+
+Implementado completo como UI pura: tipos en `src/types/community.ts`,
+fixtures en `src/data/communities/*.json`, store `useCommunitiesStore`
+(sin `persist`), ~15 páginas bajo `src/pages/communities/`, componentes bajo
+`src/components/communities/`. Rutas registradas en `App.tsx` bajo
+`/communities/*`. Sistema de roles (`useCommunityPermissions`) mock,
+desacoplado a propósito del RBAC real de `gym-gateway`. No conectado a
+Supabase, sin persistencia, sin fecha de conexión a backend definida. No
+está dentro de las 7 fases del roadmap numerado — tratarlo como módulo
+paralelo/prototipo hasta que se decida priorizarlo.
+
+### 6. Conclusión / siguiente paso
+
+El diagnóstico de fondo no cambia: **Fase 2.5 (rediseño del modelo de
+Rutina) sigue siendo el bloqueante crítico**, sin iniciar. Lo que sí cambió
+es que dos de los tres pilares de infraestructura pendientes en el Mapeo #1
+avanzaron de forma real: auth (antes 0%, mock) y RBAC (antes inexistente)
+ahora existen y funcionan, vía un backend (`gym-gateway`) no anticipado en
+el plan original de "Supabase directo desde el frontend". El tercer pilar
+(persistencia de sesiones de entrenamiento, Fase 4) sigue en ~10%, sin
+cambios. Antes de seguir construyendo sobre Biblioteca o Comunidades, correr
+`npm install` para desbloquear el build, y decidir si el módulo Comunidades
+entra al roadmap numerado o se mantiene como prototipo aparte.
