@@ -7,6 +7,14 @@
 
 export type RolDashboard = 'superadmin' | 'entrenador' | 'lider_comunidad';
 
+export const ROLES_DASHBOARD: readonly RolDashboard[] = ['superadmin', 'entrenador', 'lider_comunidad'];
+
+export const ROLE_LABEL: Record<RolDashboard, string> = {
+  superadmin: 'Superadmin',
+  entrenador: 'Entrenador',
+  lider_comunidad: 'Líder de comunidad',
+};
+
 /** AuthUser.role es un string libre sin enum en el frontend hoy; si no coincide
  * con ninguno de los 3 valores esperados (incluido `undefined`, caso normal
  * mientras el backend no los envíe), se usa 'entrenador' como fallback. */

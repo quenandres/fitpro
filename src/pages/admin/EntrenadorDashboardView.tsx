@@ -7,6 +7,7 @@ import { KpiCard } from '../../components/admin/dashboard/KpiCard';
 import { ChartCard } from '../../components/admin/dashboard/ChartCard';
 import { SectionHeader } from '../../components/admin/dashboard/SectionHeader';
 import { AttentionList } from '../../components/admin/dashboard/AttentionList';
+import { AttentionSection } from '../../components/admin/dashboard/AttentionSection';
 import { LineTrendChart } from '../../components/admin/dashboard/LineTrendChart';
 import { MultiSeriesLineChart } from '../../components/admin/dashboard/MultiSeriesLineChart';
 import { CategoryBarChart } from '../../components/admin/dashboard/CategoryBarChart';
@@ -35,6 +36,11 @@ export const EntrenadorDashboardView = () => (
         />
       ))}
     </div>
+
+    <AttentionSection icon={Bell} title="Alertas">
+      <AttentionList title="Usuarios en riesgo" items={metrics.usuariosEnRiesgo} />
+      <AttentionList title="Notificaciones" items={metrics.notificaciones} />
+    </AttentionSection>
 
     <SectionHeader icon={Dumbbell} title="Entrenamiento" accent={azul} />
     <div className="flex flex-col gap-3 min-w-0">
@@ -83,12 +89,6 @@ export const EntrenadorDashboardView = () => (
       <ChartCard title="Participación" subtitle="% de asistencia por tipo">
         <CategoryBarChart data={metrics.participacion} color={naranja} valueSuffix="%" />
       </ChartCard>
-    </div>
-
-    <SectionHeader icon={Bell} title="Atención" accent="#dc2626" />
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
-      <AttentionList title="Usuarios en riesgo" items={metrics.usuariosEnRiesgo} />
-      <AttentionList title="Notificaciones" items={metrics.notificaciones} />
     </div>
   </>
 );

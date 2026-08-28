@@ -20,7 +20,7 @@ export const AppShell = ({
   hideBottomNav = false,
 }: Props) => (
   <div className="min-h-dvh bg-app">
-    <Navbar width={width} />
+    <Navbar />
     {!hideBottomNav && <BottomNav />}
 
     <main

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import type {
+  CategoriaComunidad,
   Comentario,
   Comunidad,
   Discusion,
@@ -14,6 +15,7 @@ import type {
   RespuestaDiscusion,
   RolComunidad,
   TipoReaccion,
+  VisibilidadComunidad,
 } from '../types/community';
 import communitiesData from '../data/communities/communities.json';
 import membersData from '../data/communities/members.json';
@@ -29,6 +31,35 @@ export const CURRENT_MEMBER_ID = 'mem-ana';
 
 const uid = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 
+function slugifyNombre(nombre: string): string {
+  return nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function uniqueCommunityId(nombre: string, existingIds: Set<string>): string {
+  let base = `com-${slugifyNombre(nombre)}`;
+  if (!base || base === 'com-') base = `com-${uid('x').slice(4)}`;
+  let id = base;
+  let n = 2;
+  while (existingIds.has(id)) {
+    id = `${base}-${n}`;
+    n += 1;
+  }
+  return id;
+}
+
+export interface CreateCommunityInput {
+  nombre: string;
+  descripcion: string;
+  categoria: CategoriaComunidad;
+  visibilidad: VisibilidadComunidad;
+  reglas?: string[];
+}
+
 interface CommunitiesStore {
   comunidades: Comunidad[];
   miembros: MiembroComunidad[];
@@ -40,6 +71,7 @@ interface CommunitiesStore {
   reportes: Reporte[];
 
   // Comunidad
+  createCommunity: (input: CreateCommunityInput) => string;
   joinCommunity: (comunidadId: string) => void;
   leaveCommunity: (comunidadId: string) => void;
 
@@ -88,6 +120,57 @@ export const useCommunitiesStore = create<CommunitiesStore>((set, get) => ({
   invitaciones: invitationsData as Invitacion[],
   notificaciones: notificationsData as NotificacionComunidad[],
   reportes: reportsData as Reporte[],
+
+  createCommunity: (input) => {
+    const state = get();
+    const existingIds = new Set(state.comunidades.map((c) => c.id));
+    const id = uniqueCommunityId(input.nombre, existingIds);
+    const now = new Date().toISOString();
+    const reglas = (input.reglas ?? []).map((r) => r.trim()).filter(Boolean);
+
+    const comunidad: Comunidad = {
+      id,
+      nombre: input.nombre.trim(),
+      descripcion: input.descripcion.trim(),
+      categoria: input.categoria,
+      visibilidad: input.visibilidad,
+      portadaUrl: `https://picsum.photos/seed/${id}/1200/400`,
+      avatarUrl: `https://picsum.photos/seed/${id}-avatar/200/200`,
+      miembrosCount: 1,
+      postsCount: 0,
+      eventosCount: 0,
+      reglas,
+      liderIds: [CURRENT_MEMBER_ID],
+      creadaEn: now,
+    };
+
+    const yaMiembro = state.miembros.some(
+      (m) => m.comunidadId === id && m.id === CURRENT_MEMBER_ID,
+    );
+
+    set({
+      comunidades: [comunidad, ...state.comunidades],
+      miembros: yaMiembro
+        ? state.miembros.map((m) =>
+            m.comunidadId === id && m.id === CURRENT_MEMBER_ID
+              ? { ...m, rol: 'leader' as RolComunidad }
+              : m,
+          )
+        : [
+            {
+              id: CURRENT_MEMBER_ID,
+              comunidadId: id,
+              nombre: 'Tú',
+              avatarUrl: 'https://picsum.photos/seed/current-user/160/160',
+              rol: 'leader',
+              unidoEn: now,
+            },
+            ...state.miembros,
+          ],
+    });
+
+    return id;
+  },
 
   joinCommunity: (comunidadId) => {
     const yaMiembro = get().miembros.some(

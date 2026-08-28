@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Filter, Search, Users } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Filter, Plus, Search, Users } from 'lucide-react';
 import { CommunityCard } from '../../components/communities/cards/CommunityCard';
 import { ExploreFiltersSheet } from '../../components/communities/modals/ExploreFiltersSheet';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -12,6 +12,8 @@ import {
   useCommunitiesStore,
 } from '../../store/useCommunitiesStore';
 import type { CategoriaComunidad } from '../../types/community';
+import { usePlatformRole } from '../../hooks/usePlatformRole';
+import { ROUTES } from '../../routes/paths';
 
 type ExploreTab = 'para-ti' | 'mis-comunidades' | 'descubrir';
 
@@ -29,6 +31,7 @@ export function CommunitiesExplorePage() {
   const [categorias, setCategorias] = useState<CategoriaComunidad[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const { toast, showToast } = useToast();
+  const { isSuperadmin } = usePlatformRole();
 
   const comunidades = useCommunitiesStore((s) => s.comunidades);
   const miembros = useCommunitiesStore((s) => s.miembros);
@@ -67,9 +70,20 @@ export function CommunitiesExplorePage() {
 
   return (
     <div className="animate-slide-up">
-      <h1 className="font-sora text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-        Comunidades
-      </h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h1 className="font-sora text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          Comunidades
+        </h1>
+        {isSuperadmin ? (
+          <Link
+            to={ROUTES.communities.create}
+            className="fp-btn fp-btn-primary inline-flex items-center gap-1.5 shrink-0"
+          >
+            <Plus size={16} />
+            Crear comunidad
+          </Link>
+        ) : null}
+      </div>
 
       <div className="flex items-center gap-2 mt-4">
         <div className="fp-input-group flex-1">

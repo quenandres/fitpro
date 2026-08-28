@@ -12,6 +12,7 @@ import {
   Menu,
   Moon,
   Sun,
+  User,
   Users,
   X,
   type LucideProps,
@@ -22,7 +23,7 @@ import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useCommunitiesStore } from '../../store/useCommunitiesStore';
-import { SHELL_WIDTH_CLASS, type ShellWidth } from './shellWidth';
+import { SHELL_WIDTH_CLASS } from './shellWidth';
 
 const NAV_ITEMS = [
   { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e' },
@@ -30,11 +31,8 @@ const NAV_ITEMS = [
   { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7' },
   { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
   { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },
+  { path: ROUTES.perfil,             Icon: User,          label: 'Perfil',      accent: '#2dd4bf' },
 ] as const;
-
-interface NavbarProps {
-  width?: ShellWidth;
-}
 
 const isNavActive = (pathname: string, path: string) =>
   path === '/'
@@ -42,7 +40,7 @@ const isNavActive = (pathname: string, path: string) =>
     : pathname === path || pathname.startsWith(`${path}/`);
 
 /* ── Top Navbar ─────────────────────────────────────────── */
-export const Navbar = ({ width = 'default' }: NavbarProps) => {
+export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
@@ -71,7 +69,7 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
   return (
     <header className="fp-glass fixed top-0 left-0 right-0 z-50 h-[58px]">
       <div
-        className={`${SHELL_WIDTH_CLASS[width]} mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between gap-2`}
+        className={`${SHELL_WIDTH_CLASS.wide} mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between gap-2`}
       >
         <div className="flex items-center gap-1 min-w-0">
           <button
@@ -109,7 +107,8 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
 
         {/* Desktop nav — replaces bottom nav at md+ */}
         <nav
-          className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0"
+          className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0 overflow-x-auto"
+          style={{ scrollbarWidth: 'none' }}
           aria-label="Navegación principal"
         >
           {NAV_ITEMS.map(({ path, Icon, label, accent }) => {
@@ -120,7 +119,7 @@ export const Navbar = ({ width = 'default' }: NavbarProps) => {
                 to={path}
                 aria-label={label}
                 title={label}
-                className="fp-btn fp-btn-ghost flex items-center gap-2 rounded-[10px] px-2.5 py-2 lg:px-3 text-sm font-semibold transition-colors"
+                className="fp-btn fp-btn-ghost flex items-center gap-2 rounded-[10px] px-2.5 py-2 lg:px-3 text-sm font-semibold transition-colors shrink-0"
                 style={{
                   color: active ? accent : 'var(--text-secondary)',
                   background: active ? `${accent}1a` : 'transparent',

@@ -664,6 +664,35 @@ textarea.fp-input {
   }
 }
 
+/* Dashboard admin — bloque de alertas (segundo en la página) */
+.fp-admin-attention {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  padding: 14px 14px 16px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent-red) 38%, transparent);
+  background: color-mix(in srgb, var(--accent-red) 14%, var(--bg-card));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent-red) 12%, transparent);
+}
+:root.light .fp-admin-attention {
+  background: color-mix(in srgb, var(--accent-red) 9%, #fff);
+  border-color: color-mix(in srgb, var(--accent-red) 32%, transparent);
+}
+.fp-admin-attention-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .fp-admin-attention-grid { grid-template-columns: repeat(2, 1fr); }
+  .fp-admin-attention-grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+.fp-admin-attention .fp-card {
+  background: var(--bg-elevated);
+  border-color: color-mix(in srgb, var(--accent-red) 24%, var(--border));
+}
+
 /* ─── DayPicker (FitPro) ─────────────────────────────────── */
 .fp-cal-label {
   display: block;

@@ -13,6 +13,7 @@ export const ROUTES = {
   calendar: '/calendario',
   tracking: '/tracking',
   trackingUsuario: (id: string | number) => `/tracking?usuario=${id}`,
+  perfil: '/perfil',
   player: '/player',
   anatomy: '/anatomytracker',
   workout: (id: string | number) => `/workout/${id}`,
@@ -49,6 +50,7 @@ export const ROUTES = {
    */
   communities: {
     root: '/communities',
+    create: '/communities/create',
     invitations: '/communities/invitations',
     detail: (id: string) => `/communities/${id}`,
     home: (id: string) => `/communities/${id}/home`,

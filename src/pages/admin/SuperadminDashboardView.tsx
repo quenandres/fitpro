@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Users,
   UserCheck,
@@ -8,13 +9,16 @@ import {
   UserCog,
   AlertTriangle,
   MessagesSquare,
+  Plus,
 } from 'lucide-react';
 import data from '../../data/adminDashboard/superadmin.json';
 import type { SuperadminMetrics } from '../../types/adminDashboard';
+import { ROUTES } from '../../routes/paths';
 import { KpiCard } from '../../components/admin/dashboard/KpiCard';
 import { ChartCard } from '../../components/admin/dashboard/ChartCard';
 import { SectionHeader } from '../../components/admin/dashboard/SectionHeader';
 import { AttentionList } from '../../components/admin/dashboard/AttentionList';
+import { AttentionSection } from '../../components/admin/dashboard/AttentionSection';
 import { LineTrendChart } from '../../components/admin/dashboard/LineTrendChart';
 import { MultiSeriesLineChart } from '../../components/admin/dashboard/MultiSeriesLineChart';
 import { CategoryBarChart } from '../../components/admin/dashboard/CategoryBarChart';
@@ -49,6 +53,12 @@ export const SuperadminDashboardView = () => (
       ))}
     </div>
 
+    <AttentionSection columns={3}>
+      <AttentionList title="Usuarios en riesgo" items={metrics.usuariosEnRiesgo} />
+      <AttentionList title="Comunidades inactivas" items={metrics.comunidadesInactivas} />
+      <AttentionList title="Eventos con baja asistencia" items={metrics.eventosBajaAsistencia} />
+    </AttentionSection>
+
     <SectionHeader icon={Users} title="Usuarios" accent={verde} />
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
       <ChartCard title="Usuarios activos" subtitle="Últimos 7 meses">
@@ -76,6 +86,14 @@ export const SuperadminDashboardView = () => (
     </div>
 
     <SectionHeader icon={UsersRound} title="Comunidades" accent={morado} />
+    <Link
+      to={ROUTES.communities.create}
+      className="fp-btn fp-btn-secondary w-fit mb-3 inline-flex items-center gap-1.5"
+      style={{ fontSize: 13, padding: '8px 14px', textDecoration: 'none' }}
+    >
+      <Plus size={16} />
+      Crear comunidad
+    </Link>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
       <ChartCard title="Comunidades activas" subtitle="Por categoría">
         <CategoryBarChart data={metrics.comunidadesActivas} color={morado} />
@@ -105,13 +123,6 @@ export const SuperadminDashboardView = () => (
       <ChartCard title="Asistencia" subtitle="% del aforo, por tipo de evento">
         <CategoryBarChart data={metrics.asistencia} color={naranja} valueSuffix="%" />
       </ChartCard>
-    </div>
-
-    <SectionHeader icon={AlertTriangle} title="Atención" accent="#dc2626" />
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-0">
-      <AttentionList title="Usuarios en riesgo" items={metrics.usuariosEnRiesgo} />
-      <AttentionList title="Comunidades inactivas" items={metrics.comunidadesInactivas} />
-      <AttentionList title="Eventos con baja asistencia" items={metrics.eventosBajaAsistencia} />
     </div>
   </>
 );

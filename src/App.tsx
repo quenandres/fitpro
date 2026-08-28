@@ -29,6 +29,7 @@ import { CommunitiesLayout } from './components/communities/layout/CommunitiesLa
 import { CommunityLayout, CommunityDetailRedirect } from './components/communities/layout/CommunityLayout';
 import { CommunitiesExplorePage } from './pages/communities/CommunitiesExplorePage';
 import { CommunityInvitationsPage } from './pages/communities/CommunityInvitationsPage';
+import { CommunityCreatePage } from './pages/communities/CommunityCreatePage';
 import { CommunityHomePage } from './pages/communities/CommunityHomePage';
 import { CommunityPostsPage } from './pages/communities/CommunityPostsPage';
 import { CommunityPostCreatePage } from './pages/communities/CommunityPostCreatePage';
@@ -45,6 +46,7 @@ import { CommunityAdminPage } from './pages/communities/CommunityAdminPage';
 import { CommunityAdminMembersPage } from './pages/communities/CommunityAdminMembersPage';
 import { CommunityAdminModerationPage } from './pages/communities/CommunityAdminModerationPage';
 import { NotificationsPage } from './pages/communities/NotificationsPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { LEGACY_LIBRARY_REDIRECTS, LEGACY_ROUTINE_FORM_LEVELS, ROUTES } from './routes/paths';
 import { LegacyRoutineFormRedirect } from './routes/LegacyRoutineFormRedirect';
 import type { ReactNode } from 'react';
@@ -131,6 +133,7 @@ function AppRoutes() {
       */}
       <Route path={ROUTES.communities.root} element={<ProtectedRoute><CommunitiesLayout /></ProtectedRoute>}>
         <Route index element={<CommunitiesExplorePage />} />
+        <Route path="create" element={<CommunityCreatePage />} />
         <Route path="invitations" element={<CommunityInvitationsPage />} />
       </Route>
 
@@ -154,6 +157,7 @@ function AppRoutes() {
       </Route>
 
       <Route path={ROUTES.notifications} element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path={ROUTES.perfil} element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
       {/* Redirects legacy */}
       {LEGACY_LIBRARY_REDIRECTS.map(({ from, to }) => (

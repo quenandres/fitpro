@@ -1,34 +1,19 @@
 import { Shield } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
-import { useAuth } from '../../context/AuthContext';
-import { resolveDashboardRole, type RolDashboard } from '../../types/adminDashboard';
+import { usePlatformRole } from '../../hooks/usePlatformRole';
+import { ROLE_LABEL } from '../../types/adminDashboard';
 import { SuperadminDashboardView } from './SuperadminDashboardView';
 import { EntrenadorDashboardView } from './EntrenadorDashboardView';
 import { LiderComunidadDashboardView } from './LiderComunidadDashboardView';
 
-const ROLE_LABEL = {
-  superadmin: 'Superadmin',
-  entrenador: 'Entrenador',
-  lider_comunidad: 'Líder de comunidad',
-} as const;
-
-const rolFromQuery = (raw: string | null): RolDashboard | null => {
-  if (raw === 'superadmin' || raw === 'entrenador' || raw === 'lider_comunidad') return raw;
-  return null;
-};
-
 /**
  * Pantalla de inicio (`/`): dashboard de métricas — 100% datos mock
  * (ver src/data/adminDashboard/*.json). Resuelve la vista según el rol
- * (`resolveDashboardRole`) y delega en una de las 3 vistas.
- * `?rol=superadmin|entrenador|lider_comunidad` fuerza la vista (útil mientras
- * el backend no envíe esos roles).
+ * efectivo (`usePlatformRole`) y delega en una de las 3 vistas. El rol se
+ * cambia desde `/perfil` mientras el backend no envíe estos valores.
  */
 export const AdminDashboardPage = () => {
-  const { user } = useAuth();
-  const [params] = useSearchParams();
-  const rol = rolFromQuery(params.get('rol')) ?? resolveDashboardRole(user?.role);
+  const { rol } = usePlatformRole();
 
   const View =
     rol === 'superadmin'

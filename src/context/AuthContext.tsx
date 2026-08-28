@@ -23,6 +23,7 @@ import {
   type StoredSession,
 } from '../lib/gateway';
 import { GatewayError } from '../lib/gateway/errors';
+import { clearRoleOverride } from '../store/useRoleOverrideStore';
 
 export interface AuthUser {
   id: string;
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetAuth = useCallback(() => {
     clearSession();
+    clearRoleOverride();
     setUser(null);
   }, []);
 

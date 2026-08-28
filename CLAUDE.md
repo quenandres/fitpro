@@ -302,11 +302,13 @@ Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/p
   `/library/catalogo/{ejercicios,partes,equipo,tipos,musculos}`, `/library/ia`,
   `/library/planes`.
 - **Comunidades** (mock, UI pura): `/communities` (Explorar),
+  `/communities/create` (solo `superadmin`; mock `createCommunity`),
   `/communities/invitations`, `/communities/:id` (redirect → home) y todo el
   árbol `/communities/:id/{home,posts,posts/create,posts/:postId,events,
   events/create,events/:eventId,events/:eventId/participants,discussions,
   discussions/:discussionId,members,about,admin,admin/members,admin/moderation}`.
-- **Otras:** `/notifications`.
+- **Otras:** `/notifications`, `/perfil` (datos de cuenta + selector de rol de
+  plataforma para pruebas — ver `usePlatformRole` / `useRoleOverrideStore`).
 - **Redirects legacy:** rutas viejas `/admin/*`, `/library/ejercicios`,
   `/library/rutina/*` → equivalentes canónicos actuales (ver
   `LEGACY_LIBRARY_REDIRECTS` / `LEGACY_ROUTINE_FORM_LEVELS` en `paths.ts`).
@@ -435,7 +437,12 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 - [src/store/useWorkoutStore.ts](./src/store/useWorkoutStore.ts) — runtime
   del player (sin persistencia).
 - [src/store/useCommunitiesStore.ts](./src/store/useCommunitiesStore.ts) —
-  módulo Comunidades (mock, sin persist).
+  módulo Comunidades (mock, sin persist; `createCommunity` solo superadmin).
+- [src/hooks/usePlatformRole.ts](./src/hooks/usePlatformRole.ts) — rol plataforma
+  efectivo (rol real del gateway + override local editable en `/perfil`).
+- [src/store/useRoleOverrideStore.ts](./src/store/useRoleOverrideStore.ts) —
+  override de rol para pruebas (persist, `fitpro-role-override`); se limpia al
+  cerrar sesión.
 - [src/hooks/useRoutineForm.ts](./src/hooks/useRoutineForm.ts) — lógica de
   guardado real de los formularios de rutina (ya no pierde `tipo`/`rest`/`notes`).
 - [src/utils/validators.ts](./src/utils/validators.ts) — validadores
