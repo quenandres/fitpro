@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Dumbbell, Plus, SlidersHorizontal } from 'lucide-react';
 import type { CalendarViewMode, MobileCalendarView } from './calendarUtils';
 import { formatMonthYear } from './calendarUtils';
 
@@ -10,6 +10,7 @@ interface CalendarHeaderProps {
   onNext: () => void;
   onToday: () => void;
   onCreateCita: () => void;
+  onAssignEntreno: () => void;
   isMobile?: boolean;
   mobileView?: MobileCalendarView;
   onMobileViewChange?: (view: MobileCalendarView) => void;
@@ -35,6 +36,7 @@ export function CalendarHeader({
   onNext,
   onToday,
   onCreateCita,
+  onAssignEntreno,
   isMobile = false,
   mobileView = 'day',
   onMobileViewChange,
@@ -110,9 +112,13 @@ export function CalendarHeader({
                   </button>
                 ))}
               </div>
+              <button type="button" className="fp-btn fp-btn-secondary fp-cal-header-cta" onClick={onAssignEntreno}>
+                <Dumbbell size={16} />
+                <span className="hidden sm:inline">Asignar entrenamiento</span>
+              </button>
               <button type="button" className="fp-cal-create-btn" onClick={onCreateCita}>
                 <Plus size={16} />
-                <span className="hidden sm:inline">Nueva cita</span>
+                <span className="hidden sm:inline">Agendar cita</span>
               </button>
             </>
           )}

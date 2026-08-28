@@ -48,8 +48,13 @@ export function CitaDetailSheet({ event, usuarios, rutinas, onClose }: CitaDetai
 
         <div className="fp-cal-detail-tags">
           <span className={`fp-cal-tag fp-cal-tag-${event.kind}`}>
-            {event.kind === 'cita' ? 'Cita' : 'Entreno'}
+            {event.kind === 'cita'
+              ? (event.citaTipo === 'medidas' ? 'Medidas' : 'Cita')
+              : 'Entreno'}
           </span>
+          {event.citaTipo === 'medidas' ? (
+            <span className="fp-cal-tag fp-cal-tag-medidas">Seguimiento</span>
+          ) : null}
           {rutina ? <span className="fp-cal-tag fp-cal-tag-rutina">{rutina}</span> : null}
         </div>
 

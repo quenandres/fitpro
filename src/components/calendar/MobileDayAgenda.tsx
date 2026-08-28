@@ -84,7 +84,7 @@ export function DayAgenda({
               </time>
 
               <div className="fp-cal-timeline-rail">
-                <EventKindIcon kind={event.kind} />
+                <EventKindIcon kind={event.kind} citaTipo={event.citaTipo} />
                 <span className="fp-cal-timeline-line" aria-hidden />
               </div>
 

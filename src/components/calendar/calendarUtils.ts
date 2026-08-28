@@ -1,5 +1,5 @@
 import { isDiaEntreno } from '../userPlans/diasSemana';
-import type { Cita, Rutina, Usuario } from '../../types';
+import type { Cita, CitaTipo, Rutina, Usuario } from '../../types';
 
 export type CalendarViewMode = 'week' | 'month' | 'day';
 
@@ -15,6 +15,7 @@ export interface CalendarEvent {
   durationMin: number;
   accent: string;
   citaId?: number;
+  citaTipo?: CitaTipo;
   clienteId: number;
   rutinaId?: number | null;
   notas?: string;
@@ -256,7 +257,10 @@ export function citasDelDia(citas: Cita[], fecha: string): Cita[] {
     .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
 }
 
-function citaAccent(clienteId: number): string {
+const MEDIDAS_ACCENT = '#38bdf8';
+
+function citaAccentFor(clienteId: number, tipo: CitaTipo): string {
+  if (tipo === 'medidas') return MEDIDAS_ACCENT;
   return CITA_ACCENTS[clienteId % CITA_ACCENTS.length];
 }
 
@@ -277,13 +281,16 @@ export function buildCalendarEvents(
     events.push({
       id: `cita-${cita.id}`,
       kind: 'cita',
-      title: rutina ?? cliente?.nombre ?? 'Cita',
+      title: cita.tipo === 'medidas'
+        ? `Medidas · ${cliente?.nombre ?? 'Cliente'}`
+        : (rutina ?? cliente?.nombre ?? 'Cita'),
       subtitle: cliente?.nombre ?? 'Cliente',
       fecha: cita.fecha,
       startMinutes: parseTimeToMinutes(cita.hora_inicio),
       durationMin: cita.duracion_min,
-      accent: citaAccent(cita.cliente_id),
+      accent: citaAccentFor(cita.cliente_id, cita.tipo),
       citaId: cita.id,
+      citaTipo: cita.tipo,
       clienteId: cita.cliente_id,
       rutinaId: cita.rutina_id,
       notas: cita.notas,
@@ -458,8 +465,15 @@ export interface EventKindMeta {
   label: string;
 }
 
-export function getEventKindMeta(kind: CalendarEventKind): EventKindMeta {
+export function getEventKindMeta(kind: CalendarEventKind, citaTipo?: CitaTipo): EventKindMeta {
   if (kind === 'cita') {
+    if (citaTipo === 'medidas') {
+      return {
+        accent: '#0ea5e9',
+        bg: 'rgba(14,165,233,.18)',
+        label: 'Medidas',
+      };
+    }
     return {
       accent: '#a371f7',
       bg: 'rgba(163,113,247,.18)',

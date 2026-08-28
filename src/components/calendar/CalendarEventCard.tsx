@@ -18,9 +18,21 @@ interface CalendarEventCardProps {
   showTimeRange?: boolean;
 }
 
-export function EventKindIcon({ kind, size = 16 }: { kind: CalendarEvent['kind']; size?: number }) {
-  const meta = getEventKindMeta(kind);
-  const Icon = kind === 'cita' ? CalendarClock : Dumbbell;
+export function EventKindIcon({
+  kind,
+  citaTipo,
+  size = 16,
+}: {
+  kind: CalendarEvent['kind'];
+  citaTipo?: CalendarEvent['citaTipo'];
+  size?: number;
+}) {
+  const meta = getEventKindMeta(kind, citaTipo);
+  const Icon = kind === 'cita' && citaTipo === 'medidas'
+    ? CalendarClock
+    : kind === 'cita'
+      ? CalendarClock
+      : Dumbbell;
 
   return (
     <span className="fp-cal-timeline-icon" style={{ background: meta.bg, color: meta.accent }}>

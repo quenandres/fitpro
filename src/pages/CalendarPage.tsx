@@ -11,8 +11,10 @@ import { CitaDetailSheet } from '../components/calendar/CitaDetailSheet';
 import { TimeRangeSelector } from '../components/calendar/TimeRangeSelector';
 import { MobileDateStrip } from '../components/calendar/MobileDateStrip';
 import { DayAgenda } from '../components/calendar/MobileDayAgenda';
-import { Sheet } from '../components/common/Sheet';
-import { CitaForm, minutesToTime } from '../components/calendar/CitaForm';
+import { CitaCreateSheet } from '../components/calendar/CitaCreateSheet';
+import { AsignarEntrenoSheet } from '../components/calendar/AsignarEntrenoSheet';
+import { CalendarActionSheet } from '../components/calendar/CalendarActionSheet';
+import { minutesToTime } from '../components/calendar/CitaForm';
 import {
   buildCalendarEvents,
   fechaLocalISO,
@@ -30,10 +32,11 @@ import {
   type SchedulerTimeRange,
 } from '../components/calendar/calendarUtils';
 import { useIsLargeScreen, useIsMobile } from '../hooks/useMediaQuery';
-import usuariosData from '../data/usuarios.json';
 import { useDataStore } from '../store/useDataStore';
 import { useCitasStore } from '../store/useCitasStore';
-import type { Usuario } from '../types';
+import { useUsuariosStore } from '../store/useUsuariosStore';
+
+type CalendarSheetMode = null | 'menu' | 'cita' | 'asignar';
 
 export function CalendarPage() {
   const isMobile = useIsMobile();
@@ -44,10 +47,10 @@ export function CalendarPage() {
   const [timeRange, setTimeRange] = useState<SchedulerTimeRange>(() => getDefaultTimeRange());
   const [visibleClientIds, setVisibleClientIds] = useState<number[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [sheetMode, setSheetMode] = useState<CalendarSheetMode>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [createSlot, setCreateSlot] = useState<{ date: Date; minutes: number } | null>(null);
-  const [usuarios] = useState<Usuario[]>(() => usuariosData as Usuario[]);
+  const usuarios = useUsuariosStore((s) => s.usuarios);
   const citas = useCitasStore((s) => s.citas);
   const rutinas = useDataStore((s) => s.rutinas);
 
@@ -110,7 +113,11 @@ export function CalendarPage() {
     setCreateSlot(
       date && minutes != null ? { date, minutes } : { date: selected, minutes: defaultMinutes },
     );
-    setShowCreate(true);
+    setSheetMode('cita');
+  };
+
+  const openAssign = () => {
+    setSheetMode('asignar');
   };
 
   const handleMobileViewChange = (view: MobileCalendarView) => {
@@ -152,7 +159,7 @@ export function CalendarPage() {
 
   const createDate = createSlot?.date ?? selected;
   const createHora = createSlot ? minutesToTime(createSlot.minutes) : '10:00';
-  const defaultClienteId = visibleClientIds.length === 1 ? visibleClientIds[0] : null;
+  const defaultClienteIds = visibleClientIds.length > 0 ? visibleClientIds : [];
 
   const showDesktopSidebar = isLargeScreen;
   const showFiltersSheet = !isLargeScreen;
@@ -173,6 +180,7 @@ export function CalendarPage() {
               onNext={() => handleNavigate(1)}
               onToday={() => setSelected(new Date())}
               onCreateCita={() => openCreate()}
+              onAssignEntreno={openAssign}
               isMobile={isMobile}
               mobileView={mobileView}
               onMobileViewChange={handleMobileViewChange}
@@ -270,12 +278,12 @@ export function CalendarPage() {
         </div>
       </div>
 
-      {isMobile && !showCreate ? (
+      {isMobile && sheetMode === null ? (
         <button
           type="button"
           className="fp-cal-fab"
-          onClick={() => openCreate()}
-          aria-label="Nueva cita"
+          onClick={() => setSheetMode('menu')}
+          aria-label="Nueva acción"
         >
           <Plus size={22} />
         </button>
@@ -296,38 +304,35 @@ export function CalendarPage() {
         onClose={() => setSelectedEvent(null)}
       />
 
-      <Sheet
-        open={showCreate}
-        onClose={() => setShowCreate(false)}
-        ariaLabel="Nueva cita"
-        flexColumn
-      >
-        <div className="fp-cal-create-sheet flex flex-col min-h-0 flex-1">
-          <div className="shrink-0">
-            <h2 className="font-sora text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-              Nueva cita
-            </h2>
-            <p className="mb-4 capitalize" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              {new Intl.DateTimeFormat('es-ES', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              }).format(createDate)}
-            </p>
-          </div>
-          <CitaForm
-            key={`${fechaLocalISO(createDate)}-${createHora}-${defaultClienteId ?? 'all'}`}
-            selectedDate={createDate}
-            usuarios={usuarios}
-            rutinas={rutinas}
-            defaultClienteId={defaultClienteId}
-            defaultHora={createHora}
-            timeRange={timeRange}
-            isMobile={isMobile}
-            onCreated={() => setShowCreate(false)}
-          />
-        </div>
-      </Sheet>
+      <CalendarActionSheet
+        open={sheetMode === 'menu'}
+        onClose={() => setSheetMode(null)}
+        onSelect={(action) => setSheetMode(action)}
+      />
+
+      <CitaCreateSheet
+        open={sheetMode === 'cita'}
+        onClose={() => {
+          setSheetMode(null);
+          setCreateSlot(null);
+        }}
+        selectedDate={createDate}
+        usuarios={usuarios}
+        rutinas={rutinas}
+        defaultHora={createHora}
+        defaultClienteIds={defaultClienteIds}
+        isMobile={isMobile}
+        timeRange={timeRange}
+      />
+
+      <AsignarEntrenoSheet
+        open={sheetMode === 'asignar'}
+        onClose={() => setSheetMode(null)}
+        selectedDate={selected}
+        usuarios={usuarios}
+        rutinas={rutinas}
+        defaultClienteIds={defaultClienteIds}
+      />
     </AppShell>
   );
 }

@@ -14,8 +14,8 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useDataStore } from '../store/useDataStore';
+import { useUsuariosStore } from '../store/useUsuariosStore';
 import type { Rutina, Usuario } from '../types';
-import usuariosData from '../data/usuarios.json';
 import { CreatePlanWizard } from '../components/userPlans/CreatePlanWizard';
 import { PlanViewSwitcher, type PlanView } from '../components/userPlans/PlanViewSwitcher';
 import { VistaSemana } from '../components/userPlans/VistaSemana';
@@ -32,7 +32,9 @@ const ACCENT = '#a371f7';
 const UserPlansPage = () => {
   const navigate = useNavigate();
   const { rutinas, ejercicios } = useDataStore();
-  const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosData as Usuario[]);
+  const usuarios = useUsuariosStore((s) => s.usuarios);
+  const updateUsuario = useUsuariosStore((s) => s.updateUsuario);
+  const addUsuario = useUsuariosStore((s) => s.addUsuario);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
   const [showWizard, setShowWizard] = useState(false);
@@ -68,13 +70,18 @@ const UserPlansPage = () => {
 
   const handleUpdateUser = useCallback(
     (updated: Usuario) => {
-      setUsuarios((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      updateUsuario(updated.id, () => updated);
       setSelectedUser(updated);
     },
-    []
+    [updateUsuario],
   );
 
-  const mutations = usePlanMutations(selectedUser, handleUpdateUser);
+  const selectedUserLive = useMemo(
+    () => (selectedUser ? usuarios.find((u) => u.id === selectedUser.id) ?? null : null),
+    [usuarios, selectedUser],
+  );
+
+  const mutations = usePlanMutations(selectedUserLive, handleUpdateUser);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -82,7 +89,7 @@ const UserPlansPage = () => {
   );
 
   const handleCreateUser = (newUser: Usuario) => {
-    setUsuarios((prev) => [...prev, newUser]);
+    addUsuario(newUser);
     setSelectedUser(newUser);
     setShowWizard(false);
     setView('semana');
@@ -111,7 +118,7 @@ const UserPlansPage = () => {
     const ejActive = parseEjId(activeId);
     const ejOver = parseEjId(overId);
     if (ejActive && ejOver && ejActive.semana === ejOver.semana && ejActive.diaIndex === ejOver.diaIndex) {
-      const semanaPlan = selectedUser?.plan.programacion_semanal.find((s) => s.semana === ejActive.semana);
+      const semanaPlan = selectedUserLive?.plan.programacion_semanal.find((s) => s.semana === ejActive.semana);
       const dia = semanaPlan?.dias[ejActive.diaIndex];
       if (!dia) return;
       const newOrder = arrayMove(
@@ -136,14 +143,14 @@ const UserPlansPage = () => {
   };
 
   const activeDragDia = useMemo(() => {
-    if (!activeDragId || !selectedUser) return null;
+    if (!activeDragId || !selectedUserLive) return null;
     const ref = parseDragId(activeDragId);
     if (!ref) return null;
-    const semana = selectedUser.plan.programacion_semanal.find((s) => s.semana === ref.semana);
+    const semana = selectedUserLive.plan.programacion_semanal.find((s) => s.semana === ref.semana);
     const dia = semana?.dias[ref.diaIndex];
     if (!dia) return null;
     return { dia, ...ref };
-  }, [activeDragId, selectedUser]);
+  }, [activeDragId, selectedUserLive]);
 
   const renderListaUsuarios = () => (
     <div>
@@ -316,7 +323,8 @@ const UserPlansPage = () => {
   );
 
   const renderCalendario = () => {
-    if (!selectedUser) return null;
+    if (!selectedUserLive) return null;
+    const user = selectedUserLive;
 
     return (
       <div>
@@ -331,15 +339,15 @@ const UserPlansPage = () => {
             </button>
             <div className="flex-1 min-w-0">
               <h2 className="font-sora text-base font-bold text-primary tracking-tight truncate">
-                {selectedUser.nombre}
+                {user.nombre}
               </h2>
-              <p className="text-xs truncate" style={{ color: ACCENT }}>{selectedUser.plan.nombre}</p>
+              <p className="text-xs truncate" style={{ color: ACCENT }}>{user.plan.nombre}</p>
             </div>
           </div>
           <PlanViewSwitcher
             view={view}
             onChange={handleChangeView}
-            totalSemanas={selectedUser.plan.semanas}
+            totalSemanas={user.plan.semanas}
           />
         </div>
 
@@ -355,20 +363,20 @@ const UserPlansPage = () => {
             <p style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, letterSpacing: '0.08em' }}>
               OBJETIVO
             </p>
-            <p style={{ fontSize: 11, fontWeight: 600 }}>{selectedUser.objetivo}</p>
+            <p style={{ fontSize: 11, fontWeight: 600 }}>{user.objetivo}</p>
           </div>
           <div style={{ padding: 10, borderRadius: 8, background: '#58a6ff15' }}>
             <p style={{ fontSize: 9, color: '#58a6ff', fontWeight: 700, letterSpacing: '0.08em' }}>
               NIVEL
             </p>
-            <p style={{ fontSize: 11, fontWeight: 600 }}>{selectedUser.nivel}</p>
+            <p style={{ fontSize: 11, fontWeight: 600 }}>{user.nivel}</p>
           </div>
           <div style={{ padding: 10, borderRadius: 8, background: '#f0883e15' }}>
             <p style={{ fontSize: 9, color: '#f0883e', fontWeight: 700, letterSpacing: '0.08em' }}>
               DÍAS/SEM
             </p>
             <p style={{ fontSize: 11, fontWeight: 600 }}>
-              {selectedUser.plan.dias_entrenar_semana}
+              {user.plan.dias_entrenar_semana}
             </p>
           </div>
           <div style={{ padding: 10, borderRadius: 8, background: `${ACCENT}15` }}>
@@ -376,9 +384,9 @@ const UserPlansPage = () => {
               DURACIÓN
             </p>
             <p style={{ fontSize: 11, fontWeight: 600 }}>
-              {selectedUser.plan.semanas} sem ·{' '}
-              {Math.ceil(selectedUser.plan.semanas / 4)}{' '}
-              {Math.ceil(selectedUser.plan.semanas / 4) === 1 ? 'mes' : 'meses'}
+              {user.plan.semanas} sem ·{' '}
+              {Math.ceil(user.plan.semanas / 4)}{' '}
+              {Math.ceil(user.plan.semanas / 4) === 1 ? 'mes' : 'meses'}
             </p>
           </div>
         </div>
@@ -391,7 +399,7 @@ const UserPlansPage = () => {
         >
           {view === 'semana' && (
             <VistaSemana
-              user={selectedUser}
+              user={user}
               selectedWeek={selectedWeek}
               onSelectWeek={setSelectedWeek}
               onOpenDia={handleOpenDia}
@@ -399,11 +407,11 @@ const UserPlansPage = () => {
             />
           )}
           {view === 'mes' && (
-            <VistaMes user={selectedUser} onOpenDia={handleOpenDia} rutinas={rutinas} />
+            <VistaMes user={user} onOpenDia={handleOpenDia} rutinas={rutinas} />
           )}
           {view === 'total' && (
             <VistaTotal
-              user={selectedUser}
+              user={user}
               onOpenDia={handleOpenDia}
               rutinas={rutinas}
               ejercicios={ejercicios}
@@ -411,7 +419,7 @@ const UserPlansPage = () => {
           )}
           {view === 'dia' && (
             <VistaDia
-              user={selectedUser}
+              user={user}
               semana={selectedWeek}
               diaIndex={selectedDiaIndex}
               onChangeSemana={setSelectedWeek}

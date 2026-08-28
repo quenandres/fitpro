@@ -90,6 +90,7 @@ fitpro/
 │   ├── pages/             # admin/AdminDashboardPage (inicio), CalendarPage, WorkoutPlayer, library/*, communities/*
 │   ├── routes/paths.ts    # ROUTES tipado + redirects legacy
 │   ├── store/             # useDataStore (persist), useCitasStore (NO persist),
+│   │                      # useUsuariosStore (planes/usuarios mock compartido),
 │   │                      # useWorkoutStore (NO persist), useCommunitiesStore (NO persist, mock)
 │   ├── types/             # index.ts (modelo de rutinas — sigue plano) + community.ts
 │   └── utils/             # validators, suggestions, routineMuscles
@@ -186,13 +187,13 @@ Supabase del frontend está comentado; Supabase real se habla solo desde
    una fase bloqueante separada — ver `CONTEXT.md §7`), **sin iniciar**.
 6. **`useWorkoutStore` sigue sin persistir.** No hay historial de entrenos: al
    refrescar se pierde peso/RPE/reps/duración. **Sin esto no hay producto.**
-7. **`UserPlansPage` (508 líneas) sigue en `useState(usuariosData)`.** Toda
-   la UI de vistas día/semana/mes/drag&drop (`@dnd-kit`) es sofisticada, pero
-   no persiste nada — se pierde al recargar.
-8. **`useCitasStore` (calendario) tampoco persiste** y no tiene `updateCita`
-   — solo `addCita`/`deleteCita`. IDs autoincrementales en variable de módulo
-   que se resetean en cada carga. Inconsistente con `useDataStore`, que sí
-   persiste.
+7. **`UserPlansPage` y `CalendarPage` comparten `useUsuariosStore`** (seed
+   desde `usuarios.json`). Asignaciones desde calendario y edición en
+   `/library/planes` mutan el mismo estado en memoria — se pierde al recargar
+   (sin persistencia Supabase aún).
+8. **`useCitasStore` (calendario) tampoco persiste** — `addCita`/`addCitas`/
+   `deleteCita`; tipo `entrenamiento` | `medidas`; sin `updateCita`. IDs
+   autoincrementales en variable de módulo que se resetean en cada carga.
 9. **Modelo de datos de rutinas sigue plano.** `EjercicioRutina` creció con
    opcionales (`rpe`, `grupo_superset`, `exerciseDbId`, `musculos_anatomia`)
    pero sigue sin bloques/series estructuradas. No soporta dropsets reales,
@@ -270,7 +271,15 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 - **Formularios:** siempre `fp-input` + `fp-btn` con variante (`fp-btn-primary`,
   `fp-btn-secondary`, `fp-btn-ghost`). No recrear campos con `bg-overlay` +
   `rounded-xl`. Búsqueda con icono: `fp-input-group`. Referencia viva:
-  [`CitaForm.tsx`](src/components/calendar/CitaForm.tsx).
+  [`CitaCreateSheet.tsx`](src/components/calendar/CitaCreateSheet.tsx).
+- **Calendario (`/calendario`):** dos flujos separados — **(1) Agendar cita**
+  (`CitaCreateSheet`: tipo `entrenamiento` | `medidas`, multi-cliente vía
+  `ClienteMultiPicker`, bulk `addCitas`) y **(2) Asignar entrenamiento**
+  (`AsignarEntrenoSheet`: rutina obligatoria, multi-cliente, muta plan semana 1
+  vía `useUsuariosStore.assignRutinaToUsers`). Desktop: dos CTAs en
+  `CalendarHeader`; móvil: FAB → `CalendarActionSheet`. El admin puede ajustar
+  planes con flexibilidad; calendario y `/library/planes` comparten
+  `useUsuariosStore`.
 - **Overlays (`Sheet`):** CTA de envío siempre visible en móvil (cuerpo con
   scroll + botón `shrink-0` abajo, o footer fijo). `Sheet` default `zIndex`
   60 (por encima del bottom nav). Usar `flexColumn` en formularios largos.
@@ -417,7 +426,9 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 - [src/store/useDataStore.ts](./src/store/useDataStore.ts) — CRUD local
   (persist), pendiente de migrar a Supabase vía `gym-gateway` (Fase 2, ver §8).
 - [src/store/useCitasStore.ts](./src/store/useCitasStore.ts) — citas del
-  calendario (sin persist, sin `updateCita`).
+  calendario (sin persist; `addCitas` bulk; tipo entrenamiento/medidas).
+- [src/store/useUsuariosStore.ts](./src/store/useUsuariosStore.ts) — usuarios y
+  planes compartidos entre calendario y `/library/planes` (sin persist).
 - [src/store/useWorkoutStore.ts](./src/store/useWorkoutStore.ts) — runtime
   del player (sin persistencia).
 - [src/store/useCommunitiesStore.ts](./src/store/useCommunitiesStore.ts) —

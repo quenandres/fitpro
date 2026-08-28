@@ -122,6 +122,8 @@ export interface Usuario {
   plan: PlanUsuario;
 }
 
+export type CitaTipo = 'entrenamiento' | 'medidas';
+
 /** Cita entrenador–cliente; shape preparado para tabla Supabase `appointments`. */
 export interface Cita {
   id: number;
@@ -131,6 +133,7 @@ export interface Cita {
   /** HH:mm */
   hora_inicio: string;
   duracion_min: number;
+  tipo: CitaTipo;
   rutina_id: number | null;
   notas?: string;
 }

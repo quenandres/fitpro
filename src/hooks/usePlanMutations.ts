@@ -3,42 +3,15 @@ import type {
   DiaSemana,
   EjercicioPersonalizado,
   Rutina,
-  SemanaPlan,
   Usuario,
 } from '../types';
 import { resincronizarDia as buildResync } from '../utils/compareRutinaSnapshot';
 import { toEjercicioPersonalizado } from '../utils/distributeExercises';
+import { mapDia, type DiaRef } from '../utils/planMutations';
 
-export interface DiaRef {
-  semana: number;
-  diaIndex: number;
-}
+export type { DiaRef };
 
 type UpdateFn = (updated: Usuario) => void;
-
-const mapSemana = (
-  user: Usuario,
-  semanaNum: number,
-  transform: (s: SemanaPlan) => SemanaPlan
-): Usuario => ({
-  ...user,
-  plan: {
-    ...user.plan,
-    programacion_semanal: user.plan.programacion_semanal.map((s) =>
-      s.semana === semanaNum ? transform(s) : s
-    ),
-  },
-});
-
-const mapDia = (
-  user: Usuario,
-  ref: DiaRef,
-  transform: (d: DiaSemana) => DiaSemana
-): Usuario =>
-  mapSemana(user, ref.semana, (semana) => ({
-    ...semana,
-    dias: semana.dias.map((dia, idx) => (idx === ref.diaIndex ? transform(dia) : dia)),
-  }));
 
 const findDia = (user: Usuario, ref: DiaRef): DiaSemana | undefined =>
   user.plan.programacion_semanal
