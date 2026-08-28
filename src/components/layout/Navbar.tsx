@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
-  BookOpen,
   CalendarDays,
   ClipboardList,
   Dumbbell,
@@ -13,6 +12,7 @@ import {
   Moon,
   Sun,
   User,
+  UserRound,
   Users,
   X,
   type LucideProps,
@@ -27,7 +27,7 @@ import { SHELL_WIDTH_CLASS } from './shellWidth';
 
 const NAV_ITEMS = [
   { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e' },
-  { path: ROUTES.library.root,       Icon: BookOpen,      label: 'Datos',       accent: '#58a6ff' },
+  { path: ROUTES.usuarios,           Icon: UserRound,     label: 'Usuarios',    accent: '#58a6ff' },
   { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7' },
   { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
   { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },

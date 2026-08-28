@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import type { CSSProperties, ReactNode } from 'react';
 
 interface SheetProps {
@@ -28,14 +29,14 @@ export function Sheet({
   if (!open) return null;
 
   const panelBase = immersive
-    ? 'fp-card w-full max-w-md md:max-w-lg max-h-[100dvh] md:max-h-[90vh] rounded-none md:rounded-2xl animate-slide-up overflow-y-auto'
-    : 'fp-card w-full max-w-md md:max-w-lg max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl animate-slide-up';
+    ? 'fp-card w-full max-w-md md:max-w-lg max-h-[100dvh] md:max-h-[min(90vh,720px)] rounded-none md:rounded-2xl animate-slide-up md:animate-fade-in overflow-y-auto'
+    : 'fp-card w-full max-w-md md:max-w-lg max-h-[85vh] md:max-h-[min(80vh,720px)] rounded-t-2xl md:rounded-2xl animate-slide-up md:animate-fade-in';
 
   const overflowClass = flexColumn
     ? 'min-h-0 overflow-y-auto flex flex-col pb-[max(16px,env(safe-area-inset-bottom))]'
     : 'overflow-y-auto pb-[max(16px,env(safe-area-inset-bottom))]';
 
-  return (
+  return createPortal(
     <div
       className="animate-fade-in fixed inset-0 flex items-end md:items-center justify-center p-0 md:p-6 bg-[rgba(0,0,0,.75)] backdrop-blur-sm"
       style={{ zIndex }}
@@ -52,6 +53,7 @@ export function Sheet({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

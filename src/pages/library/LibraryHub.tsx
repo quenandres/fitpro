@@ -99,10 +99,10 @@ const GESTION_SECTIONS = [
     bg: 'rgba(240,136,62,.12)',
   },
   {
-    to: lib.planes,
+    to: ROUTES.usuarios,
     Icon: Users,
-    title: 'Planes de usuario',
-    desc: 'Asigna rutinas semanales a clientes',
+    title: 'Usuarios',
+    desc: 'Progreso, planes y entrenamientos asignados',
     accent: '#a371f7',
     bg: 'rgba(163,113,247,.12)',
   }  

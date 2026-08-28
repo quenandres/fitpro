@@ -5,7 +5,6 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
 import { LibraryLayout } from './components/library/LibraryLayout';
-import { LibraryHub } from './pages/library/LibraryHub';
 import { LibraryRutinasPage } from './pages/library/LibraryRutinasPage';
 import { BodyPartsCatalogPage } from './pages/library/BodyPartsCatalogPage';
 import { EquipmentsCatalogPage } from './pages/library/EquipmentsCatalogPage';
@@ -19,6 +18,7 @@ import { AdvancedRoutineForm } from './pages/library/routines/AdvancedRoutineFor
 import { RoutinePresetGalleryPage } from './pages/library/RoutinePresetGalleryPage';
 import { WorkoutPlayer } from './pages/WorkoutPlayer';
 import { RoutinePageRedirect } from './pages/RoutinePage';
+import { UsuariosPage } from './pages/UsuariosPage';
 import { UserPlansPage } from './pages/UserPlansPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { TrackingPage } from './pages/TrackingPage';
@@ -93,6 +93,8 @@ function AppRoutes() {
       <Route path={ROUTES.admin.dashboard} element={<Navigate to={ROUTES.home} replace />} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path={ROUTES.tracking} element={<ProtectedRoute><TrackingPage /></ProtectedRoute>} />
+      <Route path={ROUTES.usuarios} element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
+      <Route path="/usuarios/:userId" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
       <Route path={ROUTES.anatomy} element={<ProtectedRoute><AnatomyRecoveryTracker /></ProtectedRoute>} />
@@ -102,7 +104,7 @@ function AppRoutes() {
         Todo bajo auth; los datos vendrán del gateway (TanStack Query en Fase 3).
       */}
       <Route path={lib.root} element={<ProtectedRoute><LibraryLayout /></ProtectedRoute>}>
-        <Route index element={<LibraryHub />} />
+        <Route index element={<Navigate to={lib.rutinas} replace />} />
 
         {/* Dominio: rutinas (CRUD vía API) */}
         <Route path="rutinas" element={<LibraryRutinasPage />} />

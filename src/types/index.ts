@@ -78,6 +78,10 @@ export interface EjercicioPersonalizado {
   series: number;
   reps: number;
   notas?: string;
+  /** ID en biblioteca local — evita romper matching por nombre */
+  ejercicio_id?: number;
+  rpe?: number;
+  musculos_anatomia?: string[];
 }
 
 export interface RutinaAsignada {
@@ -112,12 +116,16 @@ export interface PlanUsuario {
   programacion_semanal: SemanaPlan[];
 }
 
+export type NivelUsuario = 'Principiante' | 'Intermedio' | 'Avanzado';
+
 export interface Usuario {
   id: number;
   nombre: string;
   email: string;
   objetivo: string;
-  nivel: string;
+  nivel: NivelUsuario | string;
+  /** Peso corporal de referencia (kg) — mock/read-only en esta fase */
+  peso_kg?: number;
   dias_entrenar: number;
   plan: PlanUsuario;
 }

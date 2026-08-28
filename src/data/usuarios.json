@@ -5,6 +5,7 @@
     "email": "carlos.martinez@email.com",
     "objetivo": "Ganar masa muscular",
     "nivel": "Intermedio",
+    "peso_kg": 78,
     "dias_entrenar": 4,
     "plan": {
       "id": 1,
@@ -82,6 +83,7 @@
     "email": "ana.lopez@email.com",
     "objetivo": "Perder grasa y tonificar",
     "nivel": "Principiante",
+    "peso_kg": 62,
     "dias_entrenar": 3,
     "plan": {
       "id": 2,
@@ -146,6 +148,7 @@
     "email": "miguel.sanchez@email.com",
     "objetivo": "Preparacion para competencia Hyrox",
     "nivel": "Avanzado",
+    "peso_kg": 84,
     "dias_entrenar": 5,
     "plan": {
       "id": 3,

@@ -17,6 +17,7 @@ interface UsuarioDraft {
   email: string;
   objetivo: string;
   nivel: string;
+  peso_kg: string;
 }
 
 interface PlanDraft {
@@ -34,6 +35,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
     email: '',
     objetivo: '',
     nivel: 'Principiante',
+    peso_kg: '',
   });
   const [plan, setPlan] = useState<PlanDraft>({ nombre: '', descripcion: '', semanas: 4 });
   const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([1, 3, 5]);
@@ -105,6 +107,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
       email: usuario.email,
       objetivo: usuario.objetivo,
       nivel: usuario.nivel,
+      peso_kg: usuario.peso_kg.trim() ? Number(usuario.peso_kg) : undefined,
       dias_entrenar: diasSeleccionados.length,
       plan: {
         id: nextUserId,
@@ -260,6 +263,20 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                   <option value="Avanzado">Avanzado</option>
                 </select>
               </div>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                Peso (kg)
+              </p>
+              <input
+                className="fp-input"
+                type="number"
+                min={30}
+                max={250}
+                placeholder="75"
+                value={usuario.peso_kg}
+                onChange={(e) => setUsuario({ ...usuario, peso_kg: e.target.value })}
+              />
             </div>
           </div>
         )}

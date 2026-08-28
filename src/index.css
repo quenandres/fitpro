@@ -765,6 +765,10 @@ textarea.fp-input {
   padding: 0;
 }
 
+.fp-cal-sidebar-search {
+  margin-bottom: 10px;
+}
+
 .fp-cal-client-list,
 .fp-cal-category-list {
   list-style: none;
@@ -2908,6 +2912,287 @@ textarea.fp-input {
 .fp-tracking-week-cell--isometrico .fp-tracking-week-day-num,
 .fp-tracking-week-cell--otro .fp-tracking-week-day-num {
   color: #fff;
+}
+
+/* ── Mapa muscular demo en celdas (semana / mes / trimestre) ── */
+.fp-tracking-week-grid--muscles {
+  gap: 10px;
+}
+
+.fp-tracking-day-num--corner {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  z-index: 2;
+  font-size: 11px !important;
+  font-weight: 800;
+  color: var(--text-primary) !important;
+  line-height: 1;
+}
+
+.fp-tracking-cell-muscle-mini {
+  display: none;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Semana */
+.fp-tracking-week-cell--muscles {
+  position: relative;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: auto;
+  min-height: 88px;
+}
+
+.fp-tracking-week-cell--muscles.fp-tracking-week-cell--fuerza {
+  background: rgba(240, 136, 62, 0.14);
+  border: 2px solid rgba(240, 136, 62, 0.55);
+}
+
+.fp-tracking-week-cell--muscles.fp-tracking-week-cell--isometrico {
+  background: rgba(88, 166, 255, 0.14);
+  border: 2px solid rgba(88, 166, 255, 0.55);
+}
+
+.fp-tracking-week-cell--muscles.fp-tracking-week-cell--otro {
+  background: rgba(34, 197, 94, 0.14);
+  border: 2px solid rgba(34, 197, 94, 0.55);
+}
+
+/* Mes */
+.fp-tracking-month-wrap--muscles {
+  gap: 8px;
+}
+
+.fp-tracking-month-wrap--muscles .fp-tracking-month-head,
+.fp-tracking-month-wrap--muscles .fp-tracking-month-row {
+  gap: 8px;
+}
+
+.fp-tracking-month-cell--muscles {
+  position: relative;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: auto;
+  min-height: 72px;
+}
+
+.fp-tracking-month-cell--muscles.fp-tracking-month-cell--fuerza {
+  background: rgba(240, 136, 62, 0.14);
+  border: 2px solid rgba(240, 136, 62, 0.55);
+}
+
+.fp-tracking-month-cell--muscles.fp-tracking-month-cell--isometrico {
+  background: rgba(88, 166, 255, 0.14);
+  border: 2px solid rgba(88, 166, 255, 0.55);
+}
+
+.fp-tracking-month-cell--muscles.fp-tracking-month-cell--otro {
+  background: rgba(34, 197, 94, 0.14);
+  border: 2px solid rgba(34, 197, 94, 0.55);
+}
+
+/* Trimestre (range) */
+.fp-tracking-range-wrap--muscles .fp-tracking-range-row {
+  align-items: stretch;
+}
+
+.fp-tracking-range-wrap--muscles .fp-tracking-range-cells {
+  gap: 4px;
+}
+
+.fp-tracking-range-cell--muscles {
+  position: relative;
+  aspect-ratio: auto;
+  min-height: 72px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.fp-tracking-range-cell--muscles.fp-tracking-range-cell--fuerza {
+  background: rgba(240, 136, 62, 0.14);
+  border: 1px solid rgba(240, 136, 62, 0.5);
+}
+
+.fp-tracking-range-cell--muscles.fp-tracking-range-cell--isometrico {
+  background: rgba(88, 166, 255, 0.14);
+  border: 1px solid rgba(88, 166, 255, 0.5);
+}
+
+.fp-tracking-range-cell--muscles.fp-tracking-range-cell--otro {
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.fp-tracking-range-cell--muscles.fp-tracking-range-cell--empty {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Móvil: demo no altera celdas */
+@media (max-width: 767px) {
+  .fp-tracking-week-cell--muscles {
+    aspect-ratio: 1;
+    min-height: 48px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .fp-tracking-week-cell--muscles.fp-tracking-week-cell--fuerza {
+    background: #f0883e;
+    border: none;
+  }
+
+  .fp-tracking-week-cell--muscles.fp-tracking-week-cell--isometrico {
+    background: #58a6ff;
+    border: none;
+  }
+
+  .fp-tracking-week-cell--muscles.fp-tracking-week-cell--otro {
+    background: #22c55e;
+    border: none;
+  }
+
+  .fp-tracking-month-cell--muscles {
+    aspect-ratio: 1;
+    min-height: 44px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 6px 8px;
+  }
+
+  .fp-tracking-month-cell--muscles.fp-tracking-month-cell--fuerza {
+    background: #f0883e;
+    border: none;
+  }
+
+  .fp-tracking-month-cell--muscles.fp-tracking-month-cell--isometrico {
+    background: #58a6ff;
+    border: none;
+  }
+
+  .fp-tracking-month-cell--muscles.fp-tracking-month-cell--otro {
+    background: #22c55e;
+    border: none;
+  }
+
+  .fp-tracking-range-cell--muscles {
+    aspect-ratio: 1;
+    min-height: 0;
+    border-radius: 4px;
+  }
+
+  .fp-tracking-range-cell--muscles.fp-tracking-range-cell--fuerza {
+    background: #f0883e;
+    border: none;
+  }
+
+  .fp-tracking-range-cell--muscles.fp-tracking-range-cell--isometrico {
+    background: #58a6ff;
+    border: none;
+  }
+
+  .fp-tracking-range-cell--muscles.fp-tracking-range-cell--otro {
+    background: #22c55e;
+    border: none;
+  }
+
+  .fp-tracking-day-num--corner {
+    position: static;
+    font-size: 15px !important;
+    color: #fff !important;
+  }
+
+  .fp-tracking-month-cell--muscles .fp-tracking-day-num--corner {
+    font-size: 13px !important;
+    color: #fff !important;
+  }
+
+  .fp-tracking-cell-muscle-mini {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .fp-tracking-week-cell--muscles {
+    min-height: 188px;
+    border-radius: 14px;
+  }
+
+  .fp-tracking-week-cell--muscles .fp-tracking-cell-muscle-mini {
+    display: flex;
+    padding: 22px 6px 8px;
+  }
+
+  .fp-tracking-month-cell--muscles {
+    min-height: 128px;
+    border-radius: 14px;
+  }
+
+  .fp-tracking-month-cell--muscles .fp-tracking-cell-muscle-mini {
+    display: flex;
+    padding: 20px 4px 6px;
+  }
+
+  .fp-tracking-range-cell--muscles {
+    min-height: 108px;
+    border-radius: 6px;
+  }
+
+  .fp-tracking-range-cell--muscles .fp-tracking-cell-muscle-mini {
+    display: flex;
+    padding: 4px 2px;
+  }
+}
+
+.anatomy-mini-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fp-tracking-week-cell--muscles .anatomy-mini-viewport {
+  min-height: 140px;
+}
+
+.fp-tracking-month-cell--muscles .anatomy-mini-viewport {
+  min-height: 96px;
+}
+
+.fp-tracking-range-cell--muscles .anatomy-mini-viewport {
+  min-height: 88px;
+}
+
+.anatomy-mini-layers {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.anatomy-mini-layers .anatomy-muscle-svg {
+  height: 92%;
 }
 
 .fp-tracking-month-wrap {

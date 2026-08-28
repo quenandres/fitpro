@@ -75,7 +75,7 @@ export const EjercicioSortable = ({ id, ejercicio, onRemove, onUpdate }: Props) 
           <Trash2 size={14} color="#f85149" />
         </button>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         <div>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>Series</p>
           <input
@@ -95,6 +95,18 @@ export const EjercicioSortable = ({ id, ejercicio, onRemove, onUpdate }: Props) 
             value={ejercicio.reps}
             onChange={(e) => onUpdate({ reps: parseInt(e.target.value) || 1 })}
             min={1}
+            style={{ padding: '8px 10px', fontSize: 13 }}
+          />
+        </div>
+        <div>
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>RPE</p>
+          <input
+            type="number"
+            className="fp-input"
+            value={ejercicio.rpe ?? 7}
+            onChange={(e) => onUpdate({ rpe: Math.min(10, Math.max(1, parseInt(e.target.value) || 7)) })}
+            min={1}
+            max={10}
             style={{ padding: '8px 10px', fontSize: 13 }}
           />
         </div>

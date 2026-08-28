@@ -54,3 +54,9 @@ export function getSesionesEnRango(
 export function getAllSesiones(): SesionEntrenamiento[] {
   return [...sesiones];
 }
+
+/** Última sesión del usuario (fecha más reciente), o null. */
+export function getUltimaSesion(usuarioId: number): SesionEntrenamiento | null {
+  const list = getSesionesByUsuario(usuarioId);
+  return list[0] ?? null;
+}

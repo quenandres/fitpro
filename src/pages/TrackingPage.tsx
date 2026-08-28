@@ -107,10 +107,10 @@ export function TrackingPage() {
           <button
             type="button"
             className="fp-btn fp-btn-ghost fp-btn-sm mb-3 -ml-1"
-            onClick={() => navigate(ROUTES.library.planes)}
+            onClick={() => navigate(ROUTES.usuarios)}
           >
             <ChevronLeft size={18} />
-            Planes
+            Usuarios
           </button>
 
           <div className="flex flex-wrap items-center gap-1.5 mb-2">

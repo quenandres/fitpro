@@ -28,6 +28,8 @@ interface Props {
   onChangeSemana: (semana: number) => void;
   onChangeDia: (diaIndex: number) => void;
   onBack?: () => void;
+  /** Oculta navegación semanal/diaria (p. ej. dentro de DiaEditorSheet). */
+  embedded?: boolean;
   onToggleEntreno: () => void;
   onSelectRutina: (rutina: Rutina) => void;
   onAddEjercicio: (ejercicio: EjercicioPersonalizado, replicarEnSiguientes: boolean) => void;
@@ -48,6 +50,7 @@ export const VistaDia = ({
   onChangeSemana,
   onChangeDia,
   onBack,
+  embedded = false,
   onToggleEntreno,
   onSelectRutina,
   onAddEjercicio,
@@ -84,6 +87,8 @@ export const VistaDia = ({
       series: 3,
       reps: pick.unidad_id_default === 1 ? 12 : 10,
       notas: '',
+      ejercicio_id: pick.ejercicio_id,
+      musculos_anatomia: pick.musculos_anatomia,
     });
   };
 
@@ -153,6 +158,8 @@ export const VistaDia = ({
         </button>
       </div>
 
+      {!embedded ? (
+        <>
       <div
         style={{
           display: 'flex',
@@ -236,6 +243,8 @@ export const VistaDia = ({
           );
         })}
       </div>
+        </>
+      ) : null}
 
       <RutinaVersionBanner
         status={syncStatus}

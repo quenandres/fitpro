@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
 import { FitProCalendar } from './FitProCalendar';
 import { clienteIniciales } from './calendarUtils';
 import type { Usuario } from '../../types';
@@ -23,7 +25,18 @@ export function CalendarSidebarBody({
   onToggleClient,
   onShowAllClients,
 }: CalendarSidebarBodyProps) {
+  const [search, setSearch] = useState('');
   const allVisible = visibleClientIds.length === 0;
+
+  const filteredUsuarios = useMemo(() => {
+    if (!search.trim()) return usuarios;
+    const q = search.trim().toLowerCase();
+    return usuarios.filter(
+      (u) =>
+        u.nombre.toLowerCase().includes(q)
+        || u.email.toLowerCase().includes(q),
+    );
+  }, [usuarios, search]);
 
   return (
     <>
@@ -45,8 +58,18 @@ export function CalendarSidebarBody({
             </button>
           ) : null}
         </div>
+        <div className="fp-cal-sidebar-search fp-input-group">
+          <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <input
+            type="search"
+            placeholder="Buscar cliente…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Buscar clientes"
+          />
+        </div>
         <ul className="fp-cal-client-list">
-          {usuarios.map((usuario) => {
+          {filteredUsuarios.map((usuario) => {
             const checked = allVisible || visibleClientIds.includes(usuario.id);
             return (
               <li key={usuario.id}>
@@ -64,6 +87,9 @@ export function CalendarSidebarBody({
               </li>
             );
           })}
+          {filteredUsuarios.length === 0 ? (
+            <li className="fp-cal-cliente-empty">Sin resultados</li>
+          ) : null}
         </ul>
       </section>
 
