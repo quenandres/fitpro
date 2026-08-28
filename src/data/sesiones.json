@@ -1,0 +1,1082 @@
+[
+  {
+    "id": "1",
+    "usuario_id": 1,
+    "days_ago": 1,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "2",
+    "usuario_id": 1,
+    "days_ago": 3,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 19
+  },
+  {
+    "id": "3",
+    "usuario_id": 1,
+    "days_ago": 5,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 12
+  },
+  {
+    "id": "4",
+    "usuario_id": 2,
+    "days_ago": 2,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 18
+  },
+  {
+    "id": "5",
+    "usuario_id": 2,
+    "days_ago": 5,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "6",
+    "usuario_id": 3,
+    "days_ago": 0,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "7",
+    "usuario_id": 3,
+    "days_ago": 2,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "8",
+    "usuario_id": 3,
+    "days_ago": 4,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 12
+  },
+  {
+    "id": "9",
+    "usuario_id": 3,
+    "days_ago": 6,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "10",
+    "usuario_id": 1,
+    "days_ago": 9,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 18
+  },
+  {
+    "id": "11",
+    "usuario_id": 1,
+    "days_ago": 11,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 11
+  },
+  {
+    "id": "12",
+    "usuario_id": 1,
+    "days_ago": 13,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "13",
+    "usuario_id": 2,
+    "days_ago": 10,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 14
+  },
+  {
+    "id": "14",
+    "usuario_id": 2,
+    "days_ago": 13,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 16
+  },
+  {
+    "id": "15",
+    "usuario_id": 3,
+    "days_ago": 7,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "16",
+    "usuario_id": 3,
+    "days_ago": 9,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 11
+  },
+  {
+    "id": "17",
+    "usuario_id": 3,
+    "days_ago": 11,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "18",
+    "usuario_id": 3,
+    "days_ago": 13,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "19",
+    "usuario_id": 1,
+    "days_ago": 15,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  },
+  {
+    "id": "20",
+    "usuario_id": 1,
+    "days_ago": 17,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "21",
+    "usuario_id": 1,
+    "days_ago": 19,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 16
+  },
+  {
+    "id": "22",
+    "usuario_id": 2,
+    "days_ago": 16,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "23",
+    "usuario_id": 2,
+    "days_ago": 19,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 19
+  },
+  {
+    "id": "24",
+    "usuario_id": 3,
+    "days_ago": 14,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  },
+  {
+    "id": "25",
+    "usuario_id": 3,
+    "days_ago": 16,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "26",
+    "usuario_id": 3,
+    "days_ago": 18,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "27",
+    "usuario_id": 3,
+    "days_ago": 20,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 16
+  },
+  {
+    "id": "28",
+    "usuario_id": 1,
+    "days_ago": 23,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "29",
+    "usuario_id": 1,
+    "days_ago": 25,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "30",
+    "usuario_id": 1,
+    "days_ago": 27,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "31",
+    "usuario_id": 2,
+    "days_ago": 24,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 18
+  },
+  {
+    "id": "32",
+    "usuario_id": 2,
+    "days_ago": 27,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "33",
+    "usuario_id": 3,
+    "days_ago": 21,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "34",
+    "usuario_id": 3,
+    "days_ago": 23,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "35",
+    "usuario_id": 3,
+    "days_ago": 25,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 18
+  },
+  {
+    "id": "36",
+    "usuario_id": 3,
+    "days_ago": 27,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "37",
+    "usuario_id": 1,
+    "days_ago": 29,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 14
+  },
+  {
+    "id": "38",
+    "usuario_id": 1,
+    "days_ago": 31,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "39",
+    "usuario_id": 1,
+    "days_ago": 33,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 12
+  },
+  {
+    "id": "40",
+    "usuario_id": 2,
+    "days_ago": 30,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "41",
+    "usuario_id": 2,
+    "days_ago": 33,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "42",
+    "usuario_id": 3,
+    "days_ago": 28,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "43",
+    "usuario_id": 3,
+    "days_ago": 30,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 17
+  },
+  {
+    "id": "44",
+    "usuario_id": 3,
+    "days_ago": 32,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "45",
+    "usuario_id": 3,
+    "days_ago": 34,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "46",
+    "usuario_id": 1,
+    "days_ago": 37,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "47",
+    "usuario_id": 1,
+    "days_ago": 39,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 11
+  },
+  {
+    "id": "48",
+    "usuario_id": 1,
+    "days_ago": 41,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 20
+  },
+  {
+    "id": "49",
+    "usuario_id": 2,
+    "days_ago": 38,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 14
+  },
+  {
+    "id": "50",
+    "usuario_id": 2,
+    "days_ago": 41,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 16
+  },
+  {
+    "id": "51",
+    "usuario_id": 3,
+    "days_ago": 35,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 16
+  },
+  {
+    "id": "52",
+    "usuario_id": 3,
+    "days_ago": 37,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "53",
+    "usuario_id": 3,
+    "days_ago": 39,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "54",
+    "usuario_id": 3,
+    "days_ago": 41,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  },
+  {
+    "id": "55",
+    "usuario_id": 1,
+    "days_ago": 43,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  },
+  {
+    "id": "56",
+    "usuario_id": 1,
+    "days_ago": 45,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 19
+  },
+  {
+    "id": "57",
+    "usuario_id": 1,
+    "days_ago": 47,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "58",
+    "usuario_id": 2,
+    "days_ago": 44,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "59",
+    "usuario_id": 2,
+    "days_ago": 47,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "60",
+    "usuario_id": 3,
+    "days_ago": 42,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "61",
+    "usuario_id": 3,
+    "days_ago": 44,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "62",
+    "usuario_id": 3,
+    "days_ago": 46,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 12
+  },
+  {
+    "id": "63",
+    "usuario_id": 3,
+    "days_ago": 48,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "64",
+    "usuario_id": 1,
+    "days_ago": 51,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 18
+  },
+  {
+    "id": "65",
+    "usuario_id": 1,
+    "days_ago": 53,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "66",
+    "usuario_id": 1,
+    "days_ago": 55,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 17
+  },
+  {
+    "id": "67",
+    "usuario_id": 2,
+    "days_ago": 52,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "68",
+    "usuario_id": 2,
+    "days_ago": 55,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "69",
+    "usuario_id": 3,
+    "days_ago": 49,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "70",
+    "usuario_id": 3,
+    "days_ago": 51,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 11
+  },
+  {
+    "id": "71",
+    "usuario_id": 3,
+    "days_ago": 53,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "72",
+    "usuario_id": 3,
+    "days_ago": 55,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "73",
+    "usuario_id": 1,
+    "days_ago": 57,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "74",
+    "usuario_id": 1,
+    "days_ago": 59,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 16
+  },
+  {
+    "id": "75",
+    "usuario_id": 1,
+    "days_ago": 61,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 20
+  },
+  {
+    "id": "76",
+    "usuario_id": 2,
+    "days_ago": 58,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "77",
+    "usuario_id": 2,
+    "days_ago": 61,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "78",
+    "usuario_id": 3,
+    "days_ago": 56,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  },
+  {
+    "id": "79",
+    "usuario_id": 3,
+    "days_ago": 58,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "80",
+    "usuario_id": 3,
+    "days_ago": 60,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "81",
+    "usuario_id": 3,
+    "days_ago": 62,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 16
+  },
+  {
+    "id": "82",
+    "usuario_id": 1,
+    "days_ago": 65,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "83",
+    "usuario_id": 1,
+    "days_ago": 67,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 19
+  },
+  {
+    "id": "84",
+    "usuario_id": 1,
+    "days_ago": 69,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 18
+  },
+  {
+    "id": "85",
+    "usuario_id": 2,
+    "days_ago": 66,
+    "rutina_id": 7,
+    "rutina_nombre": "Calistenia en Casa",
+    "modalidad": "otro",
+    "duracion_min": 30,
+    "series_completadas": 14
+  },
+  {
+    "id": "86",
+    "usuario_id": 2,
+    "days_ago": 69,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 16
+  },
+  {
+    "id": "87",
+    "usuario_id": 3,
+    "days_ago": 63,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "88",
+    "usuario_id": 3,
+    "days_ago": 65,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "89",
+    "usuario_id": 3,
+    "days_ago": 67,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 18
+  },
+  {
+    "id": "90",
+    "usuario_id": 3,
+    "days_ago": 69,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 22
+  },
+  {
+    "id": "91",
+    "usuario_id": 1,
+    "days_ago": 71,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 18
+  },
+  {
+    "id": "92",
+    "usuario_id": 1,
+    "days_ago": 73,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 17
+  },
+  {
+    "id": "93",
+    "usuario_id": 1,
+    "days_ago": 75,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "94",
+    "usuario_id": 2,
+    "days_ago": 72,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 15
+  },
+  {
+    "id": "95",
+    "usuario_id": 2,
+    "days_ago": 75,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "96",
+    "usuario_id": 3,
+    "days_ago": 70,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "97",
+    "usuario_id": 3,
+    "days_ago": 72,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 17
+  },
+  {
+    "id": "98",
+    "usuario_id": 3,
+    "days_ago": 74,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 24
+  },
+  {
+    "id": "99",
+    "usuario_id": 3,
+    "days_ago": 76,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "100",
+    "usuario_id": 1,
+    "days_ago": 79,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 16
+  },
+  {
+    "id": "101",
+    "usuario_id": 1,
+    "days_ago": 81,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 21
+  },
+  {
+    "id": "102",
+    "usuario_id": 1,
+    "days_ago": 83,
+    "rutina_id": 4,
+    "rutina_nombre": "Core de Acero",
+    "modalidad": "isometrico",
+    "duracion_min": 30,
+    "series_completadas": 17
+  },
+  {
+    "id": "103",
+    "usuario_id": 2,
+    "days_ago": 80,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 20
+  },
+  {
+    "id": "104",
+    "usuario_id": 2,
+    "days_ago": 83,
+    "rutina_id": 6,
+    "rutina_nombre": "Empuje y Tracción (Push/Pull)",
+    "modalidad": "fuerza",
+    "duracion_min": 55,
+    "series_completadas": 19
+  },
+  {
+    "id": "105",
+    "usuario_id": 3,
+    "days_ago": 77,
+    "rutina_id": 3,
+    "rutina_nombre": "HIIT Quema Grasa",
+    "modalidad": "otro",
+    "duracion_min": 20,
+    "series_completadas": 16
+  },
+  {
+    "id": "106",
+    "usuario_id": 3,
+    "days_ago": 79,
+    "rutina_id": 2,
+    "rutina_nombre": "Fuerza Total (Full Body)",
+    "modalidad": "fuerza",
+    "duracion_min": 45,
+    "series_completadas": 23
+  },
+  {
+    "id": "107",
+    "usuario_id": 3,
+    "days_ago": 81,
+    "rutina_id": 5,
+    "rutina_nombre": "Piernas y Glúteos",
+    "modalidad": "fuerza",
+    "duracion_min": 50,
+    "series_completadas": 22
+  },
+  {
+    "id": "108",
+    "usuario_id": 3,
+    "days_ago": 83,
+    "rutina_id": 8,
+    "rutina_nombre": "Movilidad y Recuperación",
+    "modalidad": "isometrico",
+    "duracion_min": 25,
+    "series_completadas": 10
+  }
+]

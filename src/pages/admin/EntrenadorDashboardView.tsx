@@ -1,6 +1,8 @@
-import { Users, TrendingUp, AlertTriangle, UsersRound, Dumbbell, MessagesSquare, CalendarDays, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Users, TrendingUp, AlertTriangle, UsersRound, Dumbbell, MessagesSquare, CalendarDays, Bell, Activity } from 'lucide-react';
 import data from '../../data/adminDashboard/entrenador.json';
 import type { EntrenadorMetrics } from '../../types/adminDashboard';
+import { ROUTES } from '../../routes/paths';
 import { KpiCard } from '../../components/admin/dashboard/KpiCard';
 import { ChartCard } from '../../components/admin/dashboard/ChartCard';
 import { SectionHeader } from '../../components/admin/dashboard/SectionHeader';
@@ -36,6 +38,14 @@ export const EntrenadorDashboardView = () => (
 
     <SectionHeader icon={Dumbbell} title="Entrenamiento" accent={azul} />
     <div className="flex flex-col gap-3 min-w-0">
+      <Link
+        to={ROUTES.tracking}
+        className="fp-btn fp-btn-secondary w-fit"
+        style={{ fontSize: 13, padding: '8px 14px', textDecoration: 'none' }}
+      >
+        <Activity size={16} />
+        Ver tracking de clientes
+      </Link>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
         <ChartCard title="Cumplimiento" subtitle="% promedio de tus clientes">
           <LineTrendChart data={metrics.cumplimiento} color={azul} valueSuffix="%" />

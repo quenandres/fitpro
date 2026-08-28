@@ -21,6 +21,7 @@ import { WorkoutPlayer } from './pages/WorkoutPlayer';
 import { RoutinePageRedirect } from './pages/RoutinePage';
 import { UserPlansPage } from './pages/UserPlansPage';
 import { CalendarPage } from './pages/CalendarPage';
+import { TrackingPage } from './pages/TrackingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
@@ -89,6 +90,7 @@ function AppRoutes() {
       <Route path={ROUTES.home} element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
       <Route path={ROUTES.admin.dashboard} element={<Navigate to={ROUTES.home} replace />} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+      <Route path={ROUTES.tracking} element={<ProtectedRoute><TrackingPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
       <Route path={ROUTES.anatomy} element={<ProtectedRoute><AnatomyRecoveryTracker /></ProtectedRoute>} />

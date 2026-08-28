@@ -148,6 +148,21 @@ export interface WorkoutState {
   startTime: number | null;
 }
 
+export type SesionModalidad = 'fuerza' | 'isometrico' | 'otro';
+
+/** Sesión completada; shape preparado para tabla Supabase `sessions` (Fase 4). */
+export interface SesionEntrenamiento {
+  id: string;
+  usuario_id: number;
+  /** YYYY-MM-DD en zona local */
+  fecha: string;
+  rutina_id: number;
+  rutina_nombre: string;
+  modalidad: SesionModalidad;
+  duracion_min: number;
+  series_completadas: number;
+}
+
 export interface GenerateRoutineRequest {
   objetivo: string;
   nivel?: string;

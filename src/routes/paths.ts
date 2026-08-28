@@ -11,6 +11,8 @@ export const ROUTES = {
   login: '/login',
   register: '/register',
   calendar: '/calendario',
+  tracking: '/tracking',
+  trackingUsuario: (id: string | number) => `/tracking?usuario=${id}`,
   player: '/player',
   anatomy: '/anatomytracker',
   workout: (id: string | number) => `/workout/${id}`,

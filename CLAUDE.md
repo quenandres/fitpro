@@ -294,7 +294,8 @@ Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/p
 
 - **Públicas:** `/login`, `/register`.
 - **App principal (protegidas):** `/` (dashboard de métricas por rol),
-  `/calendario`, `/workout/:id`, `/player`, `/anatomytracker`.
+  `/calendario`, `/tracking` (historial mock por cliente; Fase 4 pendiente),
+  `/workout/:id`, `/player`, `/anatomytracker`.
 - **Biblioteca** (bajo `LibraryLayout`, todo protegido): `/library` (hub),
   `/library/rutinas`, `/library/rutinas/nueva` (chooser de nivel),
   `/library/rutinas/plantillas`, `/library/rutinas/nueva/{basica,intermedia,avanzada}`,
@@ -429,6 +430,8 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
   calendario (sin persist; `addCitas` bulk; tipo entrenamiento/medidas).
 - [src/store/useUsuariosStore.ts](./src/store/useUsuariosStore.ts) — usuarios y
   planes compartidos entre calendario y `/library/planes` (sin persist).
+- [src/store/useSesionesStore.ts](./src/store/useSesionesStore.ts) — historial
+  de entrenos mock (`sesiones.json`); ruta `/tracking` (Fase 4 pendiente).
 - [src/store/useWorkoutStore.ts](./src/store/useWorkoutStore.ts) — runtime
   del player (sin persistencia).
 - [src/store/useCommunitiesStore.ts](./src/store/useCommunitiesStore.ts) —

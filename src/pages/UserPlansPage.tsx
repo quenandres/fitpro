@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronLeft, Plus, Sparkles } from 'lucide-react';
+import { Search, ChevronLeft, Plus, Sparkles, Activity } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -343,6 +343,14 @@ const UserPlansPage = () => {
               </h2>
               <p className="text-xs truncate" style={{ color: ACCENT }}>{user.plan.nombre}</p>
             </div>
+            <button
+              type="button"
+              className="fp-btn fp-btn-secondary fp-btn-sm shrink-0"
+              onClick={() => navigate(ROUTES.trackingUsuario(user.id))}
+            >
+              <Activity size={14} />
+              <span className="hidden sm:inline">Ver tracking</span>
+            </button>
           </div>
           <PlanViewSwitcher
             view={view}
