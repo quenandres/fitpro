@@ -68,15 +68,13 @@ export function CommunityMembersPage() {
         ) : null}
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: 'var(--bg-overlay)' }}>
-        <Search size={16} style={{ color: 'var(--text-muted)' }} />
+      <div className="fp-input-group">
+        <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
         <input
           type="search"
           placeholder="Buscar miembro…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent text-sm outline-none"
-          style={{ color: 'var(--text-primary)' }}
         />
       </div>
 

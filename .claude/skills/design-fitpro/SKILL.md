@@ -38,6 +38,8 @@ description: Aplica la guía visual y de UI de FitPro (tokens CSS, componentes f
 | Contenedor elevado | `fp-card` (+ `fp-card-hover` si es clickable) |
 | Barra superior difuminada | `fp-glass` |
 | Campo texto | `fp-input` |
+| Campo con icono (búsqueda) | `fp-input-group` |
+| Etiqueta de formulario | `fp-cal-label` |
 | Botón | `fp-btn` + `fp-btn-primary` / `fp-btn-secondary` / `fp-btn-ghost` |
 | Progreso | `fp-progress-track` + `fp-progress-fill` |
 | Píldora estado | `badge badge-brand` (o `badge-blue` si encaja el contexto) |
@@ -46,6 +48,16 @@ description: Aplica la guía visual y de UI de FitPro (tokens CSS, componentes f
 | Título con marca | `text-gradient` o `text-gradient-brand` en span dentro de `font-sora` |
 
 Auth y admin tienen bloques `.auth-*` y `.fp-admin-*` en `index.css`: reutilizarlos en flujos equivalentes en lugar de duplicar reglas.
+
+## Formularios y modales (Sheet)
+
+- **Inputs:** `fp-input` (min-height 44px, fondo `--bg-elevated`, borde `--border`, radio 11px, focus con anillo `--brand-dim`). Textareas: `fp-input resize-none`.
+- **Botones:** `fp-btn fp-btn-primary` (CTA), `fp-btn-secondary` (cancelar), `fp-btn-ghost` (iconos).
+- **Labels:** `fp-cal-label` (11px semibold, `--text-secondary`).
+- **Búsqueda con icono:** `fp-input-group` envolviendo icono Lucide + `<input>`.
+- **No inventar** campos con `px-3.5 py-2.5 rounded-xl` + `background: var(--bg-overlay)`.
+- **Sheet con formulario:** usar `flexColumn`; cuerpo `overflow-y-auto min-h-0 flex-1`; CTA `shrink-0` fijo abajo. Referencia: [`CitaForm.tsx`](../../src/components/calendar/CitaForm.tsx) + sheet en [`CalendarPage.tsx`](../../src/pages/CalendarPage.tsx).
+- **Z-index:** Sheet default 60 (navbar/bottom nav = 50).
 
 ## Forma y ritmo
 
@@ -70,6 +82,7 @@ Auth y admin tienen bloques `.auth-*` y `.fp-admin-*` en `index.css`: reutilizar
 - [ ] Tipografía: DM Sans por defecto; Sora en títulos/ KPIs que marquen el patrón dashboard.
 - [ ] Espaciado y `max-w-md` alineados con el shell principal.
 - [ ] Iconos Lucide, tamaño y color acordes al estado (activo = acento, inactivo = `--text-muted`).
+- [ ] Formularios: `fp-input` / `fp-btn`; modales con CTA visible en móvil.
 - [ ] Estados hover/active/focus y transiciones ~0.15–0.2s como en `fp-btn` / `fp-card-hover`.
 - [ ] Probar o visualizar mentalmente **modo claro** (`:root.light`).
 

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Dashboard } from './pages/Dashboard';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
 import { LibraryLayout } from './components/library/LibraryLayout';
@@ -87,6 +88,7 @@ function AppRoutes() {
 
       {/* App principal */}
       <Route path={ROUTES.home} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path={ROUTES.admin.dashboard} element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />

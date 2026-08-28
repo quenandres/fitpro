@@ -69,6 +69,15 @@ export const ROUTES = {
   },
 
   notifications: '/notifications',
+
+  /**
+   * Dashboard Admin — 100% mock (ver src/data/adminDashboard/*.json), vista
+   * separada de `home`. No colisiona con las redirects legacy `/admin/*`
+   * (match por path exacto, no por prefijo).
+   */
+  admin: {
+    dashboard: '/admin/dashboard',
+  },
 } as const;
 
 export const LEGACY_LIBRARY_REDIRECTS: ReadonlyArray<{ from: string; to: string }> = [

@@ -243,7 +243,7 @@ export function CalendarPage() {
         </div>
       </div>
 
-      {isMobile ? (
+      {isMobile && !showCreate ? (
         <button
           type="button"
           className="fp-cal-fab"
@@ -275,17 +275,19 @@ export function CalendarPage() {
         ariaLabel="Nueva cita"
         flexColumn
       >
-        <div className="fp-cal-create-sheet">
-          <h2 className="font-sora text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-            Nueva cita
-          </h2>
-          <p className="mb-4 capitalize" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            {new Intl.DateTimeFormat('es-ES', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            }).format(createDate)}
-          </p>
+        <div className="fp-cal-create-sheet flex flex-col min-h-0 flex-1">
+          <div className="shrink-0">
+            <h2 className="font-sora text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+              Nueva cita
+            </h2>
+            <p className="mb-4 capitalize" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              {new Intl.DateTimeFormat('es-ES', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              }).format(createDate)}
+            </p>
+          </div>
           <CitaForm
             key={`${fechaLocalISO(createDate)}-${createHora}-${defaultClienteId ?? 'all'}`}
             selectedDate={createDate}

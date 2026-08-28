@@ -87,122 +87,124 @@ export function CitaForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 fp-cal-form">
-      <div>
-        <label htmlFor="cita-cliente" className="fp-cal-label">
-          Cliente
-        </label>
-        <select
-          id="cita-cliente"
-          className="fp-input w-full fp-cal-touch-input"
-          value={clienteId}
-          onChange={(e) => setClienteId(e.target.value)}
-        >
-          {usuarios.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.nombre}
-            </option>
-          ))}
-        </select>
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1 fp-cal-form">
+      <div className="flex flex-col gap-3 min-h-0 flex-1 overflow-y-auto">
+        <div>
+          <label htmlFor="cita-cliente" className="fp-cal-label">
+            Cliente
+          </label>
+          <select
+            id="cita-cliente"
+            className="fp-input w-full"
+            value={clienteId}
+            onChange={(e) => setClienteId(e.target.value)}
+          >
+            {usuarios.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {isMobile ? (
-        <>
-          <TimeSlotChips
-            selectedDate={selectedDate}
-            value={horaInicio}
-            onChange={setHoraInicio}
-            timeRange={timeRange}
-            duracionMin={duracionMin}
-            clienteId={parsedClienteId}
-            citas={clienteCitas}
-          />
-          <div>
-            <p className="fp-cal-chip-section-label">Duración</p>
-            <div className="fp-cal-chip-row fp-cal-duration-row">
-              {DURACION_OPTIONS.map((mins) => (
-                <button
-                  key={mins}
-                  type="button"
-                  className={`fp-cal-duration-chip${duracionMin === mins ? ' is-active' : ''}`}
-                  onClick={() => setDuracionMin(mins)}
-                >
-                  {mins} min
-                </button>
-              ))}
+        {isMobile ? (
+          <>
+            <TimeSlotChips
+              selectedDate={selectedDate}
+              value={horaInicio}
+              onChange={setHoraInicio}
+              timeRange={timeRange}
+              duracionMin={duracionMin}
+              clienteId={parsedClienteId}
+              citas={clienteCitas}
+            />
+            <div>
+              <p className="fp-cal-chip-section-label">Duración</p>
+              <div className="fp-cal-chip-row fp-cal-duration-row">
+                {DURACION_OPTIONS.map((mins) => (
+                  <button
+                    key={mins}
+                    type="button"
+                    className={`fp-cal-duration-chip${duracionMin === mins ? ' is-active' : ''}`}
+                    onClick={() => setDuracionMin(mins)}
+                  >
+                    {mins} min
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="cita-hora" className="fp-cal-label">
+                Hora
+              </label>
+              <input
+                id="cita-hora"
+                type="time"
+                className="fp-input w-full"
+                value={horaInicio}
+                onChange={(e) => setHoraInicio(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="cita-duracion" className="fp-cal-label">
+                Duración (min)
+              </label>
+              <input
+                id="cita-duracion"
+                type="number"
+                min={15}
+                step={15}
+                className="fp-input w-full"
+                value={duracionMin}
+                onChange={(e) => setDuracionMin(Number(e.target.value))}
+              />
             </div>
           </div>
-        </>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="cita-hora" className="fp-cal-label">
-              Hora
-            </label>
-            <input
-              id="cita-hora"
-              type="time"
-              className="fp-input w-full fp-cal-touch-input"
-              value={horaInicio}
-              onChange={(e) => setHoraInicio(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="cita-duracion" className="fp-cal-label">
-              Duración (min)
-            </label>
-            <input
-              id="cita-duracion"
-              type="number"
-              min={15}
-              step={15}
-              className="fp-input w-full fp-cal-touch-input"
-              value={duracionMin}
-              onChange={(e) => setDuracionMin(Number(e.target.value))}
-            />
-          </div>
+        )}
+
+        <div>
+          <label htmlFor="cita-rutina" className="fp-cal-label">
+            Rutina (opcional)
+          </label>
+          <select
+            id="cita-rutina"
+            className="fp-input w-full"
+            value={rutinaId}
+            onChange={(e) => setRutinaId(e.target.value)}
+          >
+            <option value="">Sin rutina asignada</option>
+            {rutinas.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.nombre}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      <div>
-        <label htmlFor="cita-rutina" className="fp-cal-label">
-          Rutina (opcional)
-        </label>
-        <select
-          id="cita-rutina"
-          className="fp-input w-full fp-cal-touch-input"
-          value={rutinaId}
-          onChange={(e) => setRutinaId(e.target.value)}
-        >
-          <option value="">Sin rutina asignada</option>
-          {rutinas.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.nombre}
-            </option>
-          ))}
-        </select>
+        <div>
+          <label htmlFor="cita-notas" className="fp-cal-label">
+            Notas
+          </label>
+          <textarea
+            id="cita-notas"
+            className="fp-input w-full resize-none"
+            rows={2}
+            placeholder="Objetivo de la sesión, recordatorios…"
+            value={notas}
+            onChange={(e) => setNotas(e.target.value)}
+          />
+        </div>
+
+        {error ? (
+          <p style={{ fontSize: 12, color: 'var(--accent-red)' }}>{error}</p>
+        ) : null}
       </div>
 
-      <div>
-        <label htmlFor="cita-notas" className="fp-cal-label">
-          Notas
-        </label>
-        <textarea
-          id="cita-notas"
-          className="fp-input w-full fp-cal-touch-input"
-          rows={2}
-          placeholder="Objetivo de la sesión, recordatorios…"
-          value={notas}
-          onChange={(e) => setNotas(e.target.value)}
-        />
-      </div>
-
-      {error ? (
-        <p style={{ fontSize: 12, color: 'var(--accent-red)' }}>{error}</p>
-      ) : null}
-
-      <button type="submit" className="fp-btn fp-btn-primary w-full fp-cal-touch-btn">
+      <button type="submit" className="fp-btn fp-btn-primary w-full shrink-0 mt-3">
         Crear cita
       </button>
     </form>

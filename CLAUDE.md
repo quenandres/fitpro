@@ -267,6 +267,13 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 - No crear archivos nuevos si editar uno existente basta.
 - No agregar comentarios que narren el código; solo comentar intención no
   obvia, trade-offs o restricciones.
+- **Formularios:** siempre `fp-input` + `fp-btn` con variante (`fp-btn-primary`,
+  `fp-btn-secondary`, `fp-btn-ghost`). No recrear campos con `bg-overlay` +
+  `rounded-xl`. Búsqueda con icono: `fp-input-group`. Referencia viva:
+  [`CitaForm.tsx`](src/components/calendar/CitaForm.tsx).
+- **Overlays (`Sheet`):** CTA de envío siempre visible en móvil (cuerpo con
+  scroll + botón `shrink-0` abajo, o footer fijo). `Sheet` default `zIndex`
+  60 (por encima del bottom nav). Usar `flexColumn` en formularios largos.
 - Al editar una página god (`UserPlansPage.tsx`, `AIRoutineChatPage.tsx`),
   **extraer** en vez de seguir agregando.
 

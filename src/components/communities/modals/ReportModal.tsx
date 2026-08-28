@@ -41,13 +41,13 @@ export function ReportModal({ open, onClose, comunidadId, postId, discusionId, o
   };
 
   return (
-    <Sheet open={open} onClose={onClose} ariaLabel="Reportar contenido">
-      <div className="p-5">
-        <h2 className="font-sora text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+    <Sheet open={open} onClose={onClose} ariaLabel="Reportar contenido" flexColumn>
+      <div className="flex flex-col min-h-0 flex-1 p-5">
+        <h2 className="font-sora text-lg font-bold mb-4 shrink-0" style={{ color: 'var(--text-primary)' }}>
           Reportar contenido
         </h2>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 min-h-0 flex-1 overflow-y-auto">
           {MOTIVOS.map((m) => (
             <label
               key={m.value}
@@ -66,18 +66,17 @@ export function ReportModal({ open, onClose, comunidadId, postId, discusionId, o
               </span>
             </label>
           ))}
+
+          <textarea
+            value={detalle}
+            onChange={(e) => setDetalle(e.target.value)}
+            placeholder="Detalles adicionales (opcional)"
+            rows={3}
+            className="fp-input w-full resize-none mt-1"
+          />
         </div>
 
-        <textarea
-          value={detalle}
-          onChange={(e) => setDetalle(e.target.value)}
-          placeholder="Detalles adicionales (opcional)"
-          rows={3}
-          className="w-full mt-3 px-3.5 py-2.5 rounded-xl text-sm outline-none resize-none"
-          style={{ background: 'var(--bg-overlay)', color: 'var(--text-primary)' }}
-        />
-
-        <button type="button" className="fp-btn w-full mt-4" style={{ background: 'var(--accent-red)', color: '#fff' }} onClick={handleSubmit}>
+        <button type="button" className="fp-btn fp-btn-primary w-full shrink-0 mt-4" onClick={handleSubmit}>
           Enviar reporte
         </button>
       </div>

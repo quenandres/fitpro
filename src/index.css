@@ -104,7 +104,9 @@
 }
 
 /* ─── Reset ─────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* box-sizing only — padding/margin stay in @layer base (Tailwind
+   preflight) so utilities like px-4 / pt-[70px] can override. */
+*, *::before, *::after { box-sizing: border-box; }
 body { min-height: 100dvh; background: var(--bg-app); transition: background-color .2s ease, color .2s ease; }
 #root { min-height: 100dvh; }
 input, select, textarea { font-family: inherit; -webkit-appearance: none; appearance: none; }
@@ -196,6 +198,7 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 /* Input */
 .fp-input {
   width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -208,10 +211,45 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 }
 .fp-input::placeholder { color: var(--text-muted); }
 .fp-input:focus        { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--brand-dim); }
+textarea.fp-input {
+  min-height: auto;
+}
+
+/* Input con icono (búsqueda, etc.) */
+.fp-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.fp-input-group:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+.fp-input-group input {
+  flex: 1;
+  min-width: 0;
+  min-height: auto;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+.fp-input-group input::placeholder { color: var(--text-muted); }
 
 /* Button */
 .fp-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px;
   padding: 9px 18px;
   border-radius: 10px;
   font-size: 13px; font-weight: 600; font-family: inherit;
@@ -603,6 +641,27 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 /* Header brand subtitle — hide on narrow */
 @media (max-width: 380px) {
   .fp-admin-brand-sub { display: none; }
+}
+
+/* Dashboard admin — cards de gráfica overflow-safe y altura fluida */
+.fp-admin-chart-card {
+  padding: 12px;
+  border-radius: 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+.fp-admin-chart-body {
+  width: 100%;
+  min-width: 0;
+  height: var(--chart-h, 240px);
+}
+@media (min-width: 768px) {
+  .fp-admin-chart-card { padding: 16px; }
+}
+@media (max-width: 767px) {
+  .fp-admin-chart-body {
+    height: max(200px, calc(var(--chart-h, 240px) - 20px));
+  }
 }
 
 /* ─── DayPicker (FitPro) ─────────────────────────────────── */
@@ -1147,6 +1206,10 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 }
 
 .fp-cal-create-sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
   padding: 20px;
 }
 

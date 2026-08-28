@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useCommunitiesStore, CURRENT_MEMBER_ID } from '../../store/useCommunitiesStore';
 import { ROUTES } from '../../routes/paths';
 
-const inputStyle = { background: 'var(--bg-overlay)', color: 'var(--text-primary)' } as const;
-const labelClass = 'block text-xs font-semibold mb-1.5';
+const labelClass = 'fp-cal-label';
 
 export function CommunityEventCreatePage() {
   const { id } = useParams<{ id: string }>();
@@ -45,76 +44,76 @@ export function CommunityEventCreatePage() {
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
-          <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Título</label>
+          <label className={labelClass} htmlFor="evento-titulo">Título</label>
           <input
+            id="evento-titulo"
             type="text"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             required
-            className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-            style={inputStyle}
+            className="fp-input w-full"
           />
         </div>
 
         <div>
-          <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Descripción</label>
+          <label className={labelClass} htmlFor="evento-descripcion">Descripción</label>
           <textarea
+            id="evento-descripcion"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             rows={3}
             required
-            className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none resize-none"
-            style={inputStyle}
+            className="fp-input w-full resize-none"
           />
         </div>
 
         <div>
-          <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Lugar</label>
+          <label className={labelClass} htmlFor="evento-lugar">Lugar</label>
           <input
+            id="evento-lugar"
             type="text"
             value={lugar}
             onChange={(e) => setLugar(e.target.value)}
             required
-            className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-            style={inputStyle}
+            className="fp-input w-full"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Inicio</label>
+            <label className={labelClass} htmlFor="evento-inicio">Inicio</label>
             <input
+              id="evento-inicio"
               type="datetime-local"
               value={inicio}
               onChange={(e) => setInicio(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-              style={inputStyle}
+              className="fp-input w-full"
             />
           </div>
           <div>
-            <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Fin</label>
+            <label className={labelClass} htmlFor="evento-fin">Fin</label>
             <input
+              id="evento-fin"
               type="datetime-local"
               value={fin}
               onChange={(e) => setFin(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-              style={inputStyle}
+              className="fp-input w-full"
             />
           </div>
         </div>
 
         <div>
-          <label className={labelClass} style={{ color: 'var(--text-secondary)' }}>Cupo máximo (opcional)</label>
+          <label className={labelClass} htmlFor="evento-cupo">Cupo máximo (opcional)</label>
           <input
+            id="evento-cupo"
             type="number"
             min={1}
             value={cupoMax}
             onChange={(e) => setCupoMax(e.target.value)}
             placeholder="Sin límite"
-            className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-            style={inputStyle}
+            className="fp-input w-full"
           />
         </div>
 
@@ -124,8 +123,7 @@ export function CommunityEventCreatePage() {
           </button>
           <button
             type="submit"
-            className="fp-btn text-sm"
-            style={{ background: 'var(--accent-pink)', color: '#fff', opacity: canSubmit ? 1 : 0.5 }}
+            className="fp-btn fp-btn-primary text-sm"
             disabled={!canSubmit}
           >
             Crear evento

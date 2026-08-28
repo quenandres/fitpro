@@ -1,0 +1,46 @@
+{
+  "kpis": [
+    { "label": "Miembros", "valor": 186 },
+    { "label": "Nuevos miembros", "valor": 14 },
+    { "label": "Actividad", "valor": "68%" }
+  ],
+  "nuevosMiembros": [
+    { "fecha": "2026-02-01", "valor": 6 },
+    { "fecha": "2026-03-01", "valor": 8 },
+    { "fecha": "2026-04-01", "valor": 9 },
+    { "fecha": "2026-05-01", "valor": 11 },
+    { "fecha": "2026-06-01", "valor": 10 },
+    { "fecha": "2026-07-01", "valor": 13 },
+    { "fecha": "2026-08-01", "valor": 14 }
+  ],
+  "actividadSocial": [
+    { "fecha": "2026-02-01", "publicaciones": 18, "comentarios": 64, "reacciones": 210 },
+    { "fecha": "2026-03-01", "publicaciones": 21, "comentarios": 72, "reacciones": 240 },
+    { "fecha": "2026-04-01", "publicaciones": 24, "comentarios": 85, "reacciones": 268 },
+    { "fecha": "2026-05-01", "publicaciones": 26, "comentarios": 90, "reacciones": 290 },
+    { "fecha": "2026-06-01", "publicaciones": 29, "comentarios": 98, "reacciones": 312 },
+    { "fecha": "2026-07-01", "publicaciones": 31, "comentarios": 105, "reacciones": 335 },
+    { "fecha": "2026-08-01", "publicaciones": 34, "comentarios": 112, "reacciones": 360 }
+  ],
+  "discusiones": [
+    { "etiqueta": "Nutrición", "valor": 14 },
+    { "etiqueta": "Técnica", "valor": 9 },
+    { "etiqueta": "Motivación", "valor": 11 },
+    { "etiqueta": "Equipo", "valor": 5 }
+  ],
+  "eventos": [
+    { "etiqueta": "Entreno grupal", "valor": 8 },
+    { "etiqueta": "Reto mensual", "valor": 2 },
+    { "etiqueta": "Salida", "valor": 3 }
+  ],
+  "asistencia": [
+    { "etiqueta": "Entreno grupal", "valor": 76 },
+    { "etiqueta": "Reto mensual", "valor": 62 },
+    { "etiqueta": "Salida", "valor": 84 }
+  ],
+  "contenidoPopular": [
+    { "id": "post-reto-30-dias", "titulo": "Reto 30 días de sentadillas", "detalle": "Publicación de Ana Torres", "metrica": "312 reacciones" },
+    { "id": "post-guia-nutricion", "titulo": "Guía rápida de nutrición pre-entreno", "detalle": "Publicación de Luis Pérez", "metrica": "94 comentarios" },
+    { "id": "post-fotos-salida", "titulo": "Fotos de la última salida en grupo", "detalle": "Publicación de Marta Díaz", "metrica": "228 reacciones" }
+  ]
+}

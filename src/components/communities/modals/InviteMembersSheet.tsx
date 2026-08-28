@@ -68,8 +68,7 @@ export function InviteMembersSheet({ open, onClose, onInvited }: InviteMembersSh
 
         <button
           type="button"
-          className="fp-btn w-full mt-4"
-          style={{ background: 'var(--accent-pink)', color: '#fff', opacity: selected.length > 0 ? 1 : 0.5 }}
+          className="fp-btn fp-btn-primary w-full mt-4"
           disabled={selected.length === 0}
           onClick={handleSubmit}
         >

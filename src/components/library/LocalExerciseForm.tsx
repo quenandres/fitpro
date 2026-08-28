@@ -199,7 +199,7 @@ export const LocalExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
 
         {/* ── Scrollable body ─────────────────────────── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 18px' }}>
+        <div className="min-h-0 flex-1 overflow-y-auto" style={{ padding: '20px 18px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
             {/* ─ Imagen + preview ─ */}

@@ -18,7 +18,7 @@ export function Sheet({
   open,
   onClose,
   children,
-  zIndex = 50,
+  zIndex = 60,
   flexColumn = false,
   immersive = false,
   panelClassName = '',
@@ -31,7 +31,9 @@ export function Sheet({
     ? 'fp-card w-full max-w-md md:max-w-lg max-h-[100dvh] md:max-h-[90vh] rounded-none md:rounded-2xl animate-slide-up overflow-y-auto'
     : 'fp-card w-full max-w-md md:max-w-lg max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl animate-slide-up';
 
-  const overflowClass = flexColumn ? 'overflow-hidden flex flex-col' : 'overflow-y-auto';
+  const overflowClass = flexColumn
+    ? 'min-h-0 overflow-y-auto flex flex-col pb-[max(16px,env(safe-area-inset-bottom))]'
+    : 'overflow-y-auto pb-[max(16px,env(safe-area-inset-bottom))]';
 
   return (
     <div

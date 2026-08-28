@@ -1,0 +1,64 @@
+{
+  "kpis": [
+    { "label": "Usuarios asignados", "valor": 34 },
+    { "label": "Cumplimiento", "valor": "76%" },
+    { "label": "En riesgo", "valor": 5 },
+    { "label": "Comunidades", "valor": 3 }
+  ],
+  "cumplimiento": [
+    { "fecha": "2026-02-01", "valor": 58 },
+    { "fecha": "2026-03-01", "valor": 62 },
+    { "fecha": "2026-04-01", "valor": 65 },
+    { "fecha": "2026-05-01", "valor": 68 },
+    { "fecha": "2026-06-01", "valor": 71 },
+    { "fecha": "2026-07-01", "valor": 74 },
+    { "fecha": "2026-08-01", "valor": 76 }
+  ],
+  "progreso": [
+    { "fecha": "2026-02-01", "valor": 42 },
+    { "fecha": "2026-03-01", "valor": 46 },
+    { "fecha": "2026-04-01", "valor": 51 },
+    { "fecha": "2026-05-01", "valor": 55 },
+    { "fecha": "2026-06-01", "valor": 60 },
+    { "fecha": "2026-07-01", "valor": 63 },
+    { "fecha": "2026-08-01", "valor": 68 }
+  ],
+  "usuariosPorCumplimiento": [
+    { "etiqueta": "0-25%", "valor": 2 },
+    { "etiqueta": "25-50%", "valor": 5 },
+    { "etiqueta": "50-75%", "valor": 11 },
+    { "etiqueta": "75-100%", "valor": 16 }
+  ],
+  "comunidadesAdministradas": [
+    { "etiqueta": "Box CrossFit Norte", "valor": 128 },
+    { "etiqueta": "Running Club Centro", "valor": 74 },
+    { "etiqueta": "Powerlifting FitPro", "valor": 52 }
+  ],
+  "actividadSocial": [
+    { "fecha": "2026-02-01", "publicaciones": 8, "discusiones": 3 },
+    { "fecha": "2026-03-01", "publicaciones": 10, "discusiones": 4 },
+    { "fecha": "2026-04-01", "publicaciones": 12, "discusiones": 5 },
+    { "fecha": "2026-05-01", "publicaciones": 11, "discusiones": 6 },
+    { "fecha": "2026-06-01", "publicaciones": 14, "discusiones": 7 },
+    { "fecha": "2026-07-01", "publicaciones": 15, "discusiones": 6 },
+    { "fecha": "2026-08-01", "publicaciones": 17, "discusiones": 8 }
+  ],
+  "eventos": [
+    { "etiqueta": "Clases grupales", "valor": 12 },
+    { "etiqueta": "Retos", "valor": 4 },
+    { "etiqueta": "Talleres", "valor": 6 }
+  ],
+  "participacion": [
+    { "etiqueta": "Clases grupales", "valor": 88 },
+    { "etiqueta": "Retos", "valor": 65 },
+    { "etiqueta": "Talleres", "valor": 54 }
+  ],
+  "usuariosEnRiesgo": [
+    { "id": "riesgo-carla-mena", "titulo": "Carla Mena", "detalle": "Sin entrenar hace 9 días", "severidad": "alta" },
+    { "id": "riesgo-diego-rios", "titulo": "Diego Ríos", "detalle": "Cumplimiento bajó a 30% este mes", "severidad": "media" }
+  ],
+  "notificaciones": [
+    { "id": "notif-plan-vencido", "titulo": "Plan vencido", "detalle": "3 clientes con plan semanal sin renovar", "severidad": "media" },
+    { "id": "notif-mensajes-sin-leer", "titulo": "Mensajes sin responder", "detalle": "5 mensajes de clientes con más de 48h", "severidad": "baja" }
+  ]
+}

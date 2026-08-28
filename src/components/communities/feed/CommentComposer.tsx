@@ -28,8 +28,7 @@ export function CommentComposer({ onSubmit, disabled = false, placeholder = 'Esc
         }}
         placeholder={placeholder}
         disabled={disabled}
-        className="flex-1 px-3.5 py-2.5 rounded-xl text-sm outline-none"
-        style={{ background: 'var(--bg-overlay)', color: 'var(--text-primary)' }}
+        className="fp-input flex-1"
       />
       <button
         type="button"

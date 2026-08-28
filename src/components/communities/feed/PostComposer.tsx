@@ -72,8 +72,7 @@ export function PostComposer({ tipo, onSubmit, onCancel, submitLabel = 'Publicar
         placeholder="¿Qué quieres compartir con la comunidad?"
         rows={5}
         autoFocus
-        className="w-full px-3.5 py-3 rounded-xl text-sm outline-none resize-none"
-        style={{ background: 'var(--bg-overlay)', color: 'var(--text-primary)' }}
+        className="fp-input w-full resize-none"
       />
 
       {media.length > 0 ? (
@@ -130,8 +129,7 @@ export function PostComposer({ tipo, onSubmit, onCancel, submitLabel = 'Publicar
           ) : null}
           <button
             type="button"
-            className="fp-btn text-sm"
-            style={{ background: 'var(--accent-pink)', color: '#fff', opacity: canSubmit ? 1 : 0.5 }}
+            className="fp-btn fp-btn-primary text-sm"
             disabled={!canSubmit}
             onClick={handleSubmit}
           >

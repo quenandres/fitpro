@@ -1,0 +1,95 @@
+{
+  "kpis": [
+    { "label": "Usuarios", "valor": 4820 },
+    { "label": "Activos", "valor": 3190 },
+    { "label": "Entrenamientos", "valor": 18240 },
+    { "label": "Comunidades", "valor": 38 },
+    { "label": "Eventos", "valor": 124 },
+    { "label": "Retención", "valor": "87%" },
+    { "label": "Entrenadores", "valor": 56 },
+    { "label": "Alertas", "valor": 12 }
+  ],
+  "usuariosActivos": [
+    { "fecha": "2026-02-01", "valor": 2380 },
+    { "fecha": "2026-03-01", "valor": 2510 },
+    { "fecha": "2026-04-01", "valor": 2690 },
+    { "fecha": "2026-05-01", "valor": 2840 },
+    { "fecha": "2026-06-01", "valor": 2960 },
+    { "fecha": "2026-07-01", "valor": 3080 },
+    { "fecha": "2026-08-01", "valor": 3190 }
+  ],
+  "nuevosVsActivos": [
+    { "etiqueta": "Feb", "nuevos": 210, "activos": 2380 },
+    { "etiqueta": "Mar", "nuevos": 260, "activos": 2510 },
+    { "etiqueta": "Abr", "nuevos": 305, "activos": 2690 },
+    { "etiqueta": "May", "nuevos": 340, "activos": 2840 },
+    { "etiqueta": "Jun", "nuevos": 298, "activos": 2960 },
+    { "etiqueta": "Jul", "nuevos": 312, "activos": 3080 },
+    { "etiqueta": "Ago", "nuevos": 275, "activos": 3190 }
+  ],
+  "cumplimiento": [
+    { "fecha": "2026-02-01", "valor": 61 },
+    { "fecha": "2026-03-01", "valor": 64 },
+    { "fecha": "2026-04-01", "valor": 66 },
+    { "fecha": "2026-05-01", "valor": 69 },
+    { "fecha": "2026-06-01", "valor": 71 },
+    { "fecha": "2026-07-01", "valor": 73 },
+    { "fecha": "2026-08-01", "valor": 76 }
+  ],
+  "usuariosPorCumplimiento": [
+    { "etiqueta": "0-25%", "valor": 180 },
+    { "etiqueta": "25-50%", "valor": 420 },
+    { "etiqueta": "50-75%", "valor": 980 },
+    { "etiqueta": "75-100%", "valor": 1610 }
+  ],
+  "comunidadesActivas": [
+    { "etiqueta": "CrossFit", "valor": 12 },
+    { "etiqueta": "Running", "valor": 9 },
+    { "etiqueta": "Powerlifting", "valor": 7 },
+    { "etiqueta": "Yoga", "valor": 6 },
+    { "etiqueta": "Nutrición", "valor": 4 }
+  ],
+  "crecimientoMiembros": [
+    { "fecha": "2026-02-01", "valor": 640 },
+    { "fecha": "2026-03-01", "valor": 720 },
+    { "fecha": "2026-04-01", "valor": 810 },
+    { "fecha": "2026-05-01", "valor": 890 },
+    { "fecha": "2026-06-01", "valor": 960 },
+    { "fecha": "2026-07-01", "valor": 1040 },
+    { "fecha": "2026-08-01", "valor": 1120 }
+  ],
+  "actividadSocial": [
+    { "fecha": "2026-02-01", "posts": 320, "comentarios": 810, "reacciones": 2100 },
+    { "fecha": "2026-03-01", "posts": 360, "comentarios": 890, "reacciones": 2340 },
+    { "fecha": "2026-04-01", "posts": 410, "comentarios": 960, "reacciones": 2560 },
+    { "fecha": "2026-05-01", "posts": 455, "comentarios": 1040, "reacciones": 2780 },
+    { "fecha": "2026-06-01", "posts": 480, "comentarios": 1120, "reacciones": 2950 },
+    { "fecha": "2026-07-01", "posts": 510, "comentarios": 1210, "reacciones": 3140 },
+    { "fecha": "2026-08-01", "posts": 545, "comentarios": 1290, "reacciones": 3380 }
+  ],
+  "eventos": [
+    { "etiqueta": "Clases grupales", "valor": 48 },
+    { "etiqueta": "Retos", "valor": 22 },
+    { "etiqueta": "Torneos", "valor": 14 },
+    { "etiqueta": "Talleres", "valor": 40 }
+  ],
+  "asistencia": [
+    { "etiqueta": "Clases grupales", "valor": 82 },
+    { "etiqueta": "Retos", "valor": 74 },
+    { "etiqueta": "Torneos", "valor": 91 },
+    { "etiqueta": "Talleres", "valor": 58 }
+  ],
+  "usuariosEnRiesgo": [
+    { "id": "riesgo-ana-torres", "titulo": "Ana Torres", "detalle": "Sin entrenar hace 14 días", "severidad": "alta" },
+    { "id": "riesgo-luis-perez", "titulo": "Luis Pérez", "detalle": "Cumplimiento bajó a 22% este mes", "severidad": "alta" },
+    { "id": "riesgo-marta-diaz", "titulo": "Marta Díaz", "detalle": "3 rutinas seguidas sin completar", "severidad": "media" }
+  ],
+  "comunidadesInactivas": [
+    { "id": "inactiva-box-sur", "titulo": "Box Sur CrossFit", "detalle": "Sin publicaciones hace 21 días", "severidad": "media" },
+    { "id": "inactiva-yoga-plus", "titulo": "Yoga Plus", "detalle": "0 eventos programados este mes", "severidad": "baja" }
+  ],
+  "eventosBajaAsistencia": [
+    { "id": "evento-taller-nutricion", "titulo": "Taller de nutrición", "detalle": "Asistencia del 31% sobre el aforo", "severidad": "alta" },
+    { "id": "evento-reto-verano", "titulo": "Reto de verano", "detalle": "Asistencia del 48% sobre el aforo", "severidad": "media" }
+  ]
+}
