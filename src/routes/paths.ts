@@ -71,9 +71,9 @@ export const ROUTES = {
   notifications: '/notifications',
 
   /**
-   * Dashboard Admin — 100% mock (ver src/data/adminDashboard/*.json), vista
-   * separada de `home`. No colisiona con las redirects legacy `/admin/*`
-   * (match por path exacto, no por prefijo).
+   * Alias legacy del dashboard de métricas. La pantalla canónica es `home`
+   * (`/`); esta ruta redirige ahí. No colisiona con las redirects `/admin/*`
+   * de biblioteca (match por path exacto).
    */
   admin: {
     dashboard: '/admin/dashboard',

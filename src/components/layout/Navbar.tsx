@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   Moon,
-  Shield,
   Sun,
   Users,
   X,
@@ -32,13 +31,6 @@ const NAV_ITEMS = [
   { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
   { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },
 ] as const;
-
-const ADMIN_ITEM = {
-  path: ROUTES.admin.dashboard,
-  Icon: Shield,
-  label: 'Dashboard Admin',
-  accent: '#a371f7',
-} as const;
 
 interface NavbarProps {
   width?: ShellWidth;
@@ -240,7 +232,6 @@ const MobileNavMenu = ({ open, pathname, unread, onClose, onLogout }: MobileNavM
           {NAV_ITEMS.map((item) => (
             <MobileNavLink key={item.path} {...item} pathname={pathname} onNavigate={onClose} />
           ))}
-          <MobileNavLink {...ADMIN_ITEM} pathname={pathname} onNavigate={onClose} />
         </nav>
 
         <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>

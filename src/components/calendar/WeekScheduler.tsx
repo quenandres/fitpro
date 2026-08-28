@@ -1,27 +1,36 @@
 import { useMemo } from 'react';
-import { clienteIniciales } from './calendarUtils';
+import type { Rutina } from '../../types';
 import type { CalendarEvent, SchedulerTimeRange } from './calendarUtils';
 import {
   SCHEDULER_HOUR_HEIGHT,
   fechaLocalISO,
   formatHourLabel,
-  formatMinutesRange,
   getEventBlockStyle,
   getSchedulerHours,
   getSchedulerRange,
 } from './calendarUtils';
+import { CalendarEventCard } from './CalendarEventCard';
 
 interface WeekSchedulerProps {
   days: Date[];
   events: CalendarEvent[];
+  rutinas: Rutina[];
   timeRange: SchedulerTimeRange;
   onEventClick: (event: CalendarEvent) => void;
   onSlotClick?: (date: Date, startMinutes: number) => void;
 }
 
+function maxExercisesForHeight(height: number): number {
+  if (height >= 100) return 3;
+  if (height >= 72) return 2;
+  if (height >= 48) return 1;
+  return 0;
+}
+
 export function WeekScheduler({
   days,
   events,
+  rutinas,
   timeRange,
   onEventClick,
   onSlotClick,
@@ -41,16 +50,19 @@ export function WeekScheduler({
   }, [days, events]);
 
   const gridHeight = (endHour - startHour) * SCHEDULER_HOUR_HEIGHT;
+  const colMinWidth = days.length > 1 ? 120 : undefined;
 
   return (
-    <div className="fp-cal-scheduler fp-cal-scheduler-tablet">
+    <div className="fp-cal-scheduler fp-cal-scheduler-tablet fp-cal-scheduler-rich">
       <div className="fp-cal-scheduler-scroll">
         <div
           className="fp-cal-scheduler-grid"
           style={{
             minHeight: gridHeight + 24,
             ['--cal-cols' as string]: String(days.length),
-            minWidth: days.length > 1 ? `${52 + days.length * 96}px` : undefined,
+            minWidth: days.length > 1 && colMinWidth
+              ? `${52 + days.length * colMinWidth}px`
+              : undefined,
           }}
         >
           <div className="fp-cal-time-axis">
@@ -96,25 +108,20 @@ export function WeekScheduler({
                       <button
                         key={event.id}
                         type="button"
-                        className={`fp-cal-event fp-cal-event-${event.kind}`}
+                        className={`fp-cal-event fp-cal-event-rich fp-cal-event-${event.kind}`}
                         style={{
                           top: block.top,
                           height: block.height,
-                          background: event.accent,
                         }}
                         onClick={() => onEventClick(event)}
                       >
-                        <p className="fp-cal-event-title">{event.title}</p>
-                        <p className="fp-cal-event-time">
-                          {formatMinutesRange(event.startMinutes, event.durationMin)}
-                        </p>
-                        {event.kind === 'cita' ? (
-                          <span className="fp-cal-event-avatar">
-                            {clienteIniciales(event.subtitle)}
-                          </span>
-                        ) : (
-                          <p className="fp-cal-event-sub">{event.subtitle}</p>
-                        )}
+                        <CalendarEventCard
+                          event={event}
+                          rutinas={rutinas}
+                          compact
+                          showTimeRange
+                          maxExercises={maxExercisesForHeight(block.height)}
+                        />
                       </button>
                     );
                   })}

@@ -825,6 +825,14 @@ en §7 y ADR en §13):
   sobre localStorage sigue tan completa como antes, pero el nuevo objetivo
   (Supabase) arranca desde cero.
 
+### 2026-08-28 — Inicio = dashboard de métricas
+
+El usuario pidió que la pantalla de inicio sea el dashboard y descartar la
+pantalla principal anterior (`src/pages/Dashboard.tsx`: saludo, atajos y
+listado de rutinas). `/` renderiza `AdminDashboardPage` (métricas mock por
+rol). `/admin/dashboard` redirige a `/`. El listado de rutinas sigue en
+`/library/rutinas`.
+
 ---
 
 ## 13. Bitácora de decisiones (ADR ligero)
@@ -850,6 +858,7 @@ en §7 y ADR en §13):
 | 2026-08-27 | **Módulo Comunidades** (`/communities/*`) implementado como UI pura sobre datos mock (`useCommunitiesStore`, sin `persist`), sin conexión a Supabase/`gym-gateway`/auth real; rol de comunidad simulado y explícitamente desacoplado del RBAC real | Explorar/validar el feature completo de comunidades (posts, eventos, discusiones, moderación, roles por comunidad) como prototipo navegable antes de invertir en diseño de esquema y backend reales |
 | 2026-08-27 | **Reestructuración del roadmap** (a petición explícita del usuario, misma fecha): se elimina la **Fase 2.5** (rediseño del modelo) y la **Fase 6** (Monetización) como fases numeradas formales; **Comunidades pasa a ser la Fase 6**. El modelo plano de rutinas sigue siendo deuda técnica real (documentada en §3/§4/§9), solo deja de ser un gate bloqueante formal. Monetización queda "fuera del roadmap" (despriorizada, no descartada) | Simplificar el roadmap a lo que se está trabajando de verdad; evitar que una fase bloqueante sin dueño asignado frene indefinidamente el resto; darle a Comunidades el mismo nivel de seguimiento que las demás fases dado el tamaño de lo ya construido |
 | 2026-08-27 | **Fase 2 cambia de objetivo: CRUD local → CRUD vía Supabase.** `rutinas`/`ejercicios`/`unidades` dejan de apuntar a `localStorage` (`useDataStore` + `persist`) como destino final; pasan a apuntar a tablas Supabase expuestas vía `gym-gateway` (mismo patrón proxy que la auth de Fase 3), consumidas desde el frontend con TanStack Query. **Decisión de plan, no de código:** al momento de esta ADR nada de esto está implementado, `useDataStore` sigue 100% sobre `localStorage` | Evitar mantener dos backends de datos distintos (gateway para auth, localStorage para dominio) cuando ya existe el patrón gateway funcionando; aprovechar el diseño del schema para resolver de una vez la deuda del modelo plano (`Bloque/BloqueItem/SerieDef`) en vez de migrar el modelo viejo tal cual y rediseñarlo una segunda vez |
+| 2026-08-28 | La pantalla de inicio (`/`) es el dashboard de métricas (`AdminDashboardPage`); se elimina `Dashboard.tsx` (atajos + listado de rutinas). `/admin/dashboard` redirige a `/` | Una sola pantalla de arranque; las rutinas se gestionan en Biblioteca |
 
 ---
 

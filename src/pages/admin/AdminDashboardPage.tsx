@@ -19,10 +19,9 @@ const rolFromQuery = (raw: string | null): RolDashboard | null => {
 };
 
 /**
- * Dashboard Admin — 100% datos mock (ver src/data/adminDashboard/*.json).
- * Resuelve la vista según el rol (`resolveDashboardRole`) y delega en una de
- * las 3 vistas; cada una compone sus propias secciones/gráficas con
- * los componentes de src/components/admin/dashboard/.
+ * Pantalla de inicio (`/`): dashboard de métricas — 100% datos mock
+ * (ver src/data/adminDashboard/*.json). Resuelve la vista según el rol
+ * (`resolveDashboardRole`) y delega en una de las 3 vistas.
  * `?rol=superadmin|entrenador|lider_comunidad` fuerza la vista (útil mientras
  * el backend no envíe esos roles).
  */

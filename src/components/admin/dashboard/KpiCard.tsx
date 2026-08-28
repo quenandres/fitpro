@@ -8,7 +8,7 @@ interface Props {
   accent: string;
 }
 
-/** Tarjeta KPI genérica — mismo patrón visual que el bloque STATS de src/pages/Dashboard.tsx. */
+/** Tarjeta KPI del dashboard de inicio (métricas por rol). */
 export const KpiCard = ({ icon: Icon, label, value, accent }: Props) => (
   <div
     className="fp-card min-w-0"

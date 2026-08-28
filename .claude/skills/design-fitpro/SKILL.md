@@ -14,7 +14,7 @@ description: Aplica la guía visual y de UI de FitPro (tokens CSS, componentes f
 ## Fuente de verdad
 
 1. **Tokens y utilidades globales:** `src/index.css` (`:root`, `:root.light`, clases `fp-*`, `badge*`, `auth-*`, animaciones).
-2. **Patrones vivos:** `src/components/layout/Navbar.tsx`, `src/pages/Dashboard.tsx`.
+2. **Patrones vivos:** `src/components/layout/Navbar.tsx`, `src/pages/admin/AdminDashboardPage.tsx`.
 3. **Proyecto:** `CLAUDE.md` — código nuevo: preferir **Tailwind** cuando baste; si el archivo ya mezcla `style={{}}` con tokens, **mantener el mismo patrón** en esa zona para no romper coherencia local.
 
 ## Identidad visual

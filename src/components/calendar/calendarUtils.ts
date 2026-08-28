@@ -378,6 +378,52 @@ export function getDayWindow(center: Date, radius = 7): Date[] {
   return Array.from({ length: radius * 2 + 1 }, (_, i) => addDays(center, i - radius));
 }
 
+/** All days shown in a month grid (includes leading/trailing days from adjacent months). */
+export function getDaysInMonth(month: Date): Date[] {
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const first = new Date(year, monthIndex, 1);
+  const last = new Date(year, monthIndex + 1, 0);
+  const start = getWeekStart(first);
+  const end = addDays(getWeekStart(last), 6);
+  const days: Date[] = [];
+  for (let d = start; d <= end; d = addDays(d, 1)) {
+    days.push(d);
+  }
+  return days;
+}
+
+export interface DayEventSummary {
+  rutinas: string[];
+  kinds: CalendarEventKind[];
+  totalCount: number;
+  extraCount: number;
+}
+
+export function summarizeEventsForDay(
+  events: CalendarEvent[],
+  fecha: string,
+  maxVisible = 2,
+): DayEventSummary {
+  const dayEvents = events.filter((e) => e.fecha === fecha);
+  const rutinas: string[] = [];
+
+  for (const event of dayEvents) {
+    if (event.title && !rutinas.includes(event.title)) {
+      rutinas.push(event.title);
+    }
+  }
+
+  const kinds = [...new Set(dayEvents.map((e) => e.kind))];
+
+  return {
+    rutinas: rutinas.slice(0, maxVisible),
+    kinds,
+    totalCount: dayEvents.length,
+    extraCount: Math.max(0, rutinas.length - maxVisible),
+  };
+}
+
 export interface TimeSlot {
   minutes: number;
   label: string;

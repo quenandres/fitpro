@@ -10,12 +10,13 @@ import { FitProCalendar } from '../components/calendar/FitProCalendar';
 import { CitaDetailSheet } from '../components/calendar/CitaDetailSheet';
 import { TimeRangeSelector } from '../components/calendar/TimeRangeSelector';
 import { MobileDateStrip } from '../components/calendar/MobileDateStrip';
-import { MobileDayAgenda } from '../components/calendar/MobileDayAgenda';
+import { DayAgenda } from '../components/calendar/MobileDayAgenda';
 import { Sheet } from '../components/common/Sheet';
 import { CitaForm, minutesToTime } from '../components/calendar/CitaForm';
 import {
   buildCalendarEvents,
   fechaLocalISO,
+  getDaysInMonth,
   getDefaultTimeRange,
   getDayWindow,
   getEntrenoWeekdays,
@@ -55,6 +56,8 @@ export function CalendarPage() {
     return getWeekDays(selected);
   }, [selected, viewMode, isMobile]);
 
+  const monthDays = useMemo(() => getDaysInMonth(selected), [selected]);
+
   const entrenoWeekdays = useMemo(
     () => getEntrenoWeekdays(usuarios, visibleClientIds),
     [usuarios, visibleClientIds],
@@ -70,6 +73,11 @@ export function CalendarPage() {
   const events = useMemo(
     () => buildCalendarEvents(usuarios, citas, visibleClientIds, weekDays, rutinas),
     [usuarios, citas, visibleClientIds, weekDays, rutinas],
+  );
+
+  const monthEvents = useMemo(
+    () => buildCalendarEvents(usuarios, citas, visibleClientIds, monthDays, rutinas),
+    [usuarios, citas, visibleClientIds, monthDays, rutinas],
   );
 
   const allEvents = useMemo(
@@ -148,6 +156,7 @@ export function CalendarPage() {
 
   const showDesktopSidebar = isLargeScreen;
   const showFiltersSheet = !isLargeScreen;
+  const isMonthView = isMobile ? mobileView === 'month' : viewMode === 'month';
 
   return (
     <AppShell width="wide" hideBottomNav={false}>
@@ -155,7 +164,7 @@ export function CalendarPage() {
         <div className="fp-cal-layout">
           {showDesktopSidebar ? <CalendarSidebar {...sidebarProps} /> : null}
 
-          <div className="fp-cal-main">
+          <div className={`fp-cal-main${isMonthView ? ' fp-cal-main--month' : ''}`}>
             <CalendarHeader
               selected={selected}
               viewMode={viewMode}
@@ -180,6 +189,9 @@ export function CalendarPage() {
                     citaDates={citaDates}
                     month={selected}
                     onMonthChange={setSelected}
+                    density="rich"
+                    events={monthEvents}
+                    variant="mobile"
                   />
                 </div>
               ) : (
@@ -194,7 +206,7 @@ export function CalendarPage() {
                     onChange={setTimeRange}
                     compact
                   />
-                  <MobileDayAgenda
+                  <DayAgenda
                     selected={selected}
                     events={events}
                     timeRange={timeRange}
@@ -215,7 +227,7 @@ export function CalendarPage() {
                 ) : null}
 
                 {viewMode === 'month' ? (
-                  <div className="fp-cal-month-view">
+                  <div className="fp-cal-month-view fp-cal-month-view-desktop">
                     <FitProCalendar
                       selected={selected}
                       onSelect={(date) => date && setSelected(date)}
@@ -223,14 +235,29 @@ export function CalendarPage() {
                       citaDates={citaDates}
                       month={selected}
                       onMonthChange={setSelected}
+                      density="rich"
+                      events={monthEvents}
                     />
                   </div>
+                ) : viewMode === 'day' ? (
+                  <>
+                    <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+                    <DayAgenda
+                      selected={selected}
+                      events={events}
+                      timeRange={timeRange}
+                      rutinas={rutinas}
+                      onEventClick={setSelectedEvent}
+                      onCreateCita={() => openCreate()}
+                    />
+                  </>
                 ) : (
                   <>
                     <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
                     <WeekScheduler
                       days={weekDays}
                       events={events}
+                      rutinas={rutinas}
                       timeRange={timeRange}
                       onEventClick={setSelectedEvent}
                       onSlotClick={(date, startMinutes) => openCreate(date, startMinutes)}

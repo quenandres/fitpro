@@ -87,7 +87,7 @@ fitpro/
 │   │   ├── exercisedb/    # Cliente ExerciseDB + hooks TanStack Query + Zod schemas
 │   │   ├── ai/            # Helpers del chat IA (fitpro_api)
 │   │   └── supabase.ts    # COMENTADO — no se usa (todo pasa por gateway)
-│   ├── pages/             # Dashboard, CalendarPage, WorkoutPlayer, library/*, communities/*
+│   ├── pages/             # admin/AdminDashboardPage (inicio), CalendarPage, WorkoutPlayer, library/*, communities/*
 │   ├── routes/paths.ts    # ROUTES tipado + redirects legacy
 │   ├── store/             # useDataStore (persist), useCitasStore (NO persist),
 │   │                      # useWorkoutStore (NO persist), useCommunitiesStore (NO persist, mock)
@@ -284,8 +284,8 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/paths.ts):
 
 - **Públicas:** `/login`, `/register`.
-- **App principal (protegidas):** `/` (Dashboard), `/calendario`,
-  `/workout/:id`, `/player`, `/anatomytracker`.
+- **App principal (protegidas):** `/` (dashboard de métricas por rol),
+  `/calendario`, `/workout/:id`, `/player`, `/anatomytracker`.
 - **Biblioteca** (bajo `LibraryLayout`, todo protegido): `/library` (hub),
   `/library/rutinas`, `/library/rutinas/nueva` (chooser de nivel),
   `/library/rutinas/plantillas`, `/library/rutinas/nueva/{basica,intermedia,avanzada}`,
@@ -300,6 +300,7 @@ Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/p
 - **Redirects legacy:** rutas viejas `/admin/*`, `/library/ejercicios`,
   `/library/rutina/*` → equivalentes canónicos actuales (ver
   `LEGACY_LIBRARY_REDIRECTS` / `LEGACY_ROUTINE_FORM_LEVELS` en `paths.ts`).
+  `/admin/dashboard` redirige a `/` (la pantalla de inicio es el dashboard).
 - **Ruta huérfana detectada:** `ROUTES.library.unidades`
   (`/library/unidades`) está definida en `paths.ts` y referenciada por
   redirects legacy, pero **no tiene `<Route>` registrada** en `App.tsx` — cae
@@ -402,6 +403,7 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 - [README.md](./README.md) — documentación del modelo de datos (desactualizada
   en partes; confiar en `CONTEXT.md`/`CLAUDE.md` sobre auth y estructura).
 - [src/App.tsx](./src/App.tsx) / [src/routes/paths.ts](./src/routes/paths.ts) — routing.
+- [src/pages/admin/AdminDashboardPage.tsx](./src/pages/admin/AdminDashboardPage.tsx) — pantalla de inicio (`/`).
 - [src/types/index.ts](./src/types/index.ts) — modelo de datos de rutinas
   (a rediseñar; deuda técnica sin fase bloqueante formal, ver `CONTEXT.md §7`).
 - [src/types/community.ts](./src/types/community.ts) — modelo del módulo

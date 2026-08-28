@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Dashboard } from './pages/Dashboard';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
@@ -86,9 +85,9 @@ function AppRoutes() {
       <Route path={ROUTES.login} element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path={ROUTES.register} element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-      {/* App principal */}
-      <Route path={ROUTES.home} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path={ROUTES.admin.dashboard} element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+      {/* App principal — Inicio = dashboard de métricas (por rol) */}
+      <Route path={ROUTES.home} element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+      <Route path={ROUTES.admin.dashboard} element={<Navigate to={ROUTES.home} replace />} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
