@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Activity, ChevronLeft } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
@@ -6,15 +6,38 @@ import { ClienteSelector } from '../components/tracking/ClienteSelector';
 import { TrackingStats } from '../components/tracking/TrackingStats';
 import { ActivityHeatmap } from '../components/tracking/ActivityHeatmap';
 import { RecentSessionsList } from '../components/tracking/RecentSessionsList';
+import { TrackingPeriodNav } from '../components/tracking/TrackingPeriodNav';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 import { getSesionesByUsuario, getSesionesEnRango } from '../store/useSesionesStore';
-import { getRangoUltimasSemanas } from '../utils/trackingUtils';
+import {
+  TRACKING_PERIOD_LABELS,
+  fechaLocalISO,
+  getPeriodRange,
+  navigatePeriodAnchor,
+  parseFechaLocal,
+  parsePeriodParam,
+  type TrackingPeriod,
+} from '../utils/trackingUtils';
 import { ROUTES } from '../routes/paths';
 
 export function TrackingPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const usuarios = useUsuariosStore((s) => s.usuarios);
+
+  const period: TrackingPeriod = parsePeriodParam(params.get('period')) ?? 'mes';
+  const anchorDate = useMemo(() => {
+    const raw = params.get('fecha');
+    if (raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return parseFechaLocal(raw);
+    }
+    return new Date();
+  }, [params]);
+
+  const periodRange = useMemo(
+    () => getPeriodRange(period, anchorDate),
+    [period, anchorDate],
+  );
 
   const usuarioId = useMemo(() => {
     const raw = params.get('usuario');
@@ -30,20 +53,44 @@ export function TrackingPage() {
     [usuarios, usuarioId],
   );
 
-  const rango = getRangoUltimasSemanas(12);
-  const sesionesRango = useMemo(() => {
+  const sesionesPeriodo = useMemo(() => {
     if (usuarioId == null) return [];
-    return getSesionesEnRango(usuarioId, rango.desde, rango.hasta);
-  }, [usuarioId, rango.desde, rango.hasta]);
+    return getSesionesEnRango(usuarioId, periodRange.desde, periodRange.hasta);
+  }, [usuarioId, periodRange.desde, periodRange.hasta]);
 
   const sesionesAll = useMemo(() => {
     if (usuarioId == null) return [];
     return getSesionesByUsuario(usuarioId);
   }, [usuarioId]);
 
+  const updateParams = useCallback(
+    (next: { usuario?: number; period?: TrackingPeriod; fecha?: Date }) => {
+      const merged = new URLSearchParams(params);
+      if (next.usuario != null) merged.set('usuario', String(next.usuario));
+      if (next.period != null) merged.set('period', next.period);
+      if (next.fecha != null) merged.set('fecha', fechaLocalISO(next.fecha));
+      setParams(merged);
+    },
+    [params, setParams],
+  );
+
   const handleClienteChange = (id: number) => {
-    setParams({ usuario: String(id) });
+    updateParams({ usuario: id });
   };
+
+  const handlePeriodChange = (next: TrackingPeriod) => {
+    updateParams({ period: next, fecha: periodRange.anchor });
+  };
+
+  const handlePrevPeriod = () => {
+    updateParams({ fecha: navigatePeriodAnchor(period, periodRange.anchor, -1) });
+  };
+
+  const handleNextPeriod = () => {
+    updateParams({ fecha: navigatePeriodAnchor(period, periodRange.anchor, 1) });
+  };
+
+  const statsPeriodLabel = TRACKING_PERIOD_LABELS[period].toLowerCase();
 
   if (usuarios.length === 0) {
     return (
@@ -98,7 +145,7 @@ export function TrackingPage() {
         </div>
 
         <div className="flex flex-col gap-4 min-w-0">
-          <TrackingStats sesiones={sesionesRango} />
+          <TrackingStats sesiones={sesionesPeriodo} periodLabel={statsPeriodLabel} />
 
           <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
             <h2
@@ -107,10 +154,22 @@ export function TrackingPage() {
             >
               Actividad
             </h2>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-              Últimos {12} meses · color por modalidad dominante del día
-            </p>
-            <ActivityHeatmap sesiones={sesionesAll} />
+
+            <TrackingPeriodNav
+              period={period}
+              periodLabel={periodRange.label}
+              onPeriodChange={handlePeriodChange}
+              onPrev={handlePrevPeriod}
+              onNext={handleNextPeriod}
+            />
+
+            <div className="mt-4">
+              <ActivityHeatmap
+                sesiones={sesionesAll}
+                period={period}
+                anchorDate={periodRange.anchor}
+              />
+            </div>
           </div>
 
           <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
@@ -120,7 +179,7 @@ export function TrackingPage() {
             >
               Sesiones recientes
             </h2>
-            <RecentSessionsList sesiones={sesionesAll} />
+            <RecentSessionsList sesiones={sesionesPeriodo} />
           </div>
         </div>
       </div>

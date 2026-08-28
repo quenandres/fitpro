@@ -18,6 +18,27 @@ export interface HeatmapCell {
   sesiones: SesionEntrenamiento[];
 }
 
+export interface MonthCalendarCell extends HeatmapCell {
+  dayNum: number;
+  inMonth: boolean;
+}
+
+export type TrackingPeriod = 'semana' | 'mes' | 'trimestre' | 'anio';
+
+export interface TrackingPeriodRange {
+  desde: string;
+  hasta: string;
+  label: string;
+  anchor: Date;
+}
+
+export const TRACKING_PERIOD_LABELS: Record<TrackingPeriod, string> = {
+  semana: 'Semana',
+  mes: 'Mes',
+  trimestre: 'Trimestre',
+  anio: 'Año',
+};
+
 const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export function inferModalidad(categoria: string): SesionModalidad {
@@ -106,22 +127,118 @@ export function calcStreak(sesiones: SesionEntrenamiento[], today = new Date()):
   return streak;
 }
 
-/** Filas Lun–Dom, columnas semanas (más antigua → más reciente). */
-export function buildHeatmapCells(
+export function startOfWeek(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
+  const jsDay = d.getDay();
+  const diff = jsDay === 0 ? -6 : 1 - jsDay;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function formatWeekLabel(start: Date, end: Date): string {
+  const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
+  return `${fmt.format(start)} – ${fmt.format(end)}`;
+}
+
+function formatMonthLabel(date: Date): string {
+  return new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(date);
+}
+
+export function getPeriodRange(period: TrackingPeriod, anchor = new Date()): TrackingPeriodRange {
+  const a = new Date(anchor);
+  a.setHours(12, 0, 0, 0);
+
+  switch (period) {
+    case 'semana': {
+      const start = startOfWeek(a);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      return {
+        desde: fechaLocalISO(start),
+        hasta: fechaLocalISO(end),
+        label: formatWeekLabel(start, end),
+        anchor: start,
+      };
+    }
+    case 'mes': {
+      const start = new Date(a.getFullYear(), a.getMonth(), 1, 12);
+      const end = new Date(a.getFullYear(), a.getMonth() + 1, 0, 12);
+      return {
+        desde: fechaLocalISO(start),
+        hasta: fechaLocalISO(end),
+        label: formatMonthLabel(start),
+        anchor: start,
+      };
+    }
+    case 'trimestre': {
+      const q = Math.floor(a.getMonth() / 3);
+      const start = new Date(a.getFullYear(), q * 3, 1, 12);
+      const end = new Date(a.getFullYear(), q * 3 + 3, 0, 12);
+      return {
+        desde: fechaLocalISO(start),
+        hasta: fechaLocalISO(end),
+        label: `T${q + 1} ${a.getFullYear()}`,
+        anchor: start,
+      };
+    }
+    case 'anio': {
+      const start = new Date(a.getFullYear(), 0, 1, 12);
+      const end = new Date(a.getFullYear(), 11, 31, 12);
+      return {
+        desde: fechaLocalISO(start),
+        hasta: fechaLocalISO(end),
+        label: String(a.getFullYear()),
+        anchor: start,
+      };
+    }
+  }
+}
+
+export function navigatePeriodAnchor(
+  period: TrackingPeriod,
+  anchor: Date,
+  direction: -1 | 1,
+): Date {
+  const d = new Date(anchor);
+  d.setHours(12, 0, 0, 0);
+  switch (period) {
+    case 'semana':
+      d.setDate(d.getDate() + direction * 7);
+      break;
+    case 'mes':
+      d.setMonth(d.getMonth() + direction);
+      break;
+    case 'trimestre':
+      d.setMonth(d.getMonth() + direction * 3);
+      break;
+    case 'anio':
+      d.setFullYear(d.getFullYear() + direction);
+      break;
+  }
+  return d;
+}
+
+export function parsePeriodParam(raw: string | null): TrackingPeriod | null {
+  if (raw === 'semana' || raw === 'mes' || raw === 'trimestre' || raw === 'anio') {
+    return raw;
+  }
+  return null;
+}
+
+/** Filas Lun–Dom, columnas días del rango (más antigua → más reciente). */
+export function buildHeatmapCellsForRange(
   sesiones: SesionEntrenamiento[],
-  weeks: number,
-  endDate = new Date(),
+  desde: string,
+  hasta: string,
 ): HeatmapCell[][] {
   const byDate = groupByFecha(sesiones);
-  const end = new Date(endDate);
-  end.setHours(12, 0, 0, 0);
-
-  const start = new Date(end);
-  start.setDate(start.getDate() - weeks * 7 + 1);
-
   const grid: HeatmapCell[][] = Array.from({ length: 7 }, () => []);
 
+  const start = parseFechaLocal(desde);
+  const end = parseFechaLocal(hasta);
   const cursor = new Date(start);
+
   while (cursor <= end) {
     const jsDay = cursor.getDay();
     const rowIndex = jsDay === 0 ? 6 : jsDay - 1;
@@ -136,6 +253,101 @@ export function buildHeatmapCells(
   }
 
   return grid;
+}
+
+/** Una fila Lun–Dom para la semana del anchor. */
+export function buildWeekCells(
+  sesiones: SesionEntrenamiento[],
+  anchor: Date,
+): HeatmapCell[] {
+  const range = getPeriodRange('semana', anchor);
+  const byDate = groupByFecha(sesiones);
+  const cells: HeatmapCell[] = [];
+  const cursor = parseFechaLocal(range.desde);
+
+  for (let i = 0; i < 7; i += 1) {
+    const fecha = fechaLocalISO(cursor);
+    const daySessions = byDate.get(fecha) ?? [];
+    cells.push({
+      date: fecha,
+      modalidad: daySessions.length > 0 ? dominantModalidad(daySessions) : null,
+      sesiones: daySessions,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return cells;
+}
+
+/** Calendario mensual (filas = semanas, columnas = Lun–Dom). */
+export function buildMonthCalendarGrid(
+  sesiones: SesionEntrenamiento[],
+  anchor: Date,
+): MonthCalendarCell[][] {
+  const byDate = groupByFecha(sesiones);
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth();
+  const first = new Date(year, month, 1, 12);
+  const lastDay = new Date(year, month + 1, 0, 12).getDate();
+  const startPad = first.getDay() === 0 ? 6 : first.getDay() - 1;
+
+  const emptyCell = (): MonthCalendarCell => ({
+    date: '',
+    modalidad: null,
+    sesiones: [],
+    dayNum: 0,
+    inMonth: false,
+  });
+
+  const weeks: MonthCalendarCell[][] = [];
+  let week: MonthCalendarCell[] = [];
+
+  for (let i = 0; i < startPad; i += 1) {
+    week.push(emptyCell());
+  }
+
+  for (let day = 1; day <= lastDay; day += 1) {
+    const date = new Date(year, month, day, 12);
+    const fecha = fechaLocalISO(date);
+    const daySessions = byDate.get(fecha) ?? [];
+    week.push({
+      date: fecha,
+      modalidad: daySessions.length > 0 ? dominantModalidad(daySessions) : null,
+      sesiones: daySessions,
+      dayNum: day,
+      inMonth: true,
+    });
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
+  }
+
+  if (week.length > 0) {
+    while (week.length < 7) {
+      week.push(emptyCell());
+    }
+    weeks.push(week);
+  }
+
+  return weeks;
+}
+
+/** Filas Lun–Dom, columnas semanas (más antigua → más reciente). */
+export function buildHeatmapCells(
+  sesiones: SesionEntrenamiento[],
+  weeks: number,
+  endDate = new Date(),
+): HeatmapCell[][] {
+  const end = new Date(endDate);
+  end.setHours(12, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(start.getDate() - weeks * 7 + 1);
+  return buildHeatmapCellsForRange(
+    sesiones,
+    fechaLocalISO(start),
+    fechaLocalISO(end),
+  );
 }
 
 export function getHeatmapDayLabels(): readonly string[] {

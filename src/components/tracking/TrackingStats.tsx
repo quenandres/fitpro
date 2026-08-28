@@ -5,14 +5,15 @@ import { KpiCard } from '../admin/dashboard/KpiCard';
 
 interface TrackingStatsProps {
   sesiones: SesionEntrenamiento[];
+  periodLabel: string;
 }
 
-export function TrackingStats({ sesiones }: TrackingStatsProps) {
+export function TrackingStats({ sesiones, periodLabel }: TrackingStatsProps) {
   const counts = countByModalidad(sesiones);
   const streak = calcStreak(sesiones);
 
   const items = [
-    { icon: Activity, label: 'Sesiones (12 sem)', value: sesiones.length, accent: '#22c55e' },
+    { icon: Activity, label: `Sesiones (${periodLabel})`, value: sesiones.length, accent: '#22c55e' },
     { icon: Flame, label: 'Racha actual', value: streak, accent: '#f0883e' },
     { icon: Dumbbell, label: 'Fuerza', value: counts.fuerza, accent: '#f0883e' },
     { icon: Timer, label: 'Isométrico', value: counts.isometrico, accent: '#58a6ff' },
