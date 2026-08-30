@@ -36,21 +36,13 @@ export function UserPlannedLoadPanel({ user, semana, ejercicios, rutinas }: Prop
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className="rounded-[10px] px-3 py-2" style={{ background: '#58a6ff15' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#58a6ff' }}>
-            SERIES SEMANA
-          </p>
-          <p className="font-sora text-lg font-bold" style={{ color: '#58a6ff' }}>
-            {seriesTotal}
-          </p>
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Series semana</p>
+          <p className="fp-user-spec-v" style={{ fontSize: 18 }}>{seriesTotal}</p>
         </div>
-        <div className="rounded-[10px] px-3 py-2" style={{ background: '#a371f715' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#a371f7' }}>
-            MÚSCULOS
-          </p>
-          <p className="font-sora text-lg font-bold" style={{ color: '#a371f7' }}>
-            {top.length}
-          </p>
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Músculos</p>
+          <p className="fp-user-spec-v" style={{ fontSize: 18 }}>{top.length}</p>
         </div>
       </div>
 

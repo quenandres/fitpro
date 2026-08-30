@@ -39,3 +39,32 @@ export function formatUltimoEntrenamiento(sesion: SesionEntrenamiento | null): {
     detalle: sesion.rutina_nombre,
   };
 }
+
+/** Recencia para el rail de la ficha: lo primero que escanea un entrenador. */
+export type RecencyTone = 'fresh' | 'warm' | 'cold' | 'none';
+
+export function recencyToneFromSesion(sesion: SesionEntrenamiento | null): RecencyTone {
+  if (!sesion) return 'none';
+  const date = parseFechaLocal(sesion.fecha);
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  const diffDays = Math.round((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 2) return 'fresh';
+  if (diffDays <= 7) return 'warm';
+  return 'cold';
+}
+
+export function recencyCopy(tone: RecencyTone): string {
+  if (tone === 'fresh') return 'Al día';
+  if (tone === 'warm') return 'Esta semana';
+  if (tone === 'cold') return 'Se enfría';
+  return 'Sin rastro';
+}
+
+export const initialsOf = (nombre: string): string =>
+  nombre
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || '?';

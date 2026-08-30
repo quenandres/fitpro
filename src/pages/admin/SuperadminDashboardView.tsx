@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import {
   Users,
   UserCheck,
@@ -9,11 +8,9 @@ import {
   UserCog,
   AlertTriangle,
   MessagesSquare,
-  Plus,
 } from 'lucide-react';
 import data from '../../data/adminDashboard/superadmin.json';
 import type { SuperadminMetrics } from '../../types/adminDashboard';
-import { ROUTES } from '../../routes/paths';
 import { KpiCard } from '../../components/admin/dashboard/KpiCard';
 import { ChartCard } from '../../components/admin/dashboard/ChartCard';
 import { SectionHeader } from '../../components/admin/dashboard/SectionHeader';
@@ -41,7 +38,7 @@ const KPI_ICONS: Record<string, typeof Users> = {
 
 export const SuperadminDashboardView = () => (
   <>
-    <div className="animate-slide-up grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2 min-w-0">
+    <div className="animate-slide-up delay-100 fp-admin-kpi-grid">
       {metrics.kpis.map(({ label, valor }, i) => (
         <KpiCard
           key={label}
@@ -86,14 +83,6 @@ export const SuperadminDashboardView = () => (
     </div>
 
     <SectionHeader icon={UsersRound} title="Comunidades" accent={morado} />
-    <Link
-      to={ROUTES.communities.create}
-      className="fp-btn fp-btn-secondary w-fit mb-3 inline-flex items-center gap-1.5"
-      style={{ fontSize: 13, padding: '8px 14px', textDecoration: 'none' }}
-    >
-      <Plus size={16} />
-      Crear comunidad
-    </Link>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
       <ChartCard title="Comunidades activas" subtitle="Por categoría">
         <CategoryBarChart data={metrics.comunidadesActivas} color={morado} />

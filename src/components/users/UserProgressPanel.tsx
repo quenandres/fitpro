@@ -44,9 +44,10 @@ export function UserProgressPanel({ usuarioId }: Props) {
       <TrackingStats sesiones={sesionesPeriodo} periodLabel={statsPeriodLabel} />
 
       <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
-        <h3 className="font-sora text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-          Actividad
-        </h3>
+        <div className="fp-admin-section-head fp-admin-section-head--compact" style={{ marginBottom: 14 }}>
+          <h3 className="font-sora fp-admin-section-title">Actividad</h3>
+          <span className="fp-admin-section-rule" aria-hidden />
+        </div>
         <TrackingPeriodNav
           period={period}
           periodLabel={periodRange.label}
@@ -105,9 +106,10 @@ export function UserProgressPanel({ usuarioId }: Props) {
       </div>
 
       <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
-        <h3 className="font-sora text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-          Sesiones recientes
-        </h3>
+        <div className="fp-admin-section-head fp-admin-section-head--compact" style={{ marginBottom: 14 }}>
+          <h3 className="font-sora fp-admin-section-title">Sesiones recientes</h3>
+          <span className="fp-admin-section-rule" aria-hidden />
+        </div>
         <RecentSessionsList sesiones={sesionesPeriodo} />
       </div>
     </div>

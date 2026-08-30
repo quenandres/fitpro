@@ -155,40 +155,29 @@ export function UserPlanWorkspace({
 
   return (
     <>
-      <div
-        className="grid gap-4 mb-4"
-        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}
-      >
-        <div className="rounded-lg px-3 py-2" style={{ background: '#22c55e15' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#22c55e' }}>
-            OBJETIVO
-          </p>
-          <p className="text-xs font-semibold">{user.objetivo}</p>
+      <div className="fp-user-spec">
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Objetivo</p>
+          <p className="fp-user-spec-v">{user.objetivo}</p>
         </div>
-        <div className="rounded-lg px-3 py-2" style={{ background: '#58a6ff15' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#58a6ff' }}>
-            NIVEL
-          </p>
-          <p className="text-xs font-semibold">{isNivelAvanzado(user.nivel) ? 'Avanzado' : user.nivel}</p>
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Nivel</p>
+          <p className="fp-user-spec-v">{isNivelAvanzado(user.nivel) ? 'Avanzado' : user.nivel}</p>
         </div>
-        <div className="rounded-lg px-3 py-2" style={{ background: '#f0883e15' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#f0883e' }}>
-            PESO
-          </p>
-          <p className="text-xs font-semibold">{formatPesoKg(user.peso_kg)}</p>
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Peso</p>
+          <p className="fp-user-spec-v">{formatPesoKg(user.peso_kg)}</p>
         </div>
-        <div className="rounded-lg px-3 py-2" style={{ background: '#a371f715' }}>
-          <p className="text-[9px] font-bold tracking-wide" style={{ color: '#a371f7' }}>
-            PLAN
-          </p>
-          <p className="text-xs font-semibold">{user.plan.semanas} sem</p>
+        <div className="fp-user-spec-item">
+          <p className="fp-user-spec-k">Plan</p>
+          <p className="fp-user-spec-v">{user.plan.semanas} sem</p>
         </div>
       </div>
 
       {semanaPlan ? (
-        <div className="fp-card mb-4" style={{ padding: 12, borderRadius: 13 }}>
-          <p className="fp-cal-label mb-2">Día activo</p>
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
+        <div className="fp-card mb-4" style={{ padding: 14, borderRadius: 14 }}>
+          <p className="fp-cal-label mb-2">Día activo · {diaLabel}</p>
+          <div className="fp-user-days scrollbar-hide">
             {semanaPlan.dias.map((d, idx) => {
               const activo = idx === selectedDiaIndex;
               return (
@@ -196,12 +185,7 @@ export function UserPlanWorkspace({
                   key={d.dia}
                   type="button"
                   onClick={() => onSelectedDiaChange(idx)}
-                  className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                  style={{
-                    border: activo ? '2px solid #58a6ff' : '1px solid var(--border)',
-                    background: activo ? '#58a6ff20' : 'var(--bg-overlay)',
-                    color: activo ? '#58a6ff' : 'var(--text-muted)',
-                  }}
+                  className={`fp-user-day${activo ? ' fp-user-day--on' : ''}`}
                 >
                   {d.nombre.slice(0, 3)}
                 </button>

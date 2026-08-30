@@ -10,10 +10,9 @@ interface Props {
 }
 
 export const SectionHeader = ({ icon: Icon, title, accent = 'var(--brand)', compact = false }: Props) => (
-  <div className={`flex items-center gap-2 mb-2.5${compact ? '' : ' mt-5 md:mt-6'}`}>
+  <div className={`fp-admin-section-head${compact ? ' fp-admin-section-head--compact' : ''}`}>
     <Icon size={16} color={accent} className="shrink-0" />
-    <h2 className="font-sora" style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-      {title}
-    </h2>
+    <h2 className="font-sora fp-admin-section-title">{title}</h2>
+    <span className="fp-admin-section-rule" aria-hidden />
   </div>
 );

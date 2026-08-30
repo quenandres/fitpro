@@ -164,6 +164,15 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 .animate-fade-in    { animation: fade-in    .25s ease forwards; }
 .animate-scale-in   { animation: scale-in   .35s ease forwards; }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up,
+  .animate-slide-down,
+  .animate-fade-in,
+  .animate-scale-in {
+    animation: none;
+  }
+}
+
 .delay-50  { animation-delay: 50ms;  }
 .delay-100 { animation-delay: 100ms; }
 .delay-150 { animation-delay: 150ms; }
@@ -691,6 +700,442 @@ textarea.fp-input {
 .fp-admin-attention .fp-card {
   background: var(--bg-elevated);
   border-color: color-mix(in srgb, var(--accent-red) 24%, var(--border));
+}
+
+/* Dashboard — pizarra del día */
+.fp-admin-briefing {
+  position: relative;
+  overflow: hidden;
+  margin-top: 8px;
+  margin-bottom: 18px;
+  padding: 18px 16px 16px 20px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.fp-admin-briefing::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--brand), var(--accent-blue));
+}
+.fp-admin-briefing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.fp-admin-briefing-date {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fp-admin-briefing-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+.fp-admin-briefing-lede {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 42ch;
+}
+.fp-admin-pulse {
+  display: flex;
+  height: 8px;
+  margin-top: 16px;
+  border-radius: 100px;
+  overflow: hidden;
+  background: var(--bg-overlay);
+}
+.fp-admin-pulse-seg { height: 100%; }
+.fp-admin-pulse-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.fp-admin-pulse-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fp-admin-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.fp-admin-briefing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.fp-admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+  min-width: 0;
+}
+.fp-admin-kpi-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (min-width: 640px) {
+  .fp-admin-kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fp-admin-kpi-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.fp-admin-kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+}
+.fp-admin-kpi-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fp-admin-kpi-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fp-admin-kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+.fp-admin-kpi-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.fp-admin-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px 0 10px;
+}
+.fp-admin-section-head--compact { margin-top: 0; }
+.fp-admin-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+.fp-admin-section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  min-width: 24px;
+}
+
+.fp-admin-callout { padding: 14px 14px 10px; border-radius: 14px; }
+.fp-admin-callout-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.fp-admin-callout-empty { font-size: 12px; color: var(--text-muted); padding-bottom: 6px; }
+.fp-admin-callout-list { list-style: none; margin: 0; padding: 0; }
+.fp-admin-callout-item {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.fp-admin-callout-item:last-child { border-bottom: none; }
+.fp-admin-callout-rail {
+  width: 3px;
+  border-radius: 100px;
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 28px;
+}
+.fp-admin-callout-body { min-width: 0; flex: 1; }
+.fp-admin-callout-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.fp-admin-callout-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.fp-admin-rank {
+  list-style: none;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 14px;
+}
+.fp-admin-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.fp-admin-rank-item:last-child { border-bottom: none; }
+.fp-admin-rank-n {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text-muted);
+  width: 1.6em;
+  flex-shrink: 0;
+}
+.fp-admin-rank-copy { min-width: 0; flex: 1; }
+.fp-admin-rank-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.fp-admin-rank-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+@media (min-width: 768px) {
+  .fp-admin-briefing { padding: 22px 22px 18px 26px; }
+  .fp-admin-briefing-title { font-size: 28px; }
+}
+
+/* Fichas de atleta — roster y expediente */
+.fp-user-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 16px 14px 18px;
+  border-radius: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.fp-user-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.fp-user-card-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.fp-user-card-rail--fresh { background: var(--brand); }
+.fp-user-card-rail--warm { background: var(--accent-blue); }
+.fp-user-card-rail--cold { background: var(--accent-red); }
+.fp-user-card-rail--none { background: var(--border); }
+.fp-user-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.fp-user-id {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.fp-user-id--file {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+  border-radius: 13px;
+}
+.fp-user-card-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.fp-user-card-plan {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+.fp-user-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fp-user-card-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.fp-user-card-when {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.fp-user-card-what {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  min-width: 0;
+}
+
+.fp-user-file {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 16px 16px 14px 20px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.fp-user-file-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.fp-user-file-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.fp-user-file-copy { min-width: 0; flex: 1; }
+.fp-user-file-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+.fp-user-file-plan {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.fp-user-file-status {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.fp-user-spec {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+@media (min-width: 640px) {
+  .fp-user-spec { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.fp-user-spec-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  min-width: 0;
+}
+.fp-user-spec-k {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fp-user-spec-v {
+  margin-top: 4px;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.fp-user-days {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+.fp-user-day {
+  flex-shrink: 0;
+  min-width: 42px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg-overlay);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.fp-user-day:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.fp-user-day--on {
+  border-color: color-mix(in srgb, var(--accent-blue) 45%, var(--border));
+  background: var(--accent-blue-dim);
+  color: var(--accent-blue);
+}
+
+@media (min-width: 768px) {
+  .fp-user-file { padding: 20px 20px 16px 24px; }
+  .fp-user-file-name { font-size: 26px; }
 }
 
 /* ─── DayPicker (FitPro) ─────────────────────────────────── */

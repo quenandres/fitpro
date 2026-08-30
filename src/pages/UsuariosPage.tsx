@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Search, ChevronLeft, Plus, Sparkles, Users } from 'lucide-react';
+import { Search, Plus, Sparkles, Users } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
+import { EmptyState } from '../components/common/EmptyState';
 import { useDataStore } from '../store/useDataStore';
 import { useUsuariosStore } from '../store/useUsuariosStore';
+import { getUltimaSesion } from '../store/useSesionesStore';
 import type { Usuario } from '../types';
 import { CreatePlanWizard } from '../components/userPlans/CreatePlanWizard';
 import { usePlanMutations } from '../hooks/usePlanMutations';
 import { UserProgressPanel } from '../components/users/UserProgressPanel';
-import { UserDetailTabSwitcher, type UserDetailTab } from '../components/users/UserDetailTabSwitcher';
+import { UserDetailHeader } from '../components/users/UserDetailHeader';
+import type { UserDetailTab } from '../components/users/UserDetailTabSwitcher';
 import { UserCard } from '../components/users/UserCard';
 import { UserPlanWorkspace } from '../components/users/UserPlanWorkspace';
+import { recencyToneFromSesion } from '../utils/userSummary';
 import { ROUTES } from '../routes/paths';
-
-const ACCENT = '#58a6ff';
 
 function parseDetailTab(raw: string | null): UserDetailTab {
   return raw === 'entrenamientos' ? 'entrenamientos' : 'progreso';
@@ -144,9 +146,15 @@ export function UsuariosPage() {
       (u) =>
         u.nombre.toLowerCase().includes(term)
         || u.email.toLowerCase().includes(term)
-        || u.objetivo.toLowerCase().includes(term),
+        || u.objetivo.toLowerCase().includes(term)
+        || u.plan.nombre.toLowerCase().includes(term),
     );
   }, [usuarios, searchTerm]);
+
+  const frios = useMemo(
+    () => usuarios.filter((u) => recencyToneFromSesion(getUltimaSesion(u.id)) === 'cold').length,
+    [usuarios],
+  );
 
   const handleUpdateUser = useCallback(
     (updated: Usuario) => {
@@ -169,32 +177,25 @@ export function UsuariosPage() {
       <div className="animate-slide-up min-w-0">
         {!selectedUser ? (
           <section style={{ paddingTop: 12, paddingBottom: 16 }}>
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
-              <div className="min-w-0">
-                <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-                  <Users size={10} style={{ marginRight: 3 }} />
-                  Clientes
-                </span>
-                <h1
-                  className="font-sora text-[22px] sm:text-2xl mt-2"
-                  style={{
-                    fontWeight: 700,
-                    lineHeight: 1.2,
-                    letterSpacing: '-.02em',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  Usuarios
-                </h1>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-                  Progreso, planes y entrenamientos asignados.
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0 rounded-lg border border-line bg-overlay px-2.5 py-1">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: ACCENT }} />
-                <span className="text-[11px] font-semibold text-secondary">{usuarios.length}</span>
-              </div>
-            </div>
+            <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
+              <Users size={10} style={{ marginRight: 3 }} />
+              Roster
+            </span>
+            <h1
+              className="font-sora text-[22px] sm:text-2xl mt-2"
+              style={{
+                fontWeight: 800,
+                lineHeight: 1.15,
+                letterSpacing: '-.03em',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Tus clientes
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>
+              {usuarios.length} fichas
+              {frios > 0 ? ` · ${frios} se están enfriando` : ' · todos con rastro reciente'}
+            </p>
           </section>
         ) : null}
 
@@ -216,7 +217,7 @@ export function UsuariosPage() {
                 <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 <input
                   type="search"
-                  placeholder="Buscar usuarios…"
+                  placeholder="Nombre, plan u objetivo…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   aria-label="Buscar usuarios"
@@ -253,45 +254,36 @@ export function UsuariosPage() {
                 <UserCard key={user.id} user={user} onClick={() => handleSelectUser(user)} />
               ))}
               {filteredUsers.length === 0 ? (
-                <div
-                  style={{
-                    padding: 40,
-                    textAlign: 'center',
-                    background: 'var(--bg-overlay)',
-                    borderRadius: 12,
-                    gridColumn: '1 / -1',
-                  }}
-                >
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    No hay usuarios que coincidan. Crea un nuevo cliente para empezar.
-                  </p>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <EmptyState
+                    icon={Users}
+                    title={searchTerm ? 'Nadie coincide' : 'Aún no hay clientes'}
+                    description={
+                      searchTerm
+                        ? 'Prueba otro nombre, objetivo o plan.'
+                        : 'Crea un cliente para asignarle un plan y ver su progreso.'
+                    }
+                    action={
+                      !searchTerm ? (
+                        <button type="button" className="fp-btn fp-btn-primary" onClick={() => setShowWizard(true)}>
+                          <Plus size={14} />
+                          Nuevo cliente
+                        </button>
+                      ) : undefined
+                    }
+                  />
                 </div>
               ) : null}
             </div>
           </div>
         ) : selectedUserLive ? (
           <div>
-            <div className="flex flex-col gap-3 mb-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="fp-btn fp-btn-ghost shrink-0 p-2"
-                  aria-label="Volver a usuarios"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-sora text-base font-bold text-primary tracking-tight truncate">
-                    {selectedUserLive.nombre}
-                  </h2>
-                  <p className="text-xs truncate" style={{ color: ACCENT }}>
-                    {selectedUserLive.plan.nombre}
-                  </p>
-                </div>
-              </div>
-              <UserDetailTabSwitcher tab={detailTab} onChange={setDetailTab} />
-            </div>
+            <UserDetailHeader
+              user={selectedUserLive}
+              tab={detailTab}
+              onTabChange={setDetailTab}
+              onBack={handleBack}
+            />
 
             {detailTab === 'progreso' ? (
               <UserProgressPanel usuarioId={selectedUserLive.id} />

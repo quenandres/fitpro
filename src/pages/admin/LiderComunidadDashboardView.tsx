@@ -20,7 +20,7 @@ const KPI_ICONS: Record<string, typeof Users> = {
 
 export const LiderComunidadDashboardView = () => (
   <>
-    <div className="animate-slide-up grid grid-cols-3 gap-2 mb-2 min-w-0">
+    <div className="animate-slide-up delay-100 fp-admin-kpi-grid fp-admin-kpi-grid--3">
       {metrics.kpis.map(({ label, valor }, i) => (
         <KpiCard
           key={label}
@@ -65,33 +65,19 @@ export const LiderComunidadDashboardView = () => (
     </div>
 
     <SectionHeader icon={Flame} title="Contenido más popular" accent={rosa} />
-    <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 14 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {metrics.contenidoPopular.map((item, i) => (
-          <div
-            key={item.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 8,
-              padding: '8px 0',
-              borderBottom: i < metrics.contenidoPopular.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-            }}
-          >
-            <div style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.titulo}</p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.detalle}</p>
-            </div>
-            <span
-              className="badge"
-              style={{ fontSize: 10, padding: '3px 8px', background: `${rosa}1f`, color: rosa, border: 'none', flexShrink: 0 }}
-            >
-              {item.metrica}
-            </span>
+    <ol className="fp-card fp-admin-rank min-w-0">
+      {metrics.contenidoPopular.map((item, i) => (
+        <li key={item.id} className="fp-admin-rank-item">
+          <span className="font-sora fp-admin-rank-n">{String(i + 1).padStart(2, '0')}</span>
+          <div className="fp-admin-rank-copy">
+            <p className="fp-admin-rank-title">{item.titulo}</p>
+            <p className="fp-admin-rank-detail">{item.detalle}</p>
           </div>
-        ))}
-      </div>
-    </div>
+          <span className="badge" style={{ background: `${rosa}1f`, color: rosa, border: 'none' }}>
+            {item.metrica}
+          </span>
+        </li>
+      ))}
+    </ol>
   </>
 );

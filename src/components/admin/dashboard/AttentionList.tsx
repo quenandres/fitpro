@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react';
 import type { AlertaAtencion } from '../../../types/adminDashboard';
 import { CHART_STATUS_BG, CHART_STATUS_COLORS } from './chartColors';
 
@@ -15,56 +14,40 @@ interface Props {
 
 /** Sección "Atención": lista de alertas con severidad (usuarios en riesgo, comunidades inactivas, etc.). */
 export const AttentionList = ({ title, items }: Props) => (
-  <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 14 }}>
-    <p className="font-sora" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
-      {title}
-    </p>
+  <div className="fp-card fp-admin-callout min-w-0">
+    <p className="font-sora fp-admin-callout-title">{title}</p>
     {items.length === 0 ? (
-      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Sin elementos que revisar.</p>
+      <p className="fp-admin-callout-empty">Nada que revisar aquí.</p>
     ) : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {items.map((item, i) => {
+      <ul className="fp-admin-callout-list">
+        {items.map((item) => {
           const color = CHART_STATUS_COLORS[item.severidad];
           return (
-            <div
-              key={item.id}
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 8,
-                padding: '8px 0',
-                borderBottom: i < items.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-              }}
-            >
-              <AlertTriangle size={14} color={color} style={{ flexShrink: 0, marginTop: 2 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
+            <li key={item.id} className="fp-admin-callout-item">
+              <span className="fp-admin-callout-rail" style={{ background: color }} />
+              <div className="fp-admin-callout-body">
                 <div className="flex items-start justify-between gap-2">
-                  <p
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      minWidth: 0,
-                      overflowWrap: 'anywhere',
-                    }}
-                  >
-                    {item.titulo}
-                  </p>
+                  <p className="fp-admin-callout-name">{item.titulo}</p>
                   <span
                     className="badge"
-                    style={{ fontSize: 9, padding: '2px 6px', background: CHART_STATUS_BG[item.severidad], color, border: 'none', flexShrink: 0 }}
+                    style={{
+                      fontSize: 9,
+                      padding: '2px 6px',
+                      background: CHART_STATUS_BG[item.severidad],
+                      color,
+                      border: 'none',
+                      flexShrink: 0,
+                    }}
                   >
                     {SEVERIDAD_LABEL[item.severidad]}
                   </span>
                 </div>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, overflowWrap: 'anywhere' }}>
-                  {item.detalle}
-                </p>
+                <p className="fp-admin-callout-detail">{item.detalle}</p>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
     )}
   </div>
 );
