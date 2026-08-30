@@ -4,6 +4,7 @@ import { useRoutineFormWithPreset } from '../../../hooks/useRoutineFormWithPrese
 import { CalculatedDurationField } from '../../../components/library/routines/CalculatedDurationField';
 import { ExerciseListEditor } from '../../../components/library/routines/ExerciseListEditor';
 import { RoutineBuilderShell } from '../../../components/library/routines/RoutineBuilderShell';
+import { RoutineScheduleSection } from '../../../components/library/routines/RoutineScheduleSection';
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
 import { categoryOptions, restOptions } from '../../../utils/validators';
 import { getFieldError } from '../../../utils/routineFormValidators';
@@ -11,6 +12,7 @@ import { ROUTES } from '../../../routes/paths';
 
 export const IntermediateRoutineForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
+  const formHook = useRoutineFormWithPreset('intermedia');
   const {
     form,
     errors,
@@ -29,7 +31,7 @@ export const IntermediateRoutineForm = () => {
     validateStep1,
     selectedNames,
     durationBreakdown,
-  } = useRoutineFormWithPreset('intermedia');
+  } = formHook;
 
   const accent = LEVEL_ACCENTS.intermedia;
 
@@ -136,20 +138,22 @@ export const IntermediateRoutineForm = () => {
           />
         </FormField>
 
-        <ExerciseListEditor
-          level="intermedia"
-          ejercicios={form.ejercicios}
-          errors={errors}
-          selectedNames={selectedNames}
-          restBetweenSetsSec={form.rest_between_sets}
-          onAdd={addExercise}
-          onUpdate={updateExercise}
-          onRemove={removeExercise}
-          onCreateSuperset={createSuperset}
-          onRemoveSuperset={removeSuperset}
-        />
+        <RoutineScheduleSection accent={accent} schedule={formHook}>
+          <ExerciseListEditor
+            level="intermedia"
+            ejercicios={form.ejercicios}
+            errors={errors}
+            selectedNames={selectedNames}
+            restBetweenSetsSec={form.rest_between_sets}
+            onAdd={addExercise}
+            onUpdate={updateExercise}
+            onRemove={removeExercise}
+            onCreateSuperset={createSuperset}
+            onRemoveSuperset={removeSuperset}
+          />
+        </RoutineScheduleSection>
 
-        <FormField label="Duración total (min)" error={getFieldError(errors, 'duracion_min')}>
+        <FormField label="Duración del día (min)" error={getFieldError(errors, 'duracion_min')}>
           <CalculatedDurationField breakdown={durationBreakdown} accent={accent} />
         </FormField>
       </RoutineBuilderShell>

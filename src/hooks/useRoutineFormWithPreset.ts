@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useDataStore } from '../store/useDataStore';
-import { useRoutineForm } from './useRoutineForm';
-import { rutinaToFormData } from '../utils/inferRoutineFormLevel';
+import { inferInitialCreateMode, rutinaToFormData } from '../utils/inferRoutineFormLevel';
 import { ROUTES } from '../routes/paths';
 import type { RoutineFormData, RoutineFormLevel } from '../types';
+import { useRoutineForm } from './useRoutineForm';
 
 export interface RoutinePresetLocationState {
   presetForm?: RoutineFormData;
@@ -26,9 +26,12 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
   );
 
   const initialForm = state.presetForm ?? (editingRutina ? rutinaToFormData(editingRutina) : undefined);
+  const initialCreateMode = editingRutina
+    ? inferInitialCreateMode(editingRutina)
+    : 'semana_tipo';
 
   return {
-    ...useRoutineForm(level, initialForm, editingId),
+    ...useRoutineForm(level, initialForm, editingId, initialCreateMode),
     presetName: state.presetName,
     matchInfo: state.matchInfo,
     editingRutina,

@@ -8,6 +8,7 @@ import type {
   ResolvedRoutineDraft,
   Rutina,
 } from '../types';
+import { createProgramacionSemanas } from './routineScheduleUtils';
 
 const normalize = (value: string): string =>
   value
@@ -144,5 +145,21 @@ export const resolveExercisesAgainstApi = async (
   };
 };
 
-export const draftToRutinaPayload = (draft: ResolvedRoutineDraft): Omit<Rutina, 'id'> =>
-  draft.rutina;
+export const draftToRutinaPayload = (draft: ResolvedRoutineDraft): Omit<Rutina, 'id'> => {
+  if (draft.rutina.programacion_semanal?.length) {
+    return {
+      ...draft.rutina,
+      semanas: draft.rutina.semanas ?? draft.rutina.programacion_semanal.length,
+    };
+  }
+
+  const programacion = createProgramacionSemanas(1);
+  const lunes = programacion[0].dias.find((d) => d.dia === 1);
+  if (lunes) lunes.ejercicios = draft.rutina.ejercicios;
+
+  return {
+    ...draft.rutina,
+    semanas: 1,
+    programacion_semanal: programacion,
+  };
+};

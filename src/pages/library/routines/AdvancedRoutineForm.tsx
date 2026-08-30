@@ -4,6 +4,7 @@ import { useRoutineFormWithPreset } from '../../../hooks/useRoutineFormWithPrese
 import { CalculatedDurationField } from '../../../components/library/routines/CalculatedDurationField';
 import { ExerciseListEditor } from '../../../components/library/routines/ExerciseListEditor';
 import { RoutineBuilderShell } from '../../../components/library/routines/RoutineBuilderShell';
+import { RoutineScheduleSection } from '../../../components/library/routines/RoutineScheduleSection';
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
 import {
   categoryOptions,
@@ -15,6 +16,7 @@ import { ROUTES } from '../../../routes/paths';
 
 export const AdvancedRoutineForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
+  const formHook = useRoutineFormWithPreset('avanzada');
   const {
     form,
     errors,
@@ -33,7 +35,7 @@ export const AdvancedRoutineForm = () => {
     validateStep1,
     selectedNames,
     durationBreakdown,
-  } = useRoutineFormWithPreset('avanzada');
+  } = formHook;
 
   const accent = LEVEL_ACCENTS.avanzada;
 
@@ -168,22 +170,24 @@ export const AdvancedRoutineForm = () => {
           />
         </FormField>
 
-        <ExerciseListEditor
-          level="avanzada"
-          ejercicios={form.ejercicios}
-          errors={errors}
-          selectedNames={selectedNames}
-          restBetweenSetsSec={form.rest_between_sets}
-          showRpe
-          showSuperset
-          onAdd={addExercise}
-          onUpdate={updateExercise}
-          onRemove={removeExercise}
-          onCreateSuperset={createSuperset}
-          onRemoveSuperset={removeSuperset}
-        />
+        <RoutineScheduleSection accent={accent} schedule={formHook}>
+          <ExerciseListEditor
+            level="avanzada"
+            ejercicios={form.ejercicios}
+            errors={errors}
+            selectedNames={selectedNames}
+            restBetweenSetsSec={form.rest_between_sets}
+            showRpe
+            showSuperset
+            onAdd={addExercise}
+            onUpdate={updateExercise}
+            onRemove={removeExercise}
+            onCreateSuperset={createSuperset}
+            onRemoveSuperset={removeSuperset}
+          />
+        </RoutineScheduleSection>
 
-        <FormField label="Duración total (min)" error={getFieldError(errors, 'duracion_min')}>
+        <FormField label="Duración del día (min)" error={getFieldError(errors, 'duracion_min')}>
           <CalculatedDurationField breakdown={durationBreakdown} accent={accent} />
         </FormField>
       </RoutineBuilderShell>

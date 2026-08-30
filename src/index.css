@@ -3989,3 +3989,71 @@ textarea.fp-input {
   .fp-tracking-year-tile-name { font-size: 14px; }
   .fp-tracking-year-cell { font-size: 9px; border-radius: 5px; }
 }
+
+/* Rutina multi-semana */
+.fp-week-mode-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fp-week-mode-tab {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.fp-week-rail {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fp-week-rail-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.fp-week-day-pills {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fp-week-day-pill {
+  flex: 1;
+  min-width: 38px;
+  padding: 8px 4px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.fp-week-day-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}

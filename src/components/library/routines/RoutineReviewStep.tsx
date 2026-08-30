@@ -1,41 +1,57 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AnatomyMuscleHeatmap } from '../../anatomy';
 import { useDataStore } from '../../../store/useDataStore';
 import { useRoutineMuscleCounts } from '../../../hooks/useRoutineMuscleCounts';
 import type { RoutineFormData } from '../../../types';
+import { countDiasEntreno, flattenSemana } from '../../../utils/routineScheduleUtils';
 
 interface Props {
   form: RoutineFormData;
   isEdit: boolean;
+  semanaReview?: number;
   onMusclesResolved?: (updates: Array<{ key: string; musculos_anatomia: string[] }>) => void;
 }
 
-export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) => {
+export const RoutineReviewStep = ({
+  form,
+  isEdit,
+  semanaReview = 1,
+  onMusclesResolved,
+}: Props) => {
   const ejerciciosLib = useDataStore((s) => s.ejercicios);
+  const [reviewSemana, setReviewSemana] = useState(semanaReview);
+
+  const semanaPlan = form.programacion_semanal.find((s) => s.semana === reviewSemana);
+  const reviewEjercicios = useMemo(
+    () => flattenSemana(semanaPlan),
+    [semanaPlan],
+  );
 
   const { counts: muscleCounts, loading: musclesLoading } = useRoutineMuscleCounts(
-    form.ejercicios,
+    reviewEjercicios,
     ejerciciosLib,
     onMusclesResolved,
   );
 
   const muscleEntries = useMemo(
-    () =>
-      Object.entries(muscleCounts).sort(([, a], [, b]) => b - a),
+    () => Object.entries(muscleCounts).sort(([, a], [, b]) => b - a),
     [muscleCounts],
   );
 
   const hasMuscleData = muscleEntries.length > 0;
+  const diasEntreno = countDiasEntreno(form.programacion_semanal[0]);
+  const totalSeries = reviewEjercicios.reduce((a, e) => a + e.series, 0);
 
-  const totalSeries = form.ejercicios.reduce((a, e) => a + e.series, 0);
   const rows = [
     { lbl: 'Nombre', val: form.nombre || '—' },
+    { lbl: 'Semanas', val: form.semanas, accent: true },
+    { lbl: 'Días de entreno', val: diasEntreno },
     { lbl: 'Categoría', val: form.categoria || '—' },
     { lbl: 'Dificultad', val: form.dificultad },
-    { lbl: 'Duración', val: `${form.duracion_min} min` },
+    { lbl: 'Duración (día activo)', val: `${form.duracion_min} min` },
     { lbl: 'Tipo', val: form.tipo },
-    { lbl: 'Ejercicios', val: form.ejercicios.length },
-    { lbl: 'Series totales', val: totalSeries, accent: true },
+    { lbl: 'Ejercicios (sem. visible)', val: reviewEjercicios.length },
+    { lbl: 'Series (sem. visible)', val: totalSeries },
   ];
 
   return (
@@ -65,6 +81,67 @@ export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) =>
           </div>
         ))}
       </div>
+
+      {form.semanas > 1 && (
+        <div className="fp-week-rail">
+          {Array.from({ length: form.semanas }, (_, i) => i + 1).map((num) => (
+            <button
+              key={num}
+              type="button"
+              className="fp-week-rail-chip font-sora"
+              onClick={() => setReviewSemana(num)}
+              style={{
+                borderColor: reviewSemana === num ? 'rgba(34,197,94,.4)' : 'var(--border)',
+                background: reviewSemana === num ? 'rgba(34,197,94,.12)' : 'var(--bg-overlay)',
+                color: reviewSemana === num ? 'var(--brand)' : 'var(--text-muted)',
+              }}
+            >
+              {num}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {semanaPlan && (
+        <div className="fp-card" style={{ borderRadius: 13, padding: '12px 14px' }}>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+              marginBottom: 8,
+            }}
+          >
+            Semana {reviewSemana} · {countDiasEntreno(semanaPlan)} días de entreno
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {semanaPlan.dias
+              .filter((d) => d.ejercicios.length > 0)
+              .map((dia) => (
+                <div key={dia.dia}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    {dia.nombre}
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {dia.ejercicios.map((ej) => (
+                      <div
+                        key={ej._key ?? ej.nombre}
+                        className="flex justify-between gap-2 text-xs text-secondary min-w-0"
+                      >
+                        <span className="min-w-0 truncate">{ej.nombre}</span>
+                        <span className="shrink-0 text-muted">
+                          {ej.series}×{ej.valor}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {form.descripcion && (
         <div className="fp-card" style={{ borderRadius: 13, padding: '12px 14px' }}>
@@ -106,36 +183,6 @@ export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) =>
         </div>
       )}
 
-      {form.ejercicios.length > 0 && (
-        <div className="fp-card" style={{ borderRadius: 13, padding: '12px 14px' }}>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '.06em',
-              marginBottom: 8,
-            }}
-          >
-            Ejercicios
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {form.ejercicios.map((ej) => (
-              <div
-                key={ej._key ?? ej.nombre}
-                className="flex justify-between gap-2 text-xs text-secondary min-w-0"
-              >
-                <span className="min-w-0 truncate">{ej.nombre}</span>
-                <span className="shrink-0 text-muted">
-                  {ej.series}×{ej.valor}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="fp-card" style={{ borderRadius: 13, padding: 14 }}>
         <p
           style={{
@@ -149,7 +196,7 @@ export const RoutineReviewStep = ({ form, isEdit, onMusclesResolved }: Props) =>
         >
           Músculos trabajados
         </p>
-        {form.ejercicios.length > 0 ? (
+        {reviewEjercicios.length > 0 ? (
           musclesLoading ? (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
               Resolviendo músculos desde ExerciseDB…

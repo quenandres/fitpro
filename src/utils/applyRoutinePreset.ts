@@ -1,5 +1,6 @@
 import type { RoutinePreset } from '../data/routinePresets';
 import type { RoutineFormData, RoutineFormExercise } from '../types';
+import { createProgramacionSemanas } from './routineScheduleUtils';
 import { resolveOneExercise } from './resolveExercisesAgainstApi';
 
 const uid = (): string =>
@@ -53,6 +54,13 @@ export const applyRoutinePreset = async (
     duracion_min: preset.duracion_min,
     tipo: preset.tipo ?? 'estandar',
     ejercicios,
+    semanas: 1,
+    programacion_semanal: (() => {
+      const programacion = createProgramacionSemanas(1);
+      const lunes = programacion[0].dias.find((d) => d.dia === 1);
+      if (lunes) lunes.ejercicios = ejercicios;
+      return programacion;
+    })(),
     rest_between_sets: preset.rest_between_sets ?? 60,
     notes: preset.notes ?? '',
   };

@@ -61,7 +61,7 @@ export const RoutineChooserPage = () => (
         Elige el nivel
       </h1>
       <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-        Tres formularios con más campos según tu experiencia. Todos usan ExerciseDB.
+        Tres formularios con más campos según tu experiencia. Después eliges cómo armar las semanas (1–8).
       </p>
     </section>
 

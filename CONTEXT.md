@@ -833,6 +833,16 @@ listado de rutinas). `/` renderiza `AdminDashboardPage` (métricas mock por
 rol). `/admin/dashboard` redirige a `/`. El listado de rutinas sigue en
 `/library/rutinas`.
 
+### 2026-08-30 — Rutinas multi-semana en el creador (Biblioteca)
+
+El creador de rutinas (`/library/rutinas/nueva/*`) pasa de sesión única a **programa
+de 1–8 semanas** (`Rutina.semanas` + `Rutina.programacion_semanal`, Lun–Dom por semana).
+`ejercicios[]` se mantiene como flatten de la semana 1 para compat con player, cards y
+asignación a planes. Tres modos en tabs: **Semana tipo** (copia semana 1), **Semana a
+semana** (independiente), **Desde plantilla** (biblioteca o preset). Sin rediseño
+`Bloque/BloqueItem/SerieDef` — deuda Fase 2 sigue pendiente; esta estructura temporal
+se documenta como trade-off consciente.
+
 ---
 
 ## 13. Bitácora de decisiones (ADR ligero)

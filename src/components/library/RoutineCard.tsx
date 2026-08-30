@@ -1,5 +1,6 @@
 import { Pencil, Trash2, Clock, Target, Layers } from 'lucide-react';
 import type { Rutina } from '../../types';
+import { countDiasEntreno } from '../../utils/routineScheduleUtils';
 
 interface Props {
   rutina: Rutina;
@@ -34,6 +35,10 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
   const diff  = getDiff(rutina.dificultad);
   const total = rutina.ejercicios.reduce((a, e) => a + e.series, 0);
   const hasExerciseDb = rutina.ejercicios.some((e) => e.exerciseDbId);
+  const semanas = rutina.semanas ?? 1;
+  const diasEntreno = rutina.programacion_semanal?.[0]
+    ? countDiasEntreno(rutina.programacion_semanal[0])
+    : (rutina.ejercicios.length > 0 ? 1 : 0);
 
   return (
     <article className="fp-card fp-card-hover relative overflow-hidden">
@@ -59,6 +64,14 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
                   ExerciseDB
                 </span>
               )}
+              {semanas > 1 || diasEntreno > 1 ? (
+                <span
+                  className="badge badge-brand"
+                  style={{ fontSize: 9, padding: '1px 5px' }}
+                >
+                  {semanas} sem · {diasEntreno} días
+                </span>
+              ) : null}
             </div>
             <p className="font-sora" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
               {rutina.nombre}

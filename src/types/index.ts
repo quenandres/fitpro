@@ -16,6 +16,17 @@ export interface EjercicioRutina {
   musculos_anatomia?: string[];
 }
 
+export interface DiaRutina {
+  dia: number;
+  nombre: string;
+  ejercicios: EjercicioRutina[];
+}
+
+export interface SemanaRutina {
+  semana: number;
+  dias: DiaRutina[];
+}
+
 export interface Rutina {
   id: number;
   nombre: string;
@@ -23,13 +34,27 @@ export interface Rutina {
   dificultad: string;
   duracion_min: number;
   descripcion: string;
+  /** Flatten semana 1 — compat player, cards, asignación a planes */
   ejercicios: EjercicioRutina[];
+  semanas?: number;
+  programacion_semanal?: SemanaRutina[];
   tipo?: RoutineTipo;
   rest_between_sets?: number;
   notes?: string;
 }
 
 export type RoutineFormLevel = 'basica' | 'intermedia' | 'avanzada';
+
+export type RoutineCreateMode = 'semana_tipo' | 'semana_a_semana' | 'desde_plantilla';
+
+export interface RoutineFormDia extends Omit<DiaRutina, 'ejercicios'> {
+  ejercicios: RoutineFormExercise[];
+}
+
+export interface RoutineFormSemana {
+  semana: number;
+  dias: RoutineFormDia[];
+}
 
 export interface RoutineFormExercise extends EjercicioRutina {
   /** Clave interna para edición en UI */
@@ -43,7 +68,10 @@ export interface RoutineFormData {
   dificultad: string;
   duracion_min: number;
   tipo: RoutineTipo;
+  /** Ejercicios del día activo (derivado en runtime) */
   ejercicios: RoutineFormExercise[];
+  semanas: number;
+  programacion_semanal: RoutineFormSemana[];
   rest_between_sets: number;
   notes: string;
 }

@@ -1,5 +1,12 @@
 import type { RoutineFormData, RoutineFormLevel } from '../types';
 import type { ValidationError } from './validators';
+import {
+  countDiasEntreno,
+  countTotalEjercicios,
+  hasAnyExercise,
+  MAX_RUTINA_SEMANAS,
+  MIN_RUTINA_SEMANAS,
+} from './routineScheduleUtils';
 
 const validateNombre = (nombre: string): ValidationError[] => {
   const errors: ValidationError[] = [];
@@ -13,38 +20,62 @@ const validateNombre = (nombre: string): ValidationError[] => {
   return errors;
 };
 
-const validateEjercicios = (ejercicios: RoutineFormData['ejercicios']): ValidationError[] => {
-  if (!ejercicios.length) {
-    return [{ field: 'ejercicios', message: 'Agrega al menos un ejercicio' }];
+const validateSemanas = (semanas: number): ValidationError[] => {
+  if (semanas < MIN_RUTINA_SEMANAS || semanas > MAX_RUTINA_SEMANAS) {
+    return [{
+      field: 'semanas',
+      message: `El programa debe durar entre ${MIN_RUTINA_SEMANAS} y ${MAX_RUTINA_SEMANAS} semanas`,
+    }];
   }
+  return [];
+};
+
+const validateProgramacion = (data: RoutineFormData): ValidationError[] => {
+  if (!hasAnyExercise(data.programacion_semanal)) {
+    return [{ field: 'ejercicios', message: 'Agrega al menos un ejercicio en algún día' }];
+  }
+
   const errors: ValidationError[] = [];
-  ejercicios.forEach((ej, i) => {
-    if (ej.series < 1 || ej.series > 20) {
-      errors.push({ field: `ejercicios.${i}.series`, message: 'Series inválidas' });
-    }
-    if (ej.valor < 1 || ej.valor > 1000) {
-      errors.push({ field: `ejercicios.${i}.valor`, message: 'Repeticiones/valor inválido' });
-    }
-    if (ej.rpe !== undefined && (ej.rpe < 1 || ej.rpe > 10)) {
-      errors.push({ field: `ejercicios.${i}.rpe`, message: 'RPE debe estar entre 1 y 10' });
-    }
+  data.programacion_semanal.forEach((semana, sIdx) => {
+    semana.dias.forEach((dia, dIdx) => {
+      dia.ejercicios.forEach((ej, i) => {
+        if (ej.series < 1 || ej.series > 20) {
+          errors.push({
+            field: `programacion.${sIdx}.dias.${dIdx}.ejercicios.${i}.series`,
+            message: 'Series inválidas',
+          });
+        }
+        if (ej.valor < 1 || ej.valor > 1000) {
+          errors.push({
+            field: `programacion.${sIdx}.dias.${dIdx}.ejercicios.${i}.valor`,
+            message: 'Repeticiones/valor inválido',
+          });
+        }
+        if (ej.rpe !== undefined && (ej.rpe < 1 || ej.rpe > 10)) {
+          errors.push({
+            field: `programacion.${sIdx}.dias.${dIdx}.ejercicios.${i}.rpe`,
+            message: 'RPE debe estar entre 1 y 10',
+          });
+        }
+      });
+    });
   });
   return errors;
 };
 
 export const validateBasicRoutine = (data: RoutineFormData): ValidationError[] => [
   ...validateNombre(data.nombre),
-  ...validateEjercicios(data.ejercicios),
+  ...validateSemanas(data.semanas),
+  ...validateProgramacion(data),
 ];
 
 export const validateIntermediateRoutine = (data: RoutineFormData): ValidationError[] => {
-  const errors: ValidationError[] = [
-    ...validateBasicRoutine(data),
-  ];
+  const errors: ValidationError[] = [...validateBasicRoutine(data)];
   if (!data.categoria) {
     errors.push({ field: 'categoria', message: 'Selecciona una categoría' });
   }
-  if (data.ejercicios.length > 0 && (data.duracion_min < 1 || data.duracion_min > 120)) {
+  if (countTotalEjercicios(data.programacion_semanal) > 0 &&
+    (data.duracion_min < 1 || data.duracion_min > 120)) {
     errors.push({ field: 'duracion_min', message: 'La duración calculada debe estar entre 1 y 120 minutos' });
   }
   if (data.descripcion.length > 500) {
@@ -85,3 +116,9 @@ export const getFieldError = (
   errors: ValidationError[],
   field: string,
 ): string | undefined => errors.find((e) => e.field === field)?.message;
+
+export const countFormDiasEntreno = (data: RoutineFormData): number =>
+  data.programacion_semanal.reduce(
+    (acc, s) => acc + countDiasEntreno(s),
+    0,
+  );
