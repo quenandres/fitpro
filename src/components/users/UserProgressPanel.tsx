@@ -18,7 +18,7 @@ interface Props {
 
 export function UserProgressPanel({ usuarioId }: Props) {
   const { rutinas, ejercicios } = useDataStore();
-  const [period, setPeriod] = useState<TrackingPeriod>('mes');
+  const [period, setPeriod] = useState<TrackingPeriod>('semana');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [showMuscleMap, setShowMuscleMap] = useState(false);
 

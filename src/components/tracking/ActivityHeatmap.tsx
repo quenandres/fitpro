@@ -1,15 +1,20 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import type { HeatmapCell } from '../../utils/trackingUtils';
 import {
+  MONTH_FULL,
   TRACKING_MODALIDAD_LABELS,
   TRACKING_PERIOD_LABELS,
-  buildHeatmapCellsForRange,
+  YEAR_DAY_LETTERS,
   buildMonthCalendarGrid,
+  buildWeekAlignedRangeGrid,
   buildWeekCells,
+  countSesionesInMonth,
   formatSessionTooltip,
   getHeatmapDayLabels,
   getPeriodRange,
   parseFechaLocal,
+  rangeColumnMeta,
   type TrackingPeriod,
 } from '../../utils/trackingUtils';
 import type { Ejercicio, Rutina, SesionEntrenamiento } from '../../types';
@@ -204,11 +209,15 @@ function RangeHeatmap({
 }) {
   const range = useMemo(() => getPeriodRange(period, anchorDate), [period, anchorDate]);
   const grid = useMemo(
-    () => buildHeatmapCellsForRange(sesiones, range.desde, range.hasta),
+    () => buildWeekAlignedRangeGrid(sesiones, range.desde, range.hasta),
     [sesiones, range.desde, range.hasta],
   );
+  const columns = useMemo(() => rangeColumnMeta(grid), [grid]);
   const dayLabels = getHeatmapDayLabels();
-  const weekCount = grid[0]?.length ?? 0;
+  const weekCount = columns.length;
+  const showDayNums = period === 'trimestre';
+  const showWeekNums = period === 'trimestre';
+  const showMonths = period === 'trimestre';
 
   return (
     <div
@@ -224,6 +233,35 @@ function RangeHeatmap({
         className="fp-tracking-range-grid"
         style={{ '--tracking-weeks': weekCount } as React.CSSProperties}
       >
+        {showMonths ? (
+          <div className="fp-tracking-range-row fp-tracking-range-row--axis">
+            <span className="fp-tracking-range-day-label" aria-hidden />
+            <div className="fp-tracking-range-cells" style={{ '--tracking-weeks': weekCount } as React.CSSProperties}>
+              {columns.map((col, i) => (
+                <span
+                  key={`m-${i}`}
+                  className={`fp-tracking-range-month${col.isMonthStart ? ' is-start' : ''}`}
+                >
+                  {col.isMonthStart ? col.monthLabel : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {showWeekNums ? (
+          <div className="fp-tracking-range-row fp-tracking-range-row--axis">
+            <span className="fp-tracking-range-day-label" aria-hidden />
+            <div className="fp-tracking-range-cells" style={{ '--tracking-weeks': weekCount } as React.CSSProperties}>
+              {columns.map((col, i) => (
+                <span key={`w-${i}`} className="fp-tracking-range-week-n">
+                  S{col.weekNum}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {grid.map((row, rowIndex) => (
           <div key={dayLabels[rowIndex]} className="fp-tracking-range-row">
             <span className="fp-tracking-range-day-label">{dayLabels[rowIndex]}</span>
@@ -231,30 +269,47 @@ function RangeHeatmap({
               className="fp-tracking-range-cells"
               style={{ '--tracking-weeks': weekCount } as React.CSSProperties}
             >
-              {row.map((cell) => {
-                const hasSessions = cell.sesiones.length > 0;
+              {row.map((cell, colIndex) => {
+                const hasSessions = cell.inRange && cell.sesiones.length > 0;
                 const muscleCounts = hasSessions
                   ? aggregateSessionMuscleLoad(cell.sesiones, rutinas, ejercicios)
                   : {};
+                const monthStart = columns[colIndex]?.isMonthStart;
 
                 return (
                   <div
                     key={cell.date}
-                    className={rangeCellClass(cell.modalidad, showMuscleMap, hasSessions)}
-                    title={formatSessionTooltip(cell.sesiones)}
+                    className={[
+                      rangeCellClass(cell.modalidad, showMuscleMap, hasSessions),
+                      cell.inRange ? '' : 'fp-tracking-range-cell--out',
+                      monthStart ? 'fp-tracking-range-cell--month-start' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    title={cell.inRange ? formatSessionTooltip(cell.sesiones) : undefined}
+                    aria-hidden={!cell.inRange}
                     aria-label={
-                      hasSessions
-                        ? formatSessionTooltip(cell.sesiones).replace(/\n/g, ', ')
-                        : `Sin actividad ${cell.date}`
+                      !cell.inRange
+                        ? undefined
+                        : hasSessions
+                          ? formatSessionTooltip(cell.sesiones).replace(/\n/g, ', ')
+                          : `Sin actividad ${cell.date}`
                     }
                   >
-                    <HeatmapMuscleCellContent
-                      showMuscleMap={showMuscleMap}
-                      hasSessions={hasSessions}
-                      muscleCounts={muscleCounts}
-                      dateLabel={cell.date}
-                      normalContent={null}
-                    />
+                    {cell.inRange ? (
+                      <HeatmapMuscleCellContent
+                        showMuscleMap={showMuscleMap}
+                        hasSessions={hasSessions}
+                        muscleCounts={muscleCounts}
+                        dateLabel={cell.date}
+                        dayLabel={showDayNums ? cell.dayNum : undefined}
+                        normalContent={
+                          showDayNums ? (
+                            <span className="fp-tracking-range-day-num">{cell.dayNum}</span>
+                          ) : null
+                        }
+                      />
+                    ) : null}
                   </div>
                 );
               })}
@@ -262,6 +317,140 @@ function RangeHeatmap({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const YEAR_QUARTERS = [
+  { id: 'T1', months: [0, 1, 2] as const },
+  { id: 'T2', months: [3, 4, 5] as const },
+  { id: 'T3', months: [6, 7, 8] as const },
+  { id: 'T4', months: [9, 10, 11] as const },
+];
+
+function YearMonthTile({
+  year,
+  month,
+  sesiones,
+  isCurrent,
+}: {
+  year: number;
+  month: number;
+  sesiones: SesionEntrenamiento[];
+  isCurrent: boolean;
+}) {
+  const grid = useMemo(
+    () => buildMonthCalendarGrid(sesiones, new Date(year, month, 1, 12)),
+    [sesiones, year, month],
+  );
+  const count = useMemo(
+    () => countSesionesInMonth(sesiones, year, month),
+    [sesiones, year, month],
+  );
+
+  return (
+    <article className={`fp-tracking-year-tile${isCurrent ? ' is-current' : ''}`}>
+      <header className="fp-tracking-year-tile-head">
+        <h4 className="font-sora fp-tracking-year-tile-name">{MONTH_FULL[month]}</h4>
+        <p className="fp-tracking-year-tile-count">
+          {count === 0 ? 'Sin sesiones' : `${count} ${count === 1 ? 'sesión' : 'sesiones'}`}
+        </p>
+      </header>
+      <div className="fp-tracking-year-cal">
+        <div className="fp-tracking-year-cal-head">
+          {YEAR_DAY_LETTERS.map((letter) => (
+            <span key={letter}>{letter}</span>
+          ))}
+        </div>
+        {grid.map((week, wi) => (
+          <div key={wi} className="fp-tracking-year-cal-row">
+            {week.map((cell, di) => {
+              const hasSessions = cell.inMonth && cell.sesiones.length > 0;
+              return (
+                <div
+                  key={`${wi}-${di}`}
+                  className={[
+                    'fp-tracking-year-cell',
+                    !cell.inMonth ? 'is-pad' : '',
+                    hasSessions && cell.modalidad ? `is-${cell.modalidad}` : '',
+                    cell.inMonth && !hasSessions ? 'is-empty' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  title={cell.inMonth ? formatSessionTooltip(cell.sesiones) : undefined}
+                  aria-hidden={!cell.inMonth}
+                >
+                  {cell.inMonth ? cell.dayNum : ''}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function YearHeatmap({
+  sesiones,
+  anchorDate,
+}: {
+  sesiones: SesionEntrenamiento[];
+  anchorDate: Date;
+}) {
+  const year = anchorDate.getFullYear();
+  const now = new Date();
+  const currentMonth = now.getFullYear() === year ? now.getMonth() : -1;
+  const defaultOpen = currentMonth >= 0 ? YEAR_QUARTERS[Math.floor(currentMonth / 3)].id : null;
+  const [openId, setOpenId] = useState<string | null>(defaultOpen);
+
+  return (
+    <div className="fp-tracking-year">
+      {YEAR_QUARTERS.map((q) => {
+        const open = openId === q.id;
+        const panelId = `year-q-${q.id}`;
+        const sessionsInQ = q.months.reduce(
+          (sum, month) => sum + countSesionesInMonth(sesiones, year, month),
+          0,
+        );
+        const rangeLabel = `${MONTH_FULL[q.months[0]]} – ${MONTH_FULL[q.months[2]]}`;
+
+        return (
+          <section key={q.id} className={`fp-tracking-year-q${open ? ' is-open' : ''}`}>
+            <button
+              type="button"
+              className="fp-tracking-year-q-trigger"
+              aria-expanded={open}
+              aria-controls={panelId}
+              onClick={() => setOpenId(open ? null : q.id)}
+            >
+              <span className="font-sora fp-tracking-year-q-id">{q.id}</span>
+              <span className="fp-tracking-year-q-copy">
+                <span className="fp-tracking-year-q-range">{rangeLabel}</span>
+                <span className="fp-tracking-year-q-meta">
+                  {sessionsInQ === 0
+                    ? 'Sin sesiones'
+                    : `${sessionsInQ} ${sessionsInQ === 1 ? 'sesión' : 'sesiones'}`}
+                </span>
+              </span>
+              <ChevronDown size={16} className="fp-tracking-year-q-chevron" aria-hidden />
+            </button>
+            {open ? (
+              <div id={panelId} className="fp-tracking-year-q-grid">
+                {q.months.map((month) => (
+                  <YearMonthTile
+                    key={month}
+                    year={year}
+                    month={month}
+                    sesiones={sesiones}
+                    isCurrent={month === currentMonth}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -313,6 +502,8 @@ export function ActivityHeatmap({
           rutinas={rutinas}
           ejercicios={ejercicios}
         />
+      ) : period === 'anio' ? (
+        <YearHeatmap sesiones={sesiones} anchorDate={anchorDate} />
       ) : (
         <RangeHeatmap
           sesiones={sesiones}

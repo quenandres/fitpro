@@ -3070,12 +3070,70 @@ textarea.fp-input {
   }
 }
 
+.fp-tracking-range-row--axis {
+  align-items: end;
+  min-height: 0;
+}
+
+.fp-tracking-range-month {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.fp-tracking-range-week-n {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1;
+}
+
 .fp-tracking-range-cell {
   width: 100%;
   aspect-ratio: 1;
   min-width: 0;
   border-radius: 4px;
   cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fp-tracking-range-cell--out {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+.fp-tracking-range-cell--month-start {
+  box-shadow: inset 2px 0 0 var(--border);
+}
+
+.fp-tracking-range-day-num {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .fp-tracking-range-day-num { font-size: 11px; }
+  .fp-tracking-range-week-n { font-size: 10px; }
+  .fp-tracking-range-month { font-size: 11px; }
+}
+
+.fp-tracking-range-cell--fuerza .fp-tracking-range-day-num,
+.fp-tracking-range-cell--isometrico .fp-tracking-range-day-num,
+.fp-tracking-range-cell--otro .fp-tracking-range-day-num {
+  color: #fff;
 }
 
 @media (min-width: 768px) {
@@ -3739,4 +3797,195 @@ textarea.fp-input {
 .fp-tracking-month-cell--isometrico .fp-tracking-month-day-num,
 .fp-tracking-month-cell--otro .fp-tracking-month-day-num {
   color: #fff;
+}
+
+/* Año — tablero de 12 meses por trimestre */
+.fp-tracking-year {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fp-tracking-year-q {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.fp-tracking-year-q.is-open {
+  border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+}
+
+.fp-tracking-year-q-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.fp-tracking-year-q-trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.fp-tracking-year-q-id {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  width: 2em;
+}
+
+.fp-tracking-year-q.is-open .fp-tracking-year-q-id {
+  color: var(--brand);
+}
+
+.fp-tracking-year-q-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fp-tracking-year-q-range {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fp-tracking-year-q-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fp-tracking-year-q-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.fp-tracking-year-q.is-open .fp-tracking-year-q-chevron {
+  transform: rotate(180deg);
+  color: var(--text-secondary);
+}
+
+.fp-tracking-year-q-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 10px 12px;
+}
+
+@media (min-width: 640px) {
+  .fp-tracking-year-q-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-tracking-year-q-chevron { transition: none; }
+}
+
+.fp-tracking-year-tile {
+  min-width: 0;
+  padding: 12px 10px 10px;
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+.fp-tracking-year-tile.is-current {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+.fp-tracking-year-tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fp-tracking-year-tile-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.fp-tracking-year-tile-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.fp-tracking-year-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fp-tracking-year-cal-head,
+.fp-tracking-year-cal-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.fp-tracking-year-cal-head span {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.fp-tracking-year-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+.fp-tracking-year-cell.is-empty {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+}
+
+.fp-tracking-year-cell.is-pad {
+  background: transparent;
+  color: transparent;
+}
+
+.fp-tracking-year-cell.is-fuerza,
+.fp-tracking-year-cell.is-isometrico,
+.fp-tracking-year-cell.is-otro {
+  color: #fff;
+  border: none;
+}
+
+.fp-tracking-year-cell.is-fuerza { background: #f0883e; }
+.fp-tracking-year-cell.is-isometrico { background: #58a6ff; }
+.fp-tracking-year-cell.is-otro { background: #22c55e; }
+
+@media (min-width: 768px) {
+  .fp-tracking-year-tile { padding: 14px 12px 12px; }
+  .fp-tracking-year-tile-name { font-size: 14px; }
+  .fp-tracking-year-cell { font-size: 9px; border-radius: 5px; }
 }

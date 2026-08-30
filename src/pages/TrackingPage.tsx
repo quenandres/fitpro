@@ -25,7 +25,7 @@ export function TrackingPage() {
   const [params, setParams] = useSearchParams();
   const usuarios = useUsuariosStore((s) => s.usuarios);
 
-  const period: TrackingPeriod = parsePeriodParam(params.get('period')) ?? 'mes';
+  const period: TrackingPeriod = parsePeriodParam(params.get('period')) ?? 'semana';
   const anchorDate = useMemo(() => {
     const raw = params.get('fecha');
     if (raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {

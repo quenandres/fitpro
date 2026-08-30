@@ -18,6 +18,18 @@ export interface HeatmapCell {
   sesiones: SesionEntrenamiento[];
 }
 
+export interface RangeCalendarCell extends HeatmapCell {
+  dayNum: number;
+  inRange: boolean;
+}
+
+export interface RangeColumnMeta {
+  weekNum: number;
+  month: number;
+  monthLabel: string;
+  isMonthStart: boolean;
+}
+
 export interface MonthCalendarCell extends HeatmapCell {
   dayNum: number;
   inMonth: boolean;
@@ -224,6 +236,87 @@ export function parsePeriodParam(raw: string | null): TrackingPeriod | null {
     return raw;
   }
   return null;
+}
+
+const MONTH_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+export const MONTH_FULL = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+] as const;
+
+/** Iniciales de Lun–Dom (X = miércoles). */
+export const YEAR_DAY_LETTERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] as const;
+
+export function countSesionesInMonth(
+  sesiones: SesionEntrenamiento[],
+  year: number,
+  month: number,
+): number {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+  return sesiones.filter((s) => s.fecha.startsWith(prefix)).length;
+}
+
+/** Semana ISO (1–53) de una fecha local. */
+export function isoWeekNumber(date: Date): number {
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() + 4 - day);
+  const yearStart = new Date(d.getFullYear(), 0, 1, 12);
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+/**
+ * Filas Lun–Dom, columnas = semanas alineadas (lunes→domingo).
+ * Rellena los días fuera del rango para que cada columna sea una semana real.
+ */
+export function buildWeekAlignedRangeGrid(
+  sesiones: SesionEntrenamiento[],
+  desde: string,
+  hasta: string,
+): RangeCalendarCell[][] {
+  const byDate = groupByFecha(sesiones);
+  const grid: RangeCalendarCell[][] = Array.from({ length: 7 }, () => []);
+  const start = startOfWeek(parseFechaLocal(desde));
+  const endWeekStart = startOfWeek(parseFechaLocal(hasta));
+  const end = new Date(endWeekStart);
+  end.setDate(end.getDate() + 6);
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    const jsDay = cursor.getDay();
+    const rowIndex = jsDay === 0 ? 6 : jsDay - 1;
+    const fecha = fechaLocalISO(cursor);
+    const daySessions = byDate.get(fecha) ?? [];
+    const inRange = fecha >= desde && fecha <= hasta;
+    grid[rowIndex].push({
+      date: fecha,
+      dayNum: cursor.getDate(),
+      inRange,
+      modalidad: inRange && daySessions.length > 0 ? dominantModalidad(daySessions) : null,
+      sesiones: inRange ? daySessions : [],
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return grid;
+}
+
+/** Metadatos por columna (semana) a partir de la fila del lunes. */
+export function rangeColumnMeta(grid: RangeCalendarCell[][]): RangeColumnMeta[] {
+  const mondayRow = grid[0] ?? [];
+  return mondayRow.map((cell, i) => {
+    const d = parseFechaLocal(cell.date);
+    const month = d.getMonth();
+    const prevMonth = i > 0 ? parseFechaLocal(mondayRow[i - 1].date).getMonth() : -1;
+    return {
+      weekNum: isoWeekNumber(d),
+      month,
+      monthLabel: MONTH_SHORT[month],
+      isMonthStart: month !== prevMonth,
+    };
+  });
 }
 
 /** Filas Lun–Dom, columnas días del rango (más antigua → más reciente). */
