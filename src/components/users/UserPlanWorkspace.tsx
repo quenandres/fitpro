@@ -19,6 +19,7 @@ import { parseDragId, parseEjId } from '../userPlans/dragIds';
 import type { usePlanMutations } from '../../hooks/usePlanMutations';
 import type { DiaRef } from '../../hooks/usePlanMutations';
 import { ExercisePickerOverlay, type PickedExercise } from '../exercise/ExercisePickerOverlay';
+import { RoutineWeekDayNav } from '../library/routines/RoutineWeekDayNav';
 import { UserPlannedLoadPanel } from './UserPlannedLoadPanel';
 import { DiaEditorSheet } from './DiaEditorSheet';
 import { RutinaPickerSheet } from './RutinaPickerSheet';
@@ -38,6 +39,8 @@ interface Props {
   selectedDiaIndex: number;
   onSelectedDiaChange: (diaIndex: number) => void;
 }
+
+const PLAN_ACCENT = '#a371f7';
 
 export function UserPlanWorkspace({
   user,
@@ -149,6 +152,11 @@ export function UserPlanWorkspace({
     setShowEjercicioPicker(false);
   };
 
+  const handleSemanasChange = (n: number) => {
+    mutations.setPlanSemanas(n);
+    if (semana > n) onSemanaChange(n);
+  };
+
   const diaLabel = selectedDia
     ? `${selectedDia.nombre} · Semana ${semana}`
     : `Semana ${semana}`;
@@ -176,23 +184,25 @@ export function UserPlanWorkspace({
 
       {semanaPlan ? (
         <div className="fp-card mb-4" style={{ padding: 14, borderRadius: 14 }}>
-          <p className="fp-cal-label mb-2">Día activo · {diaLabel}</p>
-          <div className="fp-user-days scrollbar-hide">
-            {semanaPlan.dias.map((d, idx) => {
-              const activo = idx === selectedDiaIndex;
-              return (
-                <button
-                  key={d.dia}
-                  type="button"
-                  onClick={() => onSelectedDiaChange(idx)}
-                  className={`fp-user-day${activo ? ' fp-user-day--on' : ''}`}
-                >
-                  {d.nombre.slice(0, 3)}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-2 mt-3">
+          <RoutineWeekDayNav
+            variant="embedded"
+            semanas={user.plan.semanas}
+            semanaActiva={semana}
+            diaIndex={selectedDiaIndex}
+            accent={PLAN_ACCENT}
+            durationLabel="Duración del plan"
+            showBothWeekActions
+            dayHasExercises={(idx) => {
+              const d = semanaPlan.dias[idx];
+              return (d?.ejercicios_personalizados.length ?? 0) > 0;
+            }}
+            onSemanasChange={handleSemanasChange}
+            onSemanaChange={onSemanaChange}
+            onDiaChange={onSelectedDiaChange}
+            onApplyToAll={() => mutations.applyWeek1ToAll()}
+            onCopyWeekFrom={(origen) => mutations.copyWeekFrom(semana, origen)}
+          />
+          <div className="flex flex-wrap gap-2 mt-1 pt-3 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               className="fp-btn fp-btn-secondary fp-btn-sm gap-1.5"
@@ -234,6 +244,7 @@ export function UserPlanWorkspace({
             onSelectWeek={onSemanaChange}
             onOpenDia={handleOpenDia}
             rutinas={rutinas}
+            hideWeekNav
           />
           <DragOverlay>
             {activeDragDia ? (

@@ -10,9 +10,10 @@ interface Props {
   onSelectWeek: (w: number) => void;
   onOpenDia: (semana: number, diaIndex: number) => void;
   rutinas: Rutina[];
+  hideWeekNav?: boolean;
 }
 
-export const VistaSemana = ({ user, selectedWeek, onSelectWeek, onOpenDia, rutinas }: Props) => {
+export const VistaSemana = ({ user, selectedWeek, onSelectWeek, onOpenDia, rutinas, hideWeekNav = false }: Props) => {
   const semana = useMemo(
     () => user.plan.programacion_semanal.find((s) => s.semana === selectedWeek),
     [user, selectedWeek]
@@ -37,54 +38,68 @@ export const VistaSemana = ({ user, selectedWeek, onSelectWeek, onOpenDia, rutin
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 16,
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            onClick={() => onSelectWeek(Math.max(1, selectedWeek - 1))}
-            disabled={selectedWeek === 1}
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: 6 }}
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span style={{ fontSize: 14, fontWeight: 600, minWidth: 100, textAlign: 'center' }}>
-            Semana {selectedWeek}
-          </span>
-          <button
-            onClick={() => onSelectWeek(Math.min(user.plan.semanas, selectedWeek + 1))}
-            disabled={selectedWeek === user.plan.semanas}
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: 6 }}
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-        <div className="scrollbar-hide flex gap-1 overflow-x-auto pb-0.5 max-w-full">
-          {user.plan.programacion_semanal.map((s) => (
+      {!hideWeekNav ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+            flexWrap: 'wrap',
+            gap: 8,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
-              key={s.semana}
-              onClick={() => onSelectWeek(s.semana)}
-              className="shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold cursor-pointer"
-              style={{
-                border: selectedWeek === s.semana ? '2px solid #a371f7' : '1px solid var(--border)',
-                background: selectedWeek === s.semana ? '#a371f720' : 'transparent',
-                color: selectedWeek === s.semana ? '#a371f7' : 'var(--text-muted)',
-              }}
+              onClick={() => onSelectWeek(Math.max(1, selectedWeek - 1))}
+              disabled={selectedWeek === 1}
+              className="fp-btn fp-btn-ghost"
+              style={{ padding: 6 }}
             >
-              {s.semana}
+              <ChevronLeft size={16} />
             </button>
-          ))}
+            <span style={{ fontSize: 14, fontWeight: 600, minWidth: 100, textAlign: 'center' }}>
+              Semana {selectedWeek}
+            </span>
+            <button
+              onClick={() => onSelectWeek(Math.min(user.plan.semanas, selectedWeek + 1))}
+              disabled={selectedWeek === user.plan.semanas}
+              className="fp-btn fp-btn-ghost"
+              style={{ padding: 6 }}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          <div className="scrollbar-hide flex gap-1 overflow-x-auto pb-0.5 max-w-full">
+            {user.plan.programacion_semanal.map((s) => (
+              <button
+                key={s.semana}
+                onClick={() => onSelectWeek(s.semana)}
+                className="shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold cursor-pointer"
+                style={{
+                  border: selectedWeek === s.semana ? '2px solid #a371f7' : '1px solid var(--border)',
+                  background: selectedWeek === s.semana ? '#a371f720' : 'transparent',
+                  color: selectedWeek === s.semana ? '#a371f7' : 'var(--text-muted)',
+                }}
+              >
+                {s.semana}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <p
+          className="font-sora"
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            marginBottom: 14,
+          }}
+        >
+          Semana {selectedWeek}
+        </p>
+      )}
 
       <div
         style={{

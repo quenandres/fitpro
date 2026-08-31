@@ -7,14 +7,20 @@ interface Props {
   semanas: number;
   semanaActiva: number;
   diaIndex: number;
-  activeSemanaPlan?: RoutineFormSemana;
-  createMode: RoutineCreateMode;
   accent: string;
   onSemanasChange: (n: number) => void;
   onSemanaChange: (semana: number) => void;
   onDiaChange: (index: number) => void;
+  activeSemanaPlan?: RoutineFormSemana;
+  createMode?: RoutineCreateMode;
   onApplyToAll?: () => void;
   onCopyWeekFrom?: (origen: number) => void;
+  /** Si se provee, sustituye la detección vía activeSemanaPlan. */
+  dayHasExercises?: (index: number) => boolean;
+  durationLabel?: string;
+  /** Muestra aplicar semana 1 y copiar semana anterior (p. ej. plan de cliente). */
+  showBothWeekActions?: boolean;
+  variant?: 'card' | 'embedded';
 }
 
 export const RoutineWeekDayNav = ({
@@ -22,26 +28,37 @@ export const RoutineWeekDayNav = ({
   semanaActiva,
   diaIndex,
   activeSemanaPlan,
-  createMode,
+  createMode = 'semana_tipo',
   accent,
   onSemanasChange,
   onSemanaChange,
   onDiaChange,
   onApplyToAll,
   onCopyWeekFrom,
+  dayHasExercises,
+  durationLabel = 'Duración del programa',
+  showBothWeekActions = false,
+  variant = 'card',
 }: Props) => {
   const decSemanas = () => onSemanasChange(Math.max(MIN_RUTINA_SEMANAS, semanas - 1));
   const incSemanas = () => onSemanasChange(Math.min(MAX_RUTINA_SEMANAS, semanas + 1));
 
-  const showApplyAll = createMode === 'semana_tipo' && semanas > 1 && onApplyToAll;
-  const showCopyWeek =
-    createMode === 'semana_a_semana' &&
-    semanas > 1 &&
-    semanaActiva > 1 &&
-    onCopyWeekFrom;
+  const showApplyAll = showBothWeekActions
+    ? semanas > 1 && !!onApplyToAll
+    : createMode === 'semana_tipo' && semanas > 1 && !!onApplyToAll;
+  const showCopyWeek = showBothWeekActions
+    ? semanas > 1 && semanaActiva > 1 && !!onCopyWeekFrom
+    : createMode === 'semana_a_semana' && semanas > 1 && semanaActiva > 1 && !!onCopyWeekFrom;
 
   return (
-    <div className="fp-card" style={{ borderRadius: 13, padding: '12px 14px', marginBottom: 16 }}>
+    <div
+      className={variant === 'card' ? 'fp-card' : undefined}
+      style={
+        variant === 'card'
+          ? { borderRadius: 13, padding: '12px 14px', marginBottom: 16 }
+          : undefined
+      }
+    >
       <div
         style={{
           display: 'flex',
@@ -53,7 +70,7 @@ export const RoutineWeekDayNav = ({
       >
         <div>
           <p className="fp-cal-label" style={{ marginBottom: 2 }}>
-            Duración del programa
+            {durationLabel}
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             {semanas} {semanas === 1 ? 'semana' : 'semanas'} · máx. {MAX_RUTINA_SEMANAS}
@@ -133,7 +150,9 @@ export const RoutineWeekDayNav = ({
       <div className="fp-week-day-pills" role="tablist" aria-label="Días de la semana">
         {DIAS_SEMANA.map((def, index) => {
           const planDia = activeSemanaPlan?.dias[index];
-          const hasExercises = (planDia?.ejercicios.length ?? 0) > 0;
+          const hasExercises = dayHasExercises
+            ? dayHasExercises(index)
+            : (planDia?.ejercicios.length ?? 0) > 0;
           const active = index === diaIndex;
           return (
             <button

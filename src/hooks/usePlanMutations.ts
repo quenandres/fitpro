@@ -8,6 +8,7 @@ import type {
 import { resincronizarDia as buildResync } from '../utils/compareRutinaSnapshot';
 import { toEjercicioPersonalizado } from '../utils/distributeExercises';
 import { mapDia, type DiaRef } from '../utils/planMutations';
+import { cloneSemanaPlan, expandPlanSemanas } from '../utils/planScheduleUtils';
 
 export type { DiaRef };
 
@@ -206,6 +207,59 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     [selectedUser, onUpdate]
   );
 
+  const setPlanSemanas = useCallback(
+    (semanas: number) => {
+      if (!selectedUser) return;
+      const programacion = expandPlanSemanas(
+        selectedUser.plan.programacion_semanal,
+        semanas,
+        'clone_last',
+      );
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...selectedUser.plan,
+          semanas,
+          programacion_semanal: programacion,
+        },
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
+  const applyWeek1ToAll = useCallback(() => {
+    if (!selectedUser) return;
+    const week1 = selectedUser.plan.programacion_semanal.find((s) => s.semana === 1);
+    if (!week1) return;
+    onUpdate({
+      ...selectedUser,
+      plan: {
+        ...selectedUser.plan,
+        programacion_semanal: selectedUser.plan.programacion_semanal.map((s) =>
+          s.semana === 1 ? s : cloneSemanaPlan(week1, s.semana),
+        ),
+      },
+    });
+  }, [selectedUser, onUpdate]);
+
+  const copyWeekFrom = useCallback(
+    (destinoSemana: number, origenSemana: number) => {
+      if (!selectedUser) return;
+      const source = selectedUser.plan.programacion_semanal.find((s) => s.semana === origenSemana);
+      if (!source) return;
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...selectedUser.plan,
+          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) =>
+            s.semana === destinoSemana ? cloneSemanaPlan(source, s.semana) : s,
+          ),
+        },
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
   return {
     toggleDiaEntreno,
     selectRutinaForDia,
@@ -217,5 +271,8 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     reorderEjerciciosInDia,
     moveDia,
     resincronizarDesdeRutina,
+    setPlanSemanas,
+    applyWeek1ToAll,
+    copyWeekFrom,
   };
 };
