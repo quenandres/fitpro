@@ -158,6 +158,32 @@ export interface Usuario {
   plan: PlanUsuario;
 }
 
+export type SitioMedidaId =
+  | 'cuello'
+  | 'pecho'
+  | 'brazo'
+  | 'antebrazo'
+  | 'cintura'
+  | 'cadera'
+  | 'muslo'
+  | 'pantorrilla';
+
+export interface ValoresSitio {
+  unico?: number;
+  izq?: number;
+  der?: number;
+}
+
+/** Snapshot de medidas corporales; preparado para tabla Supabase (Fase 4). */
+export interface SnapshotMedidas {
+  id: string;
+  usuario_id: number;
+  /** YYYY-MM-DD en zona local */
+  fecha: string;
+  peso_kg?: number;
+  sitios: Partial<Record<SitioMedidaId, ValoresSitio>>;
+}
+
 export type CitaTipo = 'entrenamiento' | 'medidas';
 
 /** Cita entrenador–cliente; shape preparado para tabla Supabase `appointments`. */

@@ -1,10 +1,11 @@
-import { Activity, ClipboardList } from 'lucide-react';
+import { Activity, ClipboardList, Ruler } from 'lucide-react';
 
-export type UserDetailTab = 'progreso' | 'entrenamientos';
+export type UserDetailTab = 'progreso' | 'entrenamientos' | 'medidas';
 
 const TABS: { id: UserDetailTab; label: string; icon: typeof Activity }[] = [
   { id: 'progreso', label: 'Progreso', icon: Activity },
   { id: 'entrenamientos', label: 'Entrenamientos', icon: ClipboardList },
+  { id: 'medidas', label: 'Medidas', icon: Ruler },
 ];
 
 interface Props {

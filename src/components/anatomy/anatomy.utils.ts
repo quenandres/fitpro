@@ -1,5 +1,7 @@
 import {
   HEATMAP_OFF_FILTER,
+  MEASUREMENT_FILLED_FILTER,
+  MEASUREMENT_SELECTED_FILTER,
   RECOVERY_LEVELS,
 } from './anatomy.constants';
 import { MUSCLE_CANONICAL } from './anatomy.canonicalMap';
@@ -49,6 +51,18 @@ export function getMuscleFilter(
   if (!showHeatmap) return HEATMAP_OFF_FILTER;
   const base = getRecoveryLevel(level).filter;
   return isSelected ? `${base} drop-shadow(0 0 6px rgba(255,255,255,0.35))` : base;
+}
+
+/** Construye el filtro CSS para el mapa de medidas según si el sitio tiene valor. */
+export function getMeasurementMuscleFilter(
+  hasValue: boolean,
+  isSelected: boolean,
+  isMeasurable: boolean,
+): string {
+  if (!isMeasurable) return HEATMAP_OFF_FILTER;
+  if (isSelected) return MEASUREMENT_SELECTED_FILTER;
+  if (hasValue) return MEASUREMENT_FILLED_FILTER;
+  return HEATMAP_OFF_FILTER;
 }
 
 /** Nombre de archivo físico del SVG (coincide con `data/anatomy_svgs/`). */

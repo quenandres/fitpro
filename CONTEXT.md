@@ -697,6 +697,14 @@ backend de Fase 6 (Comunidades) antes de seguir ampliando su UI.
 >
 > Estructura sugerida: agregar bloques con fecha y encabezado.
 
+### 2026-08-31 — Medidas corporales con anatomy (UI mock local)
+
+Nueva pestaña **Medidas** en `/usuarios/:id?tab=medidas`: peso (kg) + circunferencias
+(cm) por sitio anatómico (cuello, pecho, brazo, etc.), mapa táctil reutilizando
+`AnatomyViewport` con highlight por sitio registrado. Persistencia en
+`useMedidasStore` (`localStorage`, clave `fitpro-medidas`). Sin backend Supabase;
+independiente de citas `tipo: medidas` del calendario (solo scheduling).
+
 ### 2026-04-16 — Entradas iniciales
 
 _(vacío — agrega aquí contexto nuevo a medida que aparezca)_

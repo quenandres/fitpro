@@ -114,3 +114,9 @@ export const DEFAULT_RECOVERY = 1.0;
 
 /** Filtro CSS usado cuando el heatmap está desactivado. */
 export const HEATMAP_OFF_FILTER = 'invert(1) brightness(0.25) opacity(0.5)';
+
+/** Filtros para el modo de medidas corporales (sitios con valor / seleccionado). */
+export const MEASUREMENT_FILLED_FILTER =
+  'invert(58%) sepia(72%) saturate(520%) hue-rotate(95deg) brightness(95%) contrast(92%)';
+export const MEASUREMENT_SELECTED_FILTER =
+  `${MEASUREMENT_FILLED_FILTER} drop-shadow(0 0 8px rgba(34,197,94,0.45))`;

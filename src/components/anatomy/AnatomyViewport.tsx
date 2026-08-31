@@ -13,6 +13,8 @@ interface AnatomyViewportProps {
   getLevel: (canonical: string) => number;
   onSelectMuscle: (canonical: string) => void;
   onDismiss: () => void;
+  /** Si se provee, sustituye la lógica de heatmap/recuperación para el filtro CSS. */
+  resolveFilter?: (canonical: string, isSelected: boolean) => string;
 }
 
 function hideOnError(e: SyntheticEvent<HTMLImageElement>) {
@@ -32,6 +34,7 @@ export function AnatomyViewport({
   getLevel,
   onSelectMuscle,
   onDismiss,
+  resolveFilter,
 }: AnatomyViewportProps) {
   const handleBackgroundClick = (e: MouseEvent<HTMLDivElement>) => {
     const role = (e.target as HTMLElement).dataset.role;
@@ -56,7 +59,9 @@ export function AnatomyViewport({
       {muscles.map((name) => {
         const canonical = getCanonical(name);
         const isSelected = selected === canonical;
-        const filter = getMuscleFilter(getLevel(canonical), isSelected, showHeatmap);
+        const filter = resolveFilter
+          ? resolveFilter(canonical, isSelected)
+          : getMuscleFilter(getLevel(canonical), isSelected, showHeatmap);
 
         return (
           <MuscleLayer

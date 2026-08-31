@@ -13,12 +13,15 @@ import { UserProgressPanel } from '../components/users/UserProgressPanel';
 import { UserDetailHeader } from '../components/users/UserDetailHeader';
 import type { UserDetailTab } from '../components/users/UserDetailTabSwitcher';
 import { UserCard } from '../components/users/UserCard';
+import { UserMedidasPanel } from '../components/users/UserMedidasPanel';
 import { UserPlanWorkspace } from '../components/users/UserPlanWorkspace';
 import { recencyToneFromSesion } from '../utils/userSummary';
 import { ROUTES } from '../routes/paths';
 
 function parseDetailTab(raw: string | null): UserDetailTab {
-  return raw === 'entrenamientos' ? 'entrenamientos' : 'progreso';
+  if (raw === 'entrenamientos') return 'entrenamientos';
+  if (raw === 'medidas') return 'medidas';
+  return 'progreso';
 }
 
 function parseSemana(raw: string | null, max: number): number {
@@ -65,7 +68,7 @@ export function UsuariosPage() {
           const next = new URLSearchParams(prev);
           if (tab === 'progreso') next.delete('tab');
           else next.set('tab', tab);
-          next.delete('dia');
+          if (tab !== 'entrenamientos') next.delete('dia');
           return next;
         },
         { replace: true },
@@ -287,6 +290,8 @@ export function UsuariosPage() {
 
             {detailTab === 'progreso' ? (
               <UserProgressPanel usuarioId={selectedUserLive.id} />
+            ) : detailTab === 'medidas' ? (
+              <UserMedidasPanel user={selectedUserLive} />
             ) : (
               <UserPlanWorkspace
                 user={selectedUserLive}
