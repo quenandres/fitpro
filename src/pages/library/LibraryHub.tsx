@@ -9,7 +9,6 @@ import {
   Dumbbell,
   Layers,
   LayoutTemplate,
-  Ruler,
   Sparkles,
   CalendarDays,
   Users,

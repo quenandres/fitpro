@@ -2,20 +2,33 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, X, BookOpen, SlidersHorizontal, Loader2 } from 'lucide-react';
 import {
-  useBodyParts,
-  useEquipments,
-  useExerciseTypes,
-  useMuscles,
-} from '../lib/exercisedb';
-import type { ReferenceItem } from '../lib/exercisedb';
-import { useExerciseBrowse } from '../hooks/useExerciseBrowse';
+  useGatewayBodyParts,
+  useGatewayEquipments,
+  useGatewayExerciseBrowse,
+  useGatewayMuscles,
+} from '../lib/gateway/hooks/useExercises';
+import type { GatewayExerciseListItem } from '../lib/gateway/adapters/exerciseAdapter';
 import { ExerciseCard } from '../components/exercise/ExerciseCard';
 import { ExerciseDetailModal } from '../components/exercise/ExerciseDetailModal';
 import { SkeletonCard } from '../components/common/Skeleton';
 
-const FILTER_KEYS = ['bodyPart', 'equipment', 'exerciseType', 'muscle'] as const;
+const FILTER_KEYS = ['bodyPart', 'equipment', 'muscle'] as const;
 
 type FilterKey = (typeof FILTER_KEYS)[number];
+
+function toCardItem(item: GatewayExerciseListItem) {
+  return {
+    exerciseId: String(item.id),
+    name: item.name,
+    imageUrl: item.imageUrl ?? '',
+    keywords: [] as string[],
+    bodyParts: item.bodyPart ? [item.bodyPart] : [],
+    equipments: item.equipment ? [item.equipment] : [],
+    targetMuscles: item.target ? [item.target] : [],
+    secondaryMuscles: [] as string[],
+    exerciseType: item.bodyPart ?? 'General',
+  };
+}
 
 export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,13 +38,11 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
 
   const bodyPart = searchParams.get('bodyPart') ?? '';
   const equip = searchParams.get('equipment') ?? '';
-  const exerciseType = searchParams.get('exerciseType') ?? '';
   const muscle = searchParams.get('muscle') ?? '';
 
-  const { data: exerciseTypes = [] } = useExerciseTypes();
-  const { data: bodyParts = [] } = useBodyParts();
-  const { data: equipments = [] } = useEquipments();
-  const { data: muscles = [] } = useMuscles();
+  const { data: bodyParts = [] } = useGatewayBodyParts();
+  const { data: equipments = [] } = useGatewayEquipments();
+  const { data: muscles = [] } = useGatewayMuscles();
 
   const setFilter = useCallback(
     (key: FilterKey, value: string) => {
@@ -59,45 +70,38 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
     );
   }, [setSearchParams]);
 
-  const {
-    isSearching,
-    displayItems,
-    isLoading,
-    isError,
-    error,
-    totalCount,
-    listQuery,
-    refetch,
-  } = useExerciseBrowse(search, {
-    exerciseType,
-    bodyPart,
-    equipment: equip,
-    muscle,
-  });
+  const browse = useGatewayExerciseBrowse(search, { bodyPart, equipment: equip, muscle });
+
+  const displayItems = useMemo(
+    () => browse.displayItems.map(toCardItem),
+    [browse.displayItems],
+  );
 
   const activeFilters = useMemo(
     () =>
       [
         bodyPart && { key: 'bodyPart' as const, label: bodyPart },
         equip && { key: 'equipment' as const, label: equip },
-        exerciseType && { key: 'exerciseType' as const, label: exerciseType },
         muscle && { key: 'muscle' as const, label: muscle },
       ].filter(Boolean) as Array<{ key: FilterKey; label: string }>,
-    [bodyPart, equip, exerciseType, muscle],
+    [bodyPart, equip, muscle],
   );
 
   const hasFilters = activeFilters.length > 0;
   const filterCount = activeFilters.length;
+  const isLoading = browse.isLoading;
+  const isError = browse.isError;
+  const error = browse.error;
+  const totalCount = browse.totalCount;
 
   const filterSelects: Array<{
     label: string;
     key: FilterKey;
     val: string;
-    opts: ReferenceItem[];
+    opts: string[];
   }> = [
     { label: 'Parte del cuerpo', key: 'bodyPart', val: bodyPart, opts: bodyParts },
     { label: 'Equipo', key: 'equipment', val: equip, opts: equipments },
-    { label: 'Tipo', key: 'exerciseType', val: exerciseType, opts: exerciseTypes },
     { label: 'Músculo', key: 'muscle', val: muscle, opts: muscles },
   ];
 
@@ -195,40 +199,6 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
         </button>
       </div>
 
-      {!isSearching && (
-        <div
-          className="animate-slide-up delay-150 scrollbar-hide flex gap-1.5 overflow-x-auto"
-          style={{ paddingBottom: 4, marginBottom: 12 }}
-        >
-          {exerciseTypes.map((type: ReferenceItem) => {
-            const active = exerciseType === type.name;
-            return (
-              <button
-                key={type.name}
-                type="button"
-                onClick={() => setFilter('exerciseType', active ? '' : type.name)}
-                style={{
-                  flexShrink: 0,
-                  padding: '5px 12px',
-                  borderRadius: 100,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  outline: 'none',
-                  whiteSpace: 'nowrap',
-                  background: active ? 'rgba(88,166,255,.14)' : 'var(--bg-elevated)',
-                  color: active ? '#58a6ff' : 'var(--text-secondary)',
-                  border: `1px solid ${active ? 'rgba(88,166,255,.35)' : 'var(--border)'}`,
-                  transition: 'all .15s',
-                }}
-              >
-                {type.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {showFilters && (
         <div
           className="fp-card animate-slide-down"
@@ -256,9 +226,9 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
                   onChange={(e) => setFilter(key, e.target.value)}
                 >
                   <option value="">Todos</option>
-                  {opts.map((o: ReferenceItem) => (
-                    <option key={o.name} value={o.name}>
-                      {o.name}
+                  {opts.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>
@@ -279,7 +249,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
         </div>
       )}
 
-      {hasFilters && !isSearching && (
+      {hasFilters && (
         <div
           className="scrollbar-hide flex gap-1.5 overflow-x-auto"
           style={{ marginBottom: 10, paddingBottom: 2 }}
@@ -327,7 +297,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
             {error?.message ?? 'Intenta de nuevo más tarde'}
           </p>
-          <button type="button" className="fp-btn fp-btn-secondary" onClick={() => refetch()}>
+          <button type="button" className="fp-btn fp-btn-secondary" onClick={() => void browse.refetch()}>
             Reintentar
           </button>
         </div>
@@ -372,15 +342,15 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
         </div>
       )}
 
-      {!isSearching && !isLoading && !isError && listQuery.hasNextPage && (
+      {!isLoading && !isError && browse.hasNextPage && (
         <div style={{ paddingTop: 16, paddingBottom: 8 }}>
           <button
             type="button"
             className="fp-btn fp-btn-secondary w-full"
-            disabled={listQuery.isFetchingNextPage}
-            onClick={() => void listQuery.fetchNextPage()}
+            disabled={browse.isFetchingNextPage}
+            onClick={() => void browse.fetchNextPage()}
           >
-            {listQuery.isFetchingNextPage ? (
+            {browse.isFetchingNextPage ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
                 Cargando…

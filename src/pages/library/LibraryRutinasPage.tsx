@@ -1,23 +1,46 @@
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, LayoutTemplate, Plus, Sparkles } from 'lucide-react';
-import { useDataStore } from '../../store/useDataStore';
+import { Dumbbell, LayoutTemplate, Loader2, Plus, Sparkles } from 'lucide-react';
+import { useTemplates, useTemplateMutations } from '../../lib/gateway/hooks/useTemplates';
 import { RoutineCard } from '../../components/library/RoutineCard';
 import { SimpleToast, useToast } from '../../components/common/Toast';
 import { routineEditPath } from '../../utils/inferRoutineFormLevel';
 import { ROUTES } from '../../routes/paths';
+import { ErrorState } from '../../components/common/ErrorState';
 
 export const LibraryRutinasPage = () => {
   const navigate = useNavigate();
-  const rutinas = useDataStore((s) => s.rutinas);
+  const { data: rutinas = [], isLoading, isError, error, refetch } = useTemplates();
+  const { remove } = useTemplateMutations();
   const { toast, showToast } = useToast();
   const { library: lib } = ROUTES;
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('¿Eliminar esta rutina?')) {
-      useDataStore.getState().deleteRutina(id);
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('¿Eliminar esta rutina?')) return;
+    try {
+      await remove.mutateAsync(id);
       showToast('Rutina eliminada', 'success');
+    } catch {
+      showToast('No se pudo eliminar la rutina', 'error');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="animate-spin" size={28} color="var(--text-muted)" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="No se pudieron cargar las rutinas"
+        description={error?.message ?? 'Revisa la conexión con el gateway'}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   return (
     <>
@@ -42,7 +65,7 @@ export const LibraryRutinasPage = () => {
             Rutinas
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            Inventario de rutinas: edita, elimina o crea desde plantilla, IA o formulario.
+            Inventario de rutinas en Supabase: edita, elimina o crea desde plantilla, IA o formulario.
           </p>
         </section>
 
@@ -99,25 +122,15 @@ export const LibraryRutinasPage = () => {
             <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
               No hay rutinas
             </p>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-              Crea desde plantilla, IA o formulario por nivel
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
+              Crea tu primera rutina o importa una plantilla global.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                className="fp-btn fp-btn-primary"
-                style={{ gap: 6 }}
-                onClick={() => navigate(lib.rutinasNueva)}
-              >
-                <Plus size={15} /> Crear rutina
-              </button>
-              <button
-                className="fp-btn fp-btn-secondary"
-                style={{ gap: 6 }}
-                onClick={() => navigate(lib.rutinasPlantillas)}
-              >
-                <LayoutTemplate size={15} /> Ver plantillas
-              </button>
-            </div>
+            <button
+              className="fp-btn fp-btn-primary gap-1.5 text-xs"
+              onClick={() => navigate(lib.rutinasNueva)}
+            >
+              <Plus size={14} /> Nueva rutina
+            </button>
           </div>
         )}
       </div>

@@ -1,4 +1,6 @@
 import type { Ejercicio, EjercicioPersonalizado, Rutina, Usuario } from '../types';
+import { isDiaEntreno } from '../components/userPlans/diasSemana';
+import { findRutinaById } from './rutinaId';
 import { aggregateRoutineMuscles, type RoutineExerciseRef } from './routineMuscles';
 
 const DEFAULT_RPE = 7;
@@ -47,8 +49,8 @@ export function aggregatePlannedWeekLoad(
       dia.ejercicios_personalizados.length > 0
         ? dia.ejercicios_personalizados
         : (() => {
-            if (dia.rutina_id == null || dia.rutina_id <= 0) return [];
-            const rutina = rutinas.find((r) => r.id === dia.rutina_id);
+            if (!isDiaEntreno(dia.rutina_id)) return [];
+            const rutina = findRutinaById(rutinas, dia.rutina_id);
             if (!rutina) return [];
             return rutina.ejercicios.map((e) => ({
               nombre: e.nombre,
@@ -88,8 +90,8 @@ export function totalPlannedSeries(user: Usuario, semanaNum: number, rutinas: re
   for (const dia of semana.dias) {
     if (dia.ejercicios_personalizados.length > 0) {
       total += dia.ejercicios_personalizados.reduce((acc, e) => acc + e.series, 0);
-    } else if (dia.rutina_id != null && dia.rutina_id > 0) {
-      const rutina = rutinas.find((r) => r.id === dia.rutina_id);
+    } else if (isDiaEntreno(dia.rutina_id)) {
+      const rutina = findRutinaById(rutinas, dia.rutina_id);
       if (rutina) {
         total += rutina.ejercicios.reduce((acc, e) => acc + e.series, 0);
       }

@@ -93,7 +93,7 @@ export function CitaCreateSheet({
         hora_inicio: horaInicio,
         duracion_min: duracionMin,
         tipo,
-        rutina_id: tipo === 'entrenamiento' && rutinaId ? Number(rutinaId) : null,
+        rutina_id: tipo === 'entrenamiento' && rutinaId ? rutinaId : null,
         notas: notas.trim() || undefined,
       })),
     );

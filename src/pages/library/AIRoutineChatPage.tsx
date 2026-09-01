@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAiRoutineChat } from '../../hooks/useAiRoutineChat';
-import { useDataStore } from '../../store/useDataStore';
+import { useTemplateMutations, useTemplates } from '../../lib/gateway/hooks/useTemplates';
 import { draftToRutinaPayload } from '../../utils/resolveExercisesAgainstApi';
 import { routineEditPath } from '../../utils/inferRoutineFormLevel';
 import { ExerciseDetailModal } from '../../components/exercise/ExerciseDetailModal';
@@ -107,8 +107,8 @@ const ExerciseRow = ({
 
 export const AIRoutineChatPage = () => {
   const navigate = useNavigate();
-  const addRutina = useDataStore((s) => s.addRutina);
-  const rutinas = useDataStore((s) => s.rutinas);
+  const { createFromRutina } = useTemplateMutations();
+  const { data: rutinas = [] } = useTemplates();
   const {
     messages,
     prefs,
@@ -121,7 +121,7 @@ export const AIRoutineChatPage = () => {
     resetChat,
   } = useAiRoutineChat();
 
-  const [savedRoutineId, setSavedRoutineId] = useState<number | null>(null);
+  const [savedRoutineId, setSavedRoutineId] = useState<string | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [showPrefs, setShowPrefs] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -130,10 +130,14 @@ export const AIRoutineChatPage = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!activeDraft) return;
-    const id = addRutina(draftToRutinaPayload(activeDraft));
-    setSavedRoutineId(id);
+    try {
+      const id = await createFromRutina.mutateAsync(draftToRutinaPayload(activeDraft));
+      setSavedRoutineId(id);
+    } catch {
+      // el toast/error UI puede añadirse después
+    }
   };
 
   const canSend = input.trim().length >= 10 && !loading;
@@ -356,7 +360,7 @@ export const AIRoutineChatPage = () => {
                       </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {msg.draft.exercises.map((ex, i) => (
+                      {msg.draft.exercises.map((ex: ResolvedExercise, i: number) => (
                         <ExerciseRow
                           key={`${ex.nombre}-${i}`}
                           exercise={ex}

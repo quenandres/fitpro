@@ -7,9 +7,9 @@ import { ROLES_DASHBOARD, ROLE_LABEL, type RolDashboard } from '../types/adminDa
 import { ROUTES } from '../routes/paths';
 
 const ROLE_DESC: Record<RolDashboard, string> = {
-  superadmin: 'Acceso completo: métricas globales y creación de comunidades.',
+  superadmin: 'Acceso completo: métricas globales y gestión de roles.',
+  admin: 'Gestión de usuarios, plantillas globales y métricas de equipo.',
   entrenador: 'Gestión de clientes, rutinas y calendario.',
-  lider_comunidad: 'Administración de su comunidad y sus miembros.',
 };
 
 /**
@@ -73,12 +73,13 @@ export const ProfilePage = () => {
           ) : null}
         </section>
 
+        {import.meta.env.DEV ? (
         <section className="fp-card animate-slide-up delay-150" style={{ padding: 16, marginBottom: 14 }}>
           <div className="flex items-start gap-2" style={{ marginBottom: 4 }}>
             <Shield size={14} style={{ color: 'var(--brand)', marginTop: 2 }} />
             <div className="min-w-0">
               <p className="font-sora text-sm" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                Rol de plataforma
+                Rol de plataforma (solo desarrollo)
               </p>
               <p className="text-[11px]" style={{ color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 2 }}>
                 Cambia la vista de toda la app para hacer pruebas. Es un ajuste
@@ -130,6 +131,7 @@ export const ProfilePage = () => {
             </button>
           ) : null}
         </section>
+        ) : null}
 
         <button
           type="button"

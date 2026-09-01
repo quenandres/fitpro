@@ -69,7 +69,8 @@ export function CitaForm({
       fecha: fechaLocalISO(selectedDate),
       hora_inicio: horaInicio,
       duracion_min: duracionMin > 0 ? duracionMin : DEFAULT_DURACION,
-      rutina_id: rutinaId ? Number(rutinaId) : null,
+      tipo: 'entrenamiento',
+      rutina_id: rutinaId || null,
       notas: notas.trim() || undefined,
     });
 

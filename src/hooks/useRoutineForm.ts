@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useDataStore } from '../store/useDataStore';
+import { useTemplateMutations } from '../lib/gateway/hooks/useTemplates';
 import type {
   RoutineCreateMode,
   RoutineFormData,
@@ -18,7 +18,6 @@ import {
   getDiaIndexByDia,
   MAX_RUTINA_SEMANAS,
   MIN_RUTINA_SEMANAS,
-  programacionToPayload,
 } from '../utils/routineScheduleUtils';
 import { validateRoutineByLevel } from '../utils/routineFormValidators';
 
@@ -98,17 +97,16 @@ const updateActiveDay = (
 export const useRoutineForm = (
   level: RoutineFormLevel,
   initialForm?: RoutineFormData,
-  editingId?: number | null,
+  editingId?: string | null,
   initialCreateMode: RoutineCreateMode = 'semana_tipo',
 ) => {
   const navigate = useNavigate();
-  const addRutina = useDataStore((s) => s.addRutina);
-  const updateRutina = useDataStore((s) => s.updateRutina);
+  const { createFromForm, updateFromForm } = useTemplateMutations();
   const [form, setForm] = useState<RoutineFormData>(
     () => initialForm ?? createEmptyRoutineForm(level),
   );
   const [errors, setErrors] = useState<ReturnType<typeof validateRoutineByLevel>>([]);
-  const [savedId, setSavedId] = useState<number | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [createMode, setCreateModeState] = useState<RoutineCreateMode>(initialCreateMode);
   const [semanaActiva, setSemanaActiva] = useState(1);
   const [diaIndex, setDiaIndex] = useState(0);
@@ -387,52 +385,25 @@ export const useRoutineForm = (
     [mutateActiveDay],
   );
 
-  const toRutinaPayload = useCallback((): Omit<Rutina, 'id'> => {
-    const { programacion_semanal, semanas, ...rest } = form;
-    const { ejercicios, programacion_semanal: progPayload } = programacionToPayload(
-      programacion_semanal,
-      semanas,
-    );
-
-    const payload: Omit<Rutina, 'id'> = {
-      nombre: rest.nombre.trim(),
-      categoria: rest.categoria || 'Fuerza',
-      dificultad: rest.dificultad,
-      duracion_min: rest.duracion_min,
-      descripcion: rest.descripcion.trim(),
-      ejercicios,
-      semanas,
-      programacion_semanal: progPayload,
-    };
-
-    if (level !== 'basica') {
-      payload.rest_between_sets = rest.rest_between_sets;
-      payload.notes = rest.notes.trim() || undefined;
-    }
-
-    if (level === 'avanzada') {
-      payload.tipo = rest.tipo;
-    }
-
-    return payload;
-  }, [form, level]);
-
-  const save = useCallback((): number | null => {
+  const save = useCallback(async (): Promise<string | null> => {
     const validation = validateRoutineByLevel(level, form);
     if (validation.length > 0) {
       setErrors(validation);
       return null;
     }
-    const payload = toRutinaPayload();
-    if (editingId != null) {
-      updateRutina(editingId, payload);
-      setSavedId(editingId);
-      return editingId;
+    try {
+      if (editingId != null) {
+        await updateFromForm.mutateAsync({ id: editingId, form });
+        setSavedId(editingId);
+        return editingId;
+      }
+      const id = await createFromForm.mutateAsync(form);
+      setSavedId(id);
+      return id;
+    } catch {
+      return null;
     }
-    const id = addRutina(payload);
-    setSavedId(id);
-    return id;
-  }, [addRutina, editingId, form, level, toRutinaPayload, updateRutina]);
+  }, [createFromForm, editingId, form, level, updateFromForm]);
 
   const validateStep1 = useCallback((): boolean => {
     const stepErrors = validateRoutineByLevel(level, form);

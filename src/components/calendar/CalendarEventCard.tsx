@@ -1,5 +1,6 @@
 import { CalendarClock, Dumbbell, MoreVertical } from 'lucide-react';
 import type { Rutina } from '../../types';
+import { findRutinaById } from '../../utils/rutinaId';
 import type { CalendarEvent } from './calendarUtils';
 import {
   formatDurationShort,
@@ -49,9 +50,7 @@ export function CalendarEventCard({
   maxExercises = 5,
   showTimeRange = false,
 }: CalendarEventCardProps) {
-  const rutina = event.rutinaId != null
-    ? rutinas.find((r) => r.id === event.rutinaId)
-    : undefined;
+  const rutina = findRutinaById(rutinas, event.rutinaId);
   const ejercicios = event.kind === 'entreno' && maxExercises > 0
     ? resumenEjercicios(rutina, maxExercises)
     : null;

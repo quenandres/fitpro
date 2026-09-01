@@ -29,9 +29,9 @@ clientes los ejecutan y ven progreso. Modelo comercial por nº de clientes
 |---|---|---|
 | UI | React 19 + Vite 8 + TypeScript 5.9 (estricto) | — |
 | Routing | `react-router-dom` v7 | — |
-| Estado UI efímero | Zustand 5 (`useWorkoutStore`, `useCitasStore`, `useCommunitiesStore`) | Zustand (solo UI) |
-| Estado local con `persist` | `useDataStore` (rutinas/ejercicios/unidades en localStorage) — hoy sigue así, sin cambios de código | **Migrar a Supabase vía `gym-gateway`, dentro de la Fase 2** (cambio de objetivo 2026-08-27, ver `CONTEXT.md §7`) |
-| Estado servidor | TanStack Query **declarado y cableado en código** (`src/main.tsx`, `src/lib/exercisedb/hooks.ts`) pero **no instalado** en `node_modules` — el build falla hoy por esto | TanStack Query funcionando |
+| Estado UI efímero | Zustand 5 | Zustand (solo UI) |
+| Estado local unidades | `useDataStore` / `useUnitsStore` (`unidades.json`) | Unidades locales; rutinas/ejercicios ya en Supabase |
+| Estado servidor | TanStack Query en `src/lib/gateway/` | Funcionando para auth, ejercicios, plantillas |
 | Validación runtime | Zod ya instalado y en uso real (`src/lib/gateway/schemas/*`, `src/lib/exercisedb/schemas.ts`) | Extender a `importData` y formularios |
 | Backend auth/datos | **`gym-gateway`** (FastAPI, repo hermano) — proxy real hacia **Supabase Auth + PostgREST**, JWT ES256 vía JWKS, RBAC server-side (`require_role`/`require_admin`) | Mismo, con migraciones SQL versionadas |
 | Backend IA | **FastAPI** (`../fitpro_api`) + DeepSeek, `POST /api/ai/routine` | — |
@@ -318,9 +318,7 @@ Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/p
   redirects legacy, pero **no tiene `<Route>` registrada** en `App.tsx` — cae
   al catch-all (`*` → `/`). No hay página de gestión de unidades hoy.
 
-Todo bajo `ProtectedRoute` salvo login/register (bajo `PublicRoute`). Sin
-gating por rol — pendiente tras Fase 3, y desconectado del RBAC real que ya
-existe en `gym-gateway`.
+Todo bajo `ProtectedRoute` salvo login/register (bajo `PublicRoute`). Gating por permisos en `/usuarios` (`PermissionGate`); navbar filtrada por capacidades. RBAC server-side en `gym-gateway`.
 
 ---
 
@@ -336,20 +334,8 @@ Supabase de rutinas/ejercicios/unidades está implementado todavía. Estado
 actual:
 
 1. Fase 1 — Base del sistema (UI, routing, theming) → **~95%**
-2. Fase 2 — CRUD vía Supabase + Biblioteca → **UI ~80% / persistencia real
-   en Supabase 0%**. La UI/Biblioteca (hub, catálogos ExerciseDB, 3
-   formularios por nivel, galería de presets, chat IA) sigue tan completa
-   como antes, corriendo sobre `useDataStore` + `localStorage`. Lo nuevo
-   (0% iniciado): diseñar schema Supabase + RLS para rutinas/ejercicios/
-   unidades, exponerlo vía `gym-gateway`, migrar `useDataStore` a TanStack
-   Query. El rediseño del modelo (`Rutina → Bloque[] → BloqueItem[] →
-   SerieDef[]`, ex-Fase 2.5) se resuelve **como parte de este diseño de
-   schema**, no aparte — evita migrar el modelo plano y rediseñarlo otra
-   vez después.
-3. Fase 3 — Supabase + Auth real + TanStack Query → **~35%** (auth real y
-   RBAC server-side ya existen vía `gym-gateway`; falta TanStack Query
-   instalado, migrar `useCitasStore` a servidor — `useDataStore` se movió a
-   Fase 2 —, y gating por rol en el frontend)
+2. Fase 2 — CRUD vía Supabase + Biblioteca → **UI ~85% / persistencia Supabase ~75%**. Rutinas/plantillas y catálogo principal en Supabase vía gateway; unidades locales; seeds canónicos pendientes.
+3. Fase 3 — Supabase + Auth real + TanStack Query → **~70%** (roles/permisos reales, guards frontend; falta citas en servidor)
 4. Fase 4 — Tracking real de sesiones (historial) → ~10% (sin cambios)
 5. Fase 5 — Multi-tenant entrenador ↔ cliente → ~5-10% (UI de planes avanzó
    mucho; sigue sin persistencia ni `trainer_client_links`)

@@ -39,7 +39,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
   });
   const [plan, setPlan] = useState<PlanDraft>({ nombre: '', descripcion: '', semanas: 4 });
   const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([1, 3, 5]);
-  const [rutinaBaseId, setRutinaBaseId] = useState<number | null>(null);
+  const [rutinaBaseId, setRutinaBaseId] = useState<string | null>(null);
   const [aplicarATodas, setAplicarATodas] = useState(true);
 
   const rutinaBase = useMemo(

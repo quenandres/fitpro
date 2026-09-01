@@ -17,7 +17,6 @@ import { CalendarActionSheet } from '../components/calendar/CalendarActionSheet'
 import { minutesToTime } from '../components/calendar/CitaForm';
 import {
   buildCalendarEvents,
-  fechaLocalISO,
   getDaysInMonth,
   getDefaultTimeRange,
   getDayWindow,
@@ -32,7 +31,7 @@ import {
   type SchedulerTimeRange,
 } from '../components/calendar/calendarUtils';
 import { useIsLargeScreen, useIsMobile } from '../hooks/useMediaQuery';
-import { useDataStore } from '../store/useDataStore';
+import { useTemplates } from '../lib/gateway/hooks/useTemplates';
 import { useCitasStore } from '../store/useCitasStore';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 
@@ -52,7 +51,7 @@ export function CalendarPage() {
   const [createSlot, setCreateSlot] = useState<{ date: Date; minutes: number } | null>(null);
   const usuarios = useUsuariosStore((s) => s.usuarios);
   const citas = useCitasStore((s) => s.citas);
-  const rutinas = useDataStore((s) => s.rutinas);
+  const { data: rutinas = [] } = useTemplates();
 
   const weekDays = useMemo(() => {
     if (isMobile || viewMode === 'day') return [selected];

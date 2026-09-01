@@ -697,6 +697,14 @@ backend de Fase 6 (Comunidades) antes de seguir ampliando su UI.
 >
 > Estructura sugerida: agregar bloques con fecha y encabezado.
 
+### 2026-09-01 — Migración Supabase + gym-gateway (alcance Fase 0–5 del plan)
+
+- **Supabase:** migraciones `001_security_fixes`, `002_platform_roles`, `003_routines_schema` versionadas en `gym-gateway/sql/` y aplicadas al remoto.
+- **Roles:** `superadmin | admin | trainer` (UI: entrenador). Registro público → `trainer`. Permisos en `users.permissions` + `users.role_permissions`.
+- **Gateway:** proxy allowlisted; endpoints de dominio `/api/routines/templates`, `/api/exercises`, `/api/context`, `/api/users`.
+- **Frontend:** `src/lib/gateway/` (httpClient, hooks TanStack Query, adaptadores); Biblioteca de rutinas/ejercicios contra Supabase; `useDataStore` solo unidades locales; fixtures marcados en `src/data/README.md`.
+- **Fuera de alcance (sin cambios):** multi-tenant, citas/sesiones/planes persistidos, Comunidades backend, tabla de unidades remota.
+
 ### 2026-08-31 — Medidas corporales con anatomy (UI mock local)
 
 Nueva pestaña **Medidas** en `/usuarios/:id?tab=medidas`: peso (kg) + circunferencias

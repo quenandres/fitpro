@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, RefreshCw, X } from 'lucide-react';
 import { useExercise } from '../../../lib/exercisedb';
-import { useDataStore } from '../../../store/useDataStore';
+import { useExerciseCatalog } from '../../../lib/gateway/hooks/useExercises';
 import type { RoutineFormExercise } from '../../../types';
 import { calculateExerciseDuration } from '../../../utils/calculateRoutineDuration';
 import { Skeleton } from '../../common/Skeleton';
@@ -75,7 +75,7 @@ export const ExercisePreviewModal = ({
   onClose,
 }: Props) => {
   const { data, isLoading, isError, refetch } = useExercise(ejercicio?.exerciseDbId);
-  const ejerciciosLocales = useDataStore((s) => s.ejercicios);
+  const { data: ejerciciosLocales = [] } = useExerciseCatalog();
   const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {

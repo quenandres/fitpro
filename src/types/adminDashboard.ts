@@ -5,22 +5,22 @@
  * por rol mientras no exista backend de métricas.
  */
 
-export type RolDashboard = 'superadmin' | 'entrenador' | 'lider_comunidad';
+import { mapRoleFromGateway, type PlatformRole } from './platformRole';
 
-export const ROLES_DASHBOARD: readonly RolDashboard[] = ['superadmin', 'entrenador', 'lider_comunidad'];
+export type RolDashboard = PlatformRole;
+
+export const ROLES_DASHBOARD: readonly RolDashboard[] = ['superadmin', 'admin', 'entrenador'];
 
 export const ROLE_LABEL: Record<RolDashboard, string> = {
   superadmin: 'Superadmin',
+  admin: 'Admin',
   entrenador: 'Entrenador',
-  lider_comunidad: 'Líder de comunidad',
 };
 
-/** AuthUser.role es un string libre sin enum en el frontend hoy; si no coincide
- * con ninguno de los 3 valores esperados (incluido `undefined`, caso normal
- * mientras el backend no los envíe), se usa 'entrenador' como fallback. */
+/** Mapea rol del gateway (trainer → entrenador) al rol de dashboard. */
 export function resolveDashboardRole(role?: string): RolDashboard {
-  if (role === 'superadmin' || role === 'entrenador' || role === 'lider_comunidad') return role;
-  return 'entrenador';
+  if (role === 'superadmin' || role === 'admin' || role === 'entrenador') return role;
+  return mapRoleFromGateway(role);
 }
 
 export interface KpiResumen {

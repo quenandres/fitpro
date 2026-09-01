@@ -5,10 +5,8 @@ import { useNow } from '../../../hooks/useNow';
 import { usePlatformRole } from '../../../hooks/usePlatformRole';
 import entrenadorData from '../../../data/adminDashboard/entrenador.json';
 import superadminData from '../../../data/adminDashboard/superadmin.json';
-import liderData from '../../../data/adminDashboard/liderComunidad.json';
 import type {
   EntrenadorMetrics,
-  LiderComunidadMetrics,
   RolDashboard,
   SuperadminMetrics,
 } from '../../../types/adminDashboard';
@@ -25,7 +23,6 @@ import {
 
 const entrenador = entrenadorData as EntrenadorMetrics;
 const superadmin = superadminData as SuperadminMetrics;
-const lider = liderData as LiderComunidadMetrics;
 
 const kpiValue = (
   kpis: Array<{ label: string; valor: number | string }>,
@@ -55,22 +52,6 @@ const briefingForRole = (
       actions: [
         { to: ROUTES.communities.create, label: 'Crear comunidad', primary: true },
         { to: ROUTES.calendar, label: 'Calendario' },
-      ],
-    };
-  }
-
-  if (rol === 'lider_comunidad') {
-    const nuevos = asNumber(kpiValue(lider.kpis, 'Nuevos miembros'));
-    const actividad = asNumber(kpiValue(lider.kpis, 'Actividad'));
-    return {
-      lede: `${nuevos} altas este mes. La comunidad se mueve al ${actividad}%.`,
-      pulse: buildPulse([
-        { label: 'Activos', value: actividad, color: 'var(--accent-pink)' },
-        { label: 'En silencio', value: Math.max(0, 100 - actividad), color: 'var(--text-muted)' },
-      ]),
-      actions: [
-        { to: ROUTES.communities.root, label: 'Ver comunidad', primary: true },
-        { to: ROUTES.notifications, label: 'Avisos' },
       ],
     };
   }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AnatomyMuscleHeatmap } from '../../anatomy';
-import { useDataStore } from '../../../store/useDataStore';
+import { useExerciseCatalog } from '../../../lib/gateway/hooks/useExercises';
 import { useRoutineMuscleCounts } from '../../../hooks/useRoutineMuscleCounts';
 import type { RoutineFormData } from '../../../types';
 import { countDiasEntreno, flattenSemana } from '../../../utils/routineScheduleUtils';
@@ -18,7 +18,7 @@ export const RoutineReviewStep = ({
   semanaReview = 1,
   onMusclesResolved,
 }: Props) => {
-  const ejerciciosLib = useDataStore((s) => s.ejercicios);
+  const { data: ejerciciosLib = [] } = useExerciseCatalog();
   const [reviewSemana, setReviewSemana] = useState(semanaReview);
 
   const semanaPlan = form.programacion_semanal.find((s) => s.semana === reviewSemana);

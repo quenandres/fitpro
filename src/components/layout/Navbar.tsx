@@ -21,17 +21,19 @@ import { ThemeToggle } from './ThemeToggle';
 import { Sheet } from '../common/Sheet';
 import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthorization } from '../../context/AuthorizationContext';
+import { PERMISSIONS } from '../../types/platformRole';
 import { useTheme } from '../../context/ThemeContext';
 import { useCommunitiesStore } from '../../store/useCommunitiesStore';
 import { SHELL_WIDTH_CLASS } from './shellWidth';
 
 const NAV_ITEMS = [
-  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e' },
-  { path: ROUTES.usuarios,           Icon: UserRound,     label: 'Usuarios',    accent: '#58a6ff' },
-  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7' },
-  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
-  { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },
-  { path: ROUTES.perfil,             Icon: User,          label: 'Perfil',      accent: '#2dd4bf' },
+  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e', permission: null },
+  { path: ROUTES.usuarios,           Icon: UserRound,     label: 'Usuarios',    accent: '#58a6ff', permission: PERMISSIONS.USERS_VIEW },
+  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7', permission: PERMISSIONS.TEMPLATES_VIEW },
+  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e', permission: null },
+  { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba', permission: null },
+  { path: ROUTES.perfil,             Icon: User,          label: 'Perfil',      accent: '#2dd4bf', permission: PERMISSIONS.PROFILE_READ },
 ] as const;
 
 const isNavActive = (pathname: string, path: string) =>
@@ -44,8 +46,13 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const { can } = useAuthorization();
   const noLeidas = useCommunitiesStore((s) => s.notificaciones.filter((n) => !n.leida).length);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.permission || can(item.permission),
+  );
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -111,7 +118,7 @@ export const Navbar = () => {
           style={{ scrollbarWidth: 'none' }}
           aria-label="Navegación principal"
         >
-          {NAV_ITEMS.map(({ path, Icon, label, accent }) => {
+          {visibleNavItems.map(({ path, Icon, label, accent }) => {
             const active = isNavActive(location.pathname, path);
             return (
               <Link
@@ -169,6 +176,7 @@ export const Navbar = () => {
         open={menuOpen}
         pathname={location.pathname}
         unread={noLeidas}
+        navItems={visibleNavItems}
         onClose={() => setMenuOpen(false)}
         onLogout={() => void handleLogout()}
       />
@@ -180,11 +188,12 @@ interface MobileNavMenuProps {
   open: boolean;
   pathname: string;
   unread: number;
+  navItems: typeof NAV_ITEMS[number][];
   onClose: () => void;
   onLogout: () => void;
 }
 
-const MobileNavMenu = ({ open, pathname, unread, onClose, onLogout }: MobileNavMenuProps) => {
+const MobileNavMenu = ({ open, pathname, unread, navItems, onClose, onLogout }: MobileNavMenuProps) => {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
@@ -228,7 +237,7 @@ const MobileNavMenu = ({ open, pathname, unread, onClose, onLogout }: MobileNavM
         </div>
 
         <nav className="flex flex-col gap-1" aria-label="Secciones">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <MobileNavLink key={item.path} {...item} pathname={pathname} onNavigate={onClose} />
           ))}
         </nav>
@@ -333,6 +342,11 @@ const MobileNavLink = ({
 /* ── Bottom Nav ─────────────────────────────────────────── */
 export const BottomNav = () => {
   const location = useLocation();
+  const { can } = useAuthorization();
+
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.permission || can(item.permission),
+  );
 
   return (
     <nav
@@ -340,7 +354,7 @@ export const BottomNav = () => {
       style={{ minHeight: 64 }}
     >
       <div className="max-w-md mx-auto px-2 sm:px-4 h-16 flex items-center justify-around min-w-0">
-        {NAV_ITEMS.map(({ path, Icon, label, accent }) => {
+        {visibleNavItems.map(({ path, Icon, label, accent }) => {
           const active = isNavActive(location.pathname, path);
           return (
             <Link

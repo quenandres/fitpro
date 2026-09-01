@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthorizationProvider } from './context/AuthorizationContext';
+import { PermissionGate } from './components/auth/PermissionGate';
+import { PERMISSIONS } from './types/platformRole';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
@@ -93,8 +96,8 @@ function AppRoutes() {
       <Route path={ROUTES.admin.dashboard} element={<Navigate to={ROUTES.home} replace />} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path={ROUTES.tracking} element={<ProtectedRoute><TrackingPage /></ProtectedRoute>} />
-      <Route path={ROUTES.usuarios} element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
-      <Route path="/usuarios/:userId" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
+      <Route path={ROUTES.usuarios} element={<ProtectedRoute><PermissionGate permission={PERMISSIONS.USERS_VIEW} redirectTo={ROUTES.home}><UsuariosPage /></PermissionGate></ProtectedRoute>} />
+      <Route path="/usuarios/:userId" element={<ProtectedRoute><PermissionGate permission={PERMISSIONS.USERS_VIEW} redirectTo={ROUTES.home}><UsuariosPage /></PermissionGate></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
       <Route path={ROUTES.player} element={<ProtectedRoute><WorkoutPlayer /></ProtectedRoute>} />
       <Route path={ROUTES.anatomy} element={<ProtectedRoute><AnatomyRecoveryTracker /></ProtectedRoute>} />
@@ -183,9 +186,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <AuthorizationProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthorizationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

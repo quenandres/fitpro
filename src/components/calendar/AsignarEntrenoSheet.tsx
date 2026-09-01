@@ -30,7 +30,7 @@ export function AsignarEntrenoSheet({
   const [error, setError] = useState('');
 
   const rutina = useMemo(
-    () => rutinas.find((r) => r.id === Number(rutinaId)),
+    () => rutinas.find((r) => r.id === rutinaId),
     [rutinas, rutinaId],
   );
 

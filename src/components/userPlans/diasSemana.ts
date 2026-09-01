@@ -14,8 +14,12 @@ export const DIAS_SEMANA: DiaDef[] = [
   { dia: 0, nombre: 'Domingo', nombreCorto: 'Dom' },
 ];
 
-export const isDiaEntreno = (rutinaId: number | null): boolean =>
-  rutinaId !== null && rutinaId !== -1;
+export const isDiaEntreno = (rutinaId: string | number | null): boolean => {
+  if (rutinaId === null) return false;
+  if (rutinaId === -1 || rutinaId === 0) return false;
+  if (typeof rutinaId === 'string') return rutinaId.length > 0;
+  return rutinaId > 0;
+};
 
-export const isDiaNueva = (rutinaId: number | null): boolean =>
+export const isDiaNueva = (rutinaId: string | number | null): boolean =>
   rutinaId === -1 || rutinaId === 0;

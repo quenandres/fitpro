@@ -28,7 +28,8 @@ export interface SemanaRutina {
 }
 
 export interface Rutina {
-  id: number;
+  /** UUID de `routines.templates` en Supabase */
+  id: string;
   nombre: string;
   categoria: string;
   dificultad: string;
@@ -113,7 +114,7 @@ export interface EjercicioPersonalizado {
 }
 
 export interface RutinaAsignada {
-  rutina_id: number;
+  rutina_id: string | number;
   nombre_rutina: string;
   frecuencia: string;
   notas?: string;
@@ -122,7 +123,7 @@ export interface RutinaAsignada {
 export interface DiaSemana {
   dia: number;
   nombre: string;
-  rutina_id: number | null;
+  rutina_id: string | number | null;
   rutina_nombre: string;
   ejercicios_personalizados: EjercicioPersonalizado[];
 }
@@ -196,7 +197,7 @@ export interface Cita {
   hora_inicio: string;
   duracion_min: number;
   tipo: CitaTipo;
-  rutina_id: number | null;
+  rutina_id: string | number | null;
   notas?: string;
 }
 
@@ -218,7 +219,7 @@ export interface SesionEntrenamiento {
   usuario_id: number;
   /** YYYY-MM-DD en zona local */
   fecha: string;
-  rutina_id: number;
+  rutina_id: string | number;
   rutina_nombre: string;
   modalidad: SesionModalidad;
   duracion_min: number;

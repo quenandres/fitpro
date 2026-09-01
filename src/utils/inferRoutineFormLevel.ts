@@ -6,9 +6,6 @@ import {
   rutinaProgramacionToForm,
 } from './routineScheduleUtils';
 
-const uid = (): string =>
-  `ex_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-
 export const rutinaToFormData = (rutina: Rutina): RoutineFormData => {
   const programacion = rutinaProgramacionToForm(rutina);
   const semanas = rutina.semanas ?? programacion.length;
@@ -65,7 +62,7 @@ export const inferRoutineFormLevel = (rutina: Rutina): RoutineFormLevel => {
   return 'basica';
 };
 
-export const routineFormPath = (level: RoutineFormLevel, id?: number): string =>
+export const routineFormPath = (level: RoutineFormLevel, id?: string): string =>
   ROUTES.library.rutinaNueva(level, id);
 
 export const routineEditPath = (rutina: Rutina): string =>

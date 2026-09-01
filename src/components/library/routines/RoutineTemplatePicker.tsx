@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { LayoutTemplate, Search } from 'lucide-react';
-import { useDataStore } from '../../../store/useDataStore';
+import { useTemplates } from '../../../lib/gateway/hooks/useTemplates';
 import { ROUTINE_PRESETS } from '../../../data/routinePresets';
 import { applyRoutinePreset } from '../../../utils/applyRoutinePreset';
 import type { Rutina, RoutineFormData } from '../../../types';
@@ -8,12 +8,12 @@ import { MAX_RUTINA_SEMANAS, MIN_RUTINA_SEMANAS } from '../../../utils/routineSc
 
 interface Props {
   accent: string;
-  excludeId?: number | null;
+  excludeId?: string | null;
   onApply: (source: Rutina | RoutineFormData, semanas: number) => void;
 }
 
 export const RoutineTemplatePicker = ({ accent, excludeId, onApply }: Props) => {
-  const rutinas = useDataStore((s) => s.rutinas);
+  const { data: rutinas = [] } = useTemplates();
   const [query, setQuery] = useState('');
   const [semanas, setSemanas] = useState(4);
   const [loadingPresetId, setLoadingPresetId] = useState<string | null>(null);

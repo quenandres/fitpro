@@ -19,7 +19,7 @@ interface ScheduleHookSlice {
   applyToAllWeeks: () => void;
   copyWeekFrom: (origen: number) => void;
   applyTemplate: (source: Rutina | import('../../../types').RoutineFormData, n: number) => void;
-  editingId?: number | null;
+  editingId?: string | null;
 }
 
 interface Props {

@@ -1,5 +1,4 @@
-import { useMemo } from 'react';
-import { Activity, Flame, RotateCcw } from 'lucide-react';
+import { Flame, RotateCcw } from 'lucide-react';
 import { AnatomyViewport } from './AnatomyViewport';
 import { RecoveryInspector } from './RecoveryInspector';
 import { RecoveryLegend } from './RecoveryLegend';
@@ -7,7 +6,6 @@ import { SegmentedControl } from './SegmentedControl';
 import { GENDER_OPTIONS, VIEW_OPTIONS } from './anatomy.constants';
 import { styles } from './anatomy.styles';
 import { useAnatomyTracker } from './useAnatomyTracker';
-import { getCanonical } from './anatomy.utils';
 import type { AnatomyView, Gender, RecoveryState } from './anatomy.types';
 import './anatomy.css';
 
@@ -41,13 +39,6 @@ export function AnatomyViewer({
     changeGender,
     changeView,
   } = useAnatomyTracker({ initialGender, initialView, onRecoveryChange });
-
-  // Resumen: porcentaje medio de recuperación entre los músculos visibles.
-  const avgRecoveryPct = useMemo(() => {
-    if (muscles.length === 0) return 100;
-    const total = muscles.reduce((acc, m) => acc + getLevel(getCanonical(m)), 0);
-    return Math.round((total / muscles.length) * 100);
-  }, [muscles, getLevel]);
 
   return (
     <div style={styles.root} className="animate-fade-in">      

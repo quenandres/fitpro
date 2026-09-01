@@ -27,7 +27,7 @@ export const ROUTES = {
     rutinas: '/library/rutinas',
     rutinasNueva: '/library/rutinas/nueva',
     rutinasPlantillas: '/library/rutinas/plantillas',
-    rutinaNueva: (level: RoutineFormLevel, id?: number) => {
+    rutinaNueva: (level: RoutineFormLevel, id?: string) => {
       const base = `/library/rutinas/nueva/${level}`;
       return id != null ? `${base}?id=${id}` : base;
     },

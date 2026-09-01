@@ -3,7 +3,6 @@ import { DashboardBriefing } from '../../components/admin/dashboard/DashboardBri
 import { usePlatformRole } from '../../hooks/usePlatformRole';
 import { SuperadminDashboardView } from './SuperadminDashboardView';
 import { EntrenadorDashboardView } from './EntrenadorDashboardView';
-import { LiderComunidadDashboardView } from './LiderComunidadDashboardView';
 
 /**
  * Pantalla de inicio (`/`): briefing del día + métricas mock
@@ -13,12 +12,7 @@ import { LiderComunidadDashboardView } from './LiderComunidadDashboardView';
 export const AdminDashboardPage = () => {
   const { rol } = usePlatformRole();
 
-  const View =
-    rol === 'superadmin'
-      ? SuperadminDashboardView
-      : rol === 'lider_comunidad'
-        ? LiderComunidadDashboardView
-        : EntrenadorDashboardView;
+  const View = rol === 'superadmin' ? SuperadminDashboardView : EntrenadorDashboardView;
 
   return (
     <AppShell width="wide">

@@ -5,7 +5,7 @@ import { countDiasEntreno } from '../../utils/routineScheduleUtils';
 interface Props {
   rutina: Rutina;
   onEdit: () => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 function getCat(cat: string) {

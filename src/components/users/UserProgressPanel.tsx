@@ -4,7 +4,8 @@ import { RecentSessionsList } from '../tracking/RecentSessionsList';
 import { TrackingPeriodNav } from '../tracking/TrackingPeriodNav';
 import { TrackingStats } from '../tracking/TrackingStats';
 import { getSesionesByUsuario, getSesionesEnRango } from '../../store/useSesionesStore';
-import { useDataStore } from '../../store/useDataStore';
+import { useExerciseCatalog } from '../../lib/gateway/hooks/useExercises';
+import { useTemplates } from '../../lib/gateway/hooks/useTemplates';
 import {
   TRACKING_PERIOD_LABELS,
   getPeriodRange,
@@ -17,7 +18,8 @@ interface Props {
 }
 
 export function UserProgressPanel({ usuarioId }: Props) {
-  const { rutinas, ejercicios } = useDataStore();
+  const { data: rutinas = [] } = useTemplates();
+  const { data: ejercicios = [] } = useExerciseCatalog();
   const [period, setPeriod] = useState<TrackingPeriod>('semana');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [showMuscleMap, setShowMuscleMap] = useState(false);

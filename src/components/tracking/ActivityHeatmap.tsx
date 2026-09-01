@@ -409,7 +409,7 @@ function YearHeatmap({
       {YEAR_QUARTERS.map((q) => {
         const open = openId === q.id;
         const panelId = `year-q-${q.id}`;
-        const sessionsInQ = q.months.reduce(
+        const sessionsInQ = q.months.reduce<number>(
           (sum, month) => sum + countSesionesInMonth(sesiones, year, month),
           0,
         );

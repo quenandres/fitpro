@@ -1,5 +1,6 @@
 import { isDiaEntreno } from '../userPlans/diasSemana';
 import type { Cita, CitaTipo, Rutina, Usuario } from '../../types';
+import { findRutinaById } from '../../utils/rutinaId';
 
 export type CalendarViewMode = 'week' | 'month' | 'day';
 
@@ -17,7 +18,7 @@ export interface CalendarEvent {
   citaId?: number;
   citaTipo?: CitaTipo;
   clienteId: number;
-  rutinaId?: number | null;
+  rutinaId?: string | number | null;
   notas?: string;
 }
 
@@ -218,7 +219,7 @@ export interface EntrenoDelDia {
   clienteId: number;
   clienteNombre: string;
   rutinaNombre: string;
-  rutinaId: number | null;
+  rutinaId: string | number | null;
 }
 
 export function getEntrenosDelDia(
@@ -339,9 +340,11 @@ export function clienteIniciales(nombre: string): string {
     .join('');
 }
 
-export function rutinaNombre(rutinas: Rutina[], id: number | null | undefined): string | null {
-  if (id == null) return null;
-  return rutinas.find((r) => r.id === id)?.nombre ?? null;
+export function rutinaNombre(
+  rutinas: Rutina[],
+  id: string | number | null | undefined,
+): string | null {
+  return findRutinaById(rutinas, id)?.nombre ?? null;
 }
 
 export function minutesToTime(minutes: number): string {

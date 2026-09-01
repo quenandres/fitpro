@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Search,
   X,
@@ -10,15 +10,13 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import {
-  useBodyParts,
-  useEquipments,
-  useExerciseTypes,
-  useMuscles,
-} from '../../lib/exercisedb';
-import type { ExerciseListItem, ExerciseSearchItem, ReferenceItem } from '../../lib/exercisedb';
-import { getExerciseById } from '../../lib/exercisedb';
-import { useExerciseBrowse } from '../../hooks/useExerciseBrowse';
-import { useDataStore } from '../../store/useDataStore';
+  useExerciseCatalog,
+  useGatewayBodyParts,
+  useGatewayEquipments,
+  useGatewayExerciseBrowse,
+  useGatewayMuscles,
+} from '../../lib/gateway/hooks/useExercises';
+import { getExerciseById } from '../../lib/gateway/exercises.service';
 import type { Ejercicio } from '../../types';
 import { musclesFromExerciseDb, musclesFromGrupoMuscular } from '../../utils/muscleCanonicalMap';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
@@ -34,7 +32,13 @@ export interface PickedExercise {
   musculos_anatomia?: string[];
 }
 
-type Tab = 'api' | 'local';
+interface CatalogItem {
+  exerciseId: string;
+  name: string;
+  imageUrl?: string;
+  bodyPart?: string;
+  target?: string;
+}
 
 interface Props {
   onClose: () => void;
@@ -44,11 +48,6 @@ interface Props {
   title?: string;
 }
 
-const isApiItem = (
-  item: ExerciseListItem | ExerciseSearchItem | Ejercicio,
-): item is ExerciseListItem | ExerciseSearchItem =>
-  'exerciseId' in item;
-
 export const ExercisePickerOverlay = ({
   onClose,
   onSelect,
@@ -56,29 +55,34 @@ export const ExercisePickerOverlay = ({
   localExercises,
   title = 'Seleccionar ejercicio',
 }: Props) => {
-  const storeEjercicios = useDataStore((s) => s.ejercicios);
-  const localList = localExercises ?? storeEjercicios;
+  const { data: catalogEjercicios = [] } = useExerciseCatalog();
+  const localList = localExercises ?? catalogEjercicios;
 
-  const [tab, setTab] = useState<Tab>('api');
+  const [tab, setTab] = useState<'catalog' | 'local'>('catalog');
   const [search, setSearch] = useState('');
   const [bodyPart, setBodyPart] = useState('');
   const [equip, setEquip] = useState('');
-  const [exerciseType, setExerciseType] = useState('');
   const [muscle, setMuscle] = useState('');
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [localSearch, setLocalSearch] = useState('');
 
-  const { data: exerciseTypes = [] } = useExerciseTypes();
-  const { data: bodyParts = [] } = useBodyParts();
-  const { data: equipments = [] } = useEquipments();
-  const { data: muscles = [] } = useMuscles();
+  const { data: bodyParts = [] } = useGatewayBodyParts();
+  const { data: equipments = [] } = useGatewayEquipments();
+  const { data: muscles = [] } = useGatewayMuscles();
 
-  const browse = useExerciseBrowse(search, {
-    exerciseType,
-    bodyPart,
-    equipment: equip,
-    muscle,
-  });
+  const browse = useGatewayExerciseBrowse(search, { bodyPart, equipment: equip, muscle });
+
+  const catalogItems: CatalogItem[] = useMemo(
+    () =>
+      browse.displayItems.map((item) => ({
+        exerciseId: String(item.id),
+        name: item.name,
+        imageUrl: item.imageUrl,
+        bodyPart: item.bodyPart,
+        target: item.target,
+      })),
+    [browse.displayItems],
+  );
 
   const localFiltered = localList.filter((ej) => {
     const term = localSearch.toLowerCase().trim();
@@ -90,24 +94,24 @@ export const ExercisePickerOverlay = ({
     );
   });
 
-  const handleSelectApi = async (item: ExerciseListItem | ExerciseSearchItem) => {
+  const handleSelectCatalog = async (item: CatalogItem) => {
     if (selectedNames.includes(item.name)) return;
 
     let musculos_anatomia: string[] | undefined;
-    if ('targetMuscles' in item) {
-      musculos_anatomia = musclesFromExerciseDb(item.targetMuscles, item.secondaryMuscles);
-    } else {
-      try {
-        const detail = await getExerciseById(item.exerciseId);
-        musculos_anatomia = musclesFromExerciseDb(detail.targetMuscles, detail.secondaryMuscles);
-      } catch {
-        musculos_anatomia = undefined;
-      }
+    try {
+      const detail = await getExerciseById(Number(item.exerciseId));
+      musculos_anatomia = musclesFromExerciseDb(
+        detail.target ? [detail.target] : [],
+        detail.muscle_group ? [detail.muscle_group] : [],
+      );
+    } catch {
+      musculos_anatomia = item.target ? [item.target] : undefined;
     }
 
     onSelect({
       nombre: item.name,
       unidad_id_default: 1,
+      ejercicio_id: Number(item.exerciseId),
       exerciseDbId: item.exerciseId,
       imageUrl: item.imageUrl,
       musculos_anatomia,
@@ -125,17 +129,15 @@ export const ExercisePickerOverlay = ({
       nombre: ej.nombre,
       unidad_id_default: ej.unidad_id_default,
       ejercicio_id: ej.id,
+      exerciseDbId: String(ej.id),
       musculos_anatomia: musculos_anatomia.length ? musculos_anatomia : undefined,
     });
     onClose();
   };
 
-  const renderApiRow = (item: ExerciseListItem | ExerciseSearchItem) => {
+  const renderCatalogRow = (item: CatalogItem) => {
     const isSel = selectedNames.includes(item.name);
-    const subtitle =
-      'exerciseType' in item
-        ? `${item.exerciseType} · ${item.targetMuscles.slice(0, 2).join(', ')}`
-        : 'Ejercicio';
+    const subtitle = [item.bodyPart, item.target].filter(Boolean).join(' · ');
 
     return (
       <div
@@ -163,16 +165,18 @@ export const ExercisePickerOverlay = ({
             border: '1px solid rgba(88,166,255,.2)',
           }}
         >
-          <img
-            src={item.imageUrl}
-            alt=""
-            loading="lazy"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {item.imageUrl ? (
+            <img
+              src={item.imageUrl}
+              alt=""
+              loading="lazy"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : null}
         </div>
         <button
           type="button"
-          onClick={() => !isSel && handleSelectApi(item)}
+          onClick={() => !isSel && void handleSelectCatalog(item)}
           disabled={isSel}
           style={{
             flex: 1,
@@ -184,30 +188,10 @@ export const ExercisePickerOverlay = ({
             padding: 0,
           }}
         >
-          <p
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              marginBottom: 2,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
             {item.name}
           </p>
-          <p
-            style={{
-              fontSize: 11,
-              color: 'var(--text-muted)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {subtitle}
-          </p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{subtitle || 'Catálogo Supabase'}</p>
         </button>
         <button
           type="button"
@@ -218,19 +202,7 @@ export const ExercisePickerOverlay = ({
         >
           <Info size={14} color="var(--accent-blue)" />
         </button>
-        {isSel ? (
-          <Check size={14} color="var(--brand)" style={{ flexShrink: 0 }} />
-        ) : (
-          <button
-            type="button"
-            className="fp-btn fp-btn-ghost"
-            style={{ padding: '5px 7px', borderRadius: 8, flexShrink: 0 }}
-            onClick={() => handleSelectApi(item)}
-            aria-label="Añadir"
-          >
-            <Check size={14} color="var(--brand)" />
-          </button>
-        )}
+        {isSel ? <Check size={14} color="var(--brand)" style={{ flexShrink: 0 }} /> : null}
       </div>
     );
   };
@@ -245,29 +217,17 @@ export const ExercisePickerOverlay = ({
         disabled={isSel}
         style={{
           width: '100%',
-          padding: '11px 12px',
+          textAlign: 'left',
+          padding: '10px 12px',
           borderRadius: 11,
           border: `1px solid ${isSel ? 'rgba(34,197,94,.3)' : 'var(--border)'}`,
           background: isSel ? 'rgba(34,197,94,.06)' : 'var(--bg-elevated)',
-          cursor: isSel ? 'default' : 'pointer',
-          outline: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
           marginBottom: 6,
-          textAlign: 'left',
-          opacity: isSel ? 0.7 : 1,
+          cursor: isSel ? 'default' : 'pointer',
         }}
       >
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
-            {ej.nombre}
-          </p>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            {ej.categoria} · {ej.grupo_muscular.slice(0, 2).join(', ')}
-          </p>
-        </div>
-        {isSel && <Check size={14} color="var(--brand)" />}
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ej.nombre}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ej.categoria}</p>
       </button>
     );
   };
@@ -282,296 +242,118 @@ export const ExercisePickerOverlay = ({
         ariaLabel={title}
         panelStyle={{ maxHeight: '85vh' }}
       >
-          <div
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              background: 'var(--border)',
-              margin: '12px auto 0',
-              flexShrink: 0,
-            }}
-          />
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+          <p className="font-sora" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            {title}
+          </p>
+        </div>
 
-          <div
-            style={{
-              padding: '12px 16px',
-              borderBottom: '1px solid var(--border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <p
-              className="font-sora"
-              style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}
-            >
-              {title}
-            </p>
-            <button
-              type="button"
-              className="fp-btn fp-btn-ghost"
-              style={{ padding: '5px 7px', borderRadius: 9 }}
-              onClick={onClose}
-            >
-              <X size={16} />
-            </button>
-          </div>
+        <div style={{ display: 'flex', gap: 4, padding: '10px 16px 0' }}>
+          {([
+            { id: 'catalog' as const, label: 'Catálogo', Icon: BookOpen },
+            { id: 'local' as const, label: 'Listado', Icon: Dumbbell },
+          ]).map(({ id, label, Icon }) => {
+            const active = tab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className="fp-btn fp-btn-ghost flex-1 gap-1.5 text-xs"
+                style={{
+                  color: active ? 'var(--brand)' : 'var(--text-muted)',
+                  borderBottom: active ? '2px solid var(--brand)' : '2px solid transparent',
+                  borderRadius: 0,
+                }}
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: 4,
-              padding: '10px 16px 0',
-              borderBottom: '1px solid var(--border-subtle)',
-            }}
-          >
-            {([
-              { id: 'api' as const, label: 'Biblioteca API', Icon: BookOpen },
-              { id: 'local' as const, label: 'Mis ejercicios', Icon: Dumbbell },
-            ]).map(({ id, label, Icon }) => {
-              const active = tab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTab(id)}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    padding: '8px 10px',
-                    borderRadius: '10px 10px 0 0',
-                    border: 'none',
-                    borderBottom: active ? '2px solid var(--brand)' : '2px solid transparent',
-                    background: active ? 'var(--bg-overlay)' : 'transparent',
-                    color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
-                >
-                  <Icon size={13} color={active ? 'var(--brand)' : 'var(--text-muted)'} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          {tab === 'api' && (
-            <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ position: 'relative', marginBottom: 10 }}>
-                <Search
-                  size={14}
-                  color="var(--text-muted)"
-                  style={{
-                    position: 'absolute',
-                    left: 11,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                  }}
-                />
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
+          {tab === 'catalog' ? (
+            <>
+              <div className="fp-input-group mb-2">
+                <Search size={14} />
                 <input
                   className="fp-input"
-                  style={{ paddingLeft: 32, fontSize: 13 }}
-                  placeholder="Buscar en ExerciseDB..."
+                  placeholder="Buscar en catálogo…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                <select className="fp-input text-xs" value={bodyPart} onChange={(e) => setBodyPart(e.target.value)}>
+                  <option value="">Parte del cuerpo</option>
+                  {bodyParts.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                <select className="fp-input text-xs" value={equip} onChange={(e) => setEquip(e.target.value)}>
+                  <option value="">Equipo</option>
+                  {equipments.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                <select className="fp-input text-xs" value={muscle} onChange={(e) => setMuscle(e.target.value)}>
+                  <option value="">Músculo</option>
+                  {muscles.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
 
-              {!browse.isSearching && (
-                <>
-                  <div
-                    className="scrollbar-hide"
-                    style={{
-                      display: 'flex',
-                      gap: 6,
-                      overflowX: 'auto',
-                      paddingBottom: 8,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {exerciseTypes.map((type: ReferenceItem) => (
-                      <button
-                        key={type.name}
-                        type="button"
-                        onClick={() =>
-                          setExerciseType(exerciseType === type.name ? '' : type.name)
-                        }
-                        style={{
-                          flexShrink: 0,
-                          padding: '4px 11px',
-                          borderRadius: 100,
-                          border: `1px solid ${exerciseType === type.name ? 'rgba(34,197,94,.4)' : 'var(--border)'}`,
-                          background:
-                            exerciseType === type.name
-                              ? 'rgba(34,197,94,.1)'
-                              : 'var(--bg-elevated)',
-                          color:
-                            exerciseType === type.name
-                              ? 'var(--brand)'
-                              : 'var(--text-muted)',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          outline: 'none',
-                        }}
-                      >
-                        {type.name}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <select
-                      className="fp-input"
-                      style={{ padding: '7px 10px', fontSize: 12 }}
-                      value={bodyPart}
-                      onChange={(e) => setBodyPart(e.target.value)}
-                    >
-                      <option value="">Parte del cuerpo</option>
-                      {bodyParts.map((o: ReferenceItem) => (
-                        <option key={o.name} value={o.name}>
-                          {o.name}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="fp-input"
-                      style={{ padding: '7px 10px', fontSize: 12 }}
-                      value={equip}
-                      onChange={(e) => setEquip(e.target.value)}
-                    >
-                      <option value="">Equipo</option>
-                      {equipments.map((o: ReferenceItem) => (
-                        <option key={o.name} value={o.name}>
-                          {o.name}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="fp-input"
-                      style={{ padding: '7px 10px', fontSize: 12, gridColumn: '1 / -1' }}
-                      value={muscle}
-                      onChange={(e) => setMuscle(e.target.value)}
-                    >
-                      <option value="">Músculo</option>
-                      {muscles.map((o: ReferenceItem) => (
-                        <option key={o.name} value={o.name}>
-                          {o.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
+              {browse.isLoading && (
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))}
+                </div>
               )}
-            </div>
-          )}
 
-          {tab === 'local' && (
-            <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ position: 'relative' }}>
-                <Search
-                  size={14}
-                  color="var(--text-muted)"
-                  style={{
-                    position: 'absolute',
-                    left: 11,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <input
-                  className="fp-input"
-                  style={{ paddingLeft: 32, fontSize: 13 }}
-                  placeholder="Buscar ejercicios personalizados..."
-                  value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
+              {browse.isError && (
+                <div className="text-center py-6">
+                  <p className="text-sm text-secondary mb-2">Error al cargar ejercicios</p>
+                  <button type="button" className="fp-btn fp-btn-secondary" onClick={() => void browse.refetch()}>
+                    <RefreshCw size={14} /> Reintentar
+                  </button>
+                </div>
+              )}
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 16px 24px' }}>
-            {tab === 'api' && browse.isLoading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
-              </div>
-            )}
+              {!browse.isLoading && !browse.isError && catalogItems.map(renderCatalogRow)}
 
-            {tab === 'api' && browse.isError && (
-              <div style={{ textAlign: 'center', padding: '24px 8px' }}>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-                  Error al cargar ejercicios
-                </p>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                  {browse.error?.message ?? 'Verifica VITE_RAPIDAPI_KEY en tu .env'}
-                </p>
+              {browse.hasNextPage && (
                 <button
                   type="button"
-                  className="fp-btn fp-btn-secondary"
-                  style={{ gap: 6, fontSize: 12 }}
-                  onClick={browse.refetch}
+                  className="fp-btn fp-btn-secondary w-full mt-2"
+                  disabled={browse.isFetchingNextPage}
+                  onClick={() => void browse.fetchNextPage()}
                 >
-                  <RefreshCw size={13} />
-                  Reintentar
+                  {browse.isFetchingNextPage ? <Loader2 size={14} className="animate-spin" /> : 'Cargar más'}
                 </button>
-              </div>
-            )}
+              )}
+            </>
+          ) : (
+            <>
+              <input
+                className="fp-input mb-3"
+                placeholder="Filtrar listado…"
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+              />
+              {localFiltered.map(renderLocalRow)}
+            </>
+          )}
+        </div>
 
-            {tab === 'api' && !browse.isLoading && !browse.isError && (
-              <>
-                {browse.displayItems.map((item) =>
-                  isApiItem(item) ? renderApiRow(item) : null,
-                )}
-                {browse.displayItems.length === 0 && (
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>
-                    Sin resultados. Prueba otra búsqueda o filtros.
-                  </p>
-                )}
-                {!browse.isSearching &&
-                  browse.listQuery.hasNextPage &&
-                  browse.displayItems.length > 0 && (
-                    <button
-                      type="button"
-                      className="fp-btn fp-btn-secondary w-full"
-                      style={{ marginTop: 8, gap: 6, fontSize: 12 }}
-                      disabled={browse.listQuery.isFetchingNextPage}
-                      onClick={() => void browse.listQuery.fetchNextPage()}
-                    >
-                      {browse.listQuery.isFetchingNextPage ? (
-                        <>
-                          <Loader2 size={13} className="animate-spin" />
-                          Cargando...
-                        </>
-                      ) : (
-                        'Cargar más'
-                      )}
-                    </button>
-                  )}
-              </>
-            )}
-
-            {tab === 'local' && (
-              <>
-                {localFiltered.map(renderLocalRow)}
-                {localFiltered.length === 0 && (
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>
-                    {localSearch
-                      ? 'Sin ejercicios personalizados con ese filtro'
-                      : 'No hay ejercicios personalizados. Créalos en Admin.'}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+        <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <button type="button" className="fp-btn fp-btn-secondary w-full" onClick={onClose}>
+            <X size={14} /> Cerrar
+          </button>
+        </div>
       </Sheet>
 
       <ExerciseDetailModal exerciseId={previewId} onClose={() => setPreviewId(null)} />

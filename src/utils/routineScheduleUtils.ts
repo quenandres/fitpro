@@ -29,7 +29,8 @@ export const createProgramacionSemanas = (count: number): SemanaRutina[] =>
   Array.from({ length: count }, (_, i) => createEmptySemana(i + 1));
 
 const stripFormKeys = (ej: RoutineFormExercise): EjercicioRutina => {
-  const { _key: _k, ...rest } = ej;
+  const { _key: _, ...rest } = ej;
+  void _;
   return rest;
 };
 
@@ -157,8 +158,6 @@ export const applyTemplateToProgramacion = (
   targetSemanas: number,
 ): SemanaRutina[] => {
   const base = rutinaProgramacionToForm(source);
-  const hasMultiDay = base[0]?.dias.some((d) => d.ejercicios.length > 0) &&
-    base[0].dias.filter((d) => d.ejercicios.length > 0).length > 1;
   const hasMultiWeek = (source.semanas ?? 1) > 1 || base.length > 1;
 
   if (hasMultiWeek) {
@@ -170,7 +169,6 @@ export const applyTemplateToProgramacion = (
 
 export const programacionToPayload = (
   programacion: SemanaRutina[],
-  semanas: number,
 ): { programacion_semanal: SemanaRutina[]; ejercicios: EjercicioRutina[] } => ({
   programacion_semanal: programacion.map((s) => ({
     semana: s.semana,

@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   clearSession,
   extractSessionTokens,
@@ -22,6 +23,7 @@ import {
   type GatewayUser,
   type StoredSession,
 } from '../lib/gateway';
+import { gatewayKeys } from '../lib/gateway/queryKeys';
 import { GatewayError } from '../lib/gateway/errors';
 import { clearRoleOverride } from '../store/useRoleOverrideStore';
 
@@ -60,18 +62,27 @@ const persistAndResolveUser = async (
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const refreshAuthContext = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: gatewayKeys.authContext() });
+  }, [queryClient]);
 
   const applySession = useCallback(async (session: StoredSession, fallbackEmail?: string) => {
     const nextUser = await persistAndResolveUser(session, fallbackEmail);
     setUser(nextUser);
+    refreshAuthContext();
     return nextUser;
-  }, []);
+  }, [refreshAuthContext]);
 
   const resetAuth = useCallback(() => {
     clearSession();
     clearRoleOverride();
     setUser(null);
-  }, []);
+    queryClient.removeQueries({ queryKey: gatewayKeys.authContext() });
+    queryClient.removeQueries({ queryKey: gatewayKeys.templates.all() });
+    queryClient.removeQueries({ queryKey: gatewayKeys.exercises.all() });
+  }, [queryClient]);
 
   useEffect(() => {
     let cancelled = false;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { useExercise } from '../../lib/exercisedb';
+import { useExerciseDetail } from '../../lib/gateway/hooks/useExercises';
 import { Skeleton } from '../common/Skeleton';
 import { Sheet } from '../common/Sheet';
 
@@ -58,7 +59,34 @@ const TagSection = ({
 };
 
 export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
-  const { data, isLoading, isError, refetch } = useExercise(exerciseId ?? undefined);
+  const numericId = exerciseId && /^\d+$/.test(exerciseId) ? Number(exerciseId) : undefined;
+  const gatewayQuery = useExerciseDetail(numericId);
+  const exerciseDbQuery = useExercise(numericId ? undefined : exerciseId ?? undefined);
+  const isGateway = numericId != null;
+  const { data: gatewayData, isLoading: gwLoading, isError: gwError, refetch: gwRefetch } = gatewayQuery;
+  const { data: apiData, isLoading: apiLoading, isError: apiError, refetch: apiRefetch } = exerciseDbQuery;
+  const isLoading = isGateway ? gwLoading : apiLoading;
+  const isError = isGateway ? gwError : apiError;
+  const refetch = isGateway ? gwRefetch : apiRefetch;
+  const data = isGateway && gatewayData
+    ? {
+        name: gatewayData.name,
+        imageUrl: gatewayData.image_url ?? undefined,
+        imageUrls: gatewayData.image_url ? { '720p': gatewayData.image_url } : undefined,
+        gifUrl: gatewayData.gif_url ?? undefined,
+        bodyParts: gatewayData.body_part ? [gatewayData.body_part] : [],
+        equipments: gatewayData.equipment ? [gatewayData.equipment] : [],
+        targetMuscles: gatewayData.target ? [gatewayData.target] : [],
+        secondaryMuscles: gatewayData.muscle_group ? [gatewayData.muscle_group] : [],
+        exerciseType: gatewayData.body_part ?? 'General',
+        instructions: [] as string[],
+        videoUrl: gatewayData.gif_url ?? undefined,
+        overview: undefined as string | undefined,
+        exerciseTips: [] as string[],
+        variations: [] as string[],
+      }
+    : apiData;
+  const videoUrl = data?.videoUrl;
   const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
@@ -115,10 +143,10 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
                 overflow: 'hidden',
               }}
             >
-              {!videoFailed ? (
+              {videoUrl && !videoFailed ? (
                 <video
-                  key={data.videoUrl}
-                  src={data.videoUrl}
+                  key={videoUrl}
+                  src={videoUrl}
                   poster={data.imageUrl}
                   autoPlay
                   loop

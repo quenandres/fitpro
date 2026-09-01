@@ -16,7 +16,7 @@ interface Props {
   form: RoutineFormData;
   isEdit: boolean;
   errors: ValidationError[];
-  savedId: number | null;
+  savedId: string | null;
   accent: string;
   onSave: () => void;
   onValidateStep1: () => boolean;

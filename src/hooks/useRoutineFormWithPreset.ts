@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { useDataStore } from '../store/useDataStore';
+import { useTemplate } from '../lib/gateway/hooks/useTemplates';
 import { inferInitialCreateMode, rutinaToFormData } from '../utils/inferRoutineFormLevel';
 import { ROUTES } from '../routes/paths';
 import type { RoutineFormData, RoutineFormLevel } from '../types';
@@ -15,15 +14,11 @@ export interface RoutinePresetLocationState {
 export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const rutinas = useDataStore((s) => s.rutinas);
+  const editingId = searchParams.get('id');
+
+  const { data: editingRutina } = useTemplate(editingId ?? undefined);
 
   const state = (location.state ?? {}) as RoutinePresetLocationState;
-  const editingId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
-
-  const editingRutina = useMemo(
-    () => (editingId != null ? rutinas.find((r) => r.id === editingId) ?? null : null),
-    [editingId, rutinas],
-  );
 
   const initialForm = state.presetForm ?? (editingRutina ? rutinaToFormData(editingRutina) : undefined);
   const initialCreateMode = editingRutina
@@ -34,7 +29,7 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
     ...useRoutineForm(level, initialForm, editingId, initialCreateMode),
     presetName: state.presetName,
     matchInfo: state.matchInfo,
-    editingRutina,
+    editingRutina: editingRutina ?? null,
   };
 };
 

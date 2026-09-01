@@ -1,8 +1,9 @@
 import type {
+  EjercicioRutina,
   GenerateRoutineApiResponse,
   GenerateRoutineRequest,
   ResolvedRoutineDraft,
-} from '../types';
+} from '../../types';
 
 export type ChatRole = 'user' | 'assistant' | 'system';
 
@@ -70,7 +71,7 @@ export const buildGenerateRequest = (
     .slice(-6)
     .map((m) => {
       if (m.role === 'user') return `Usuario: ${m.content}`;
-      const names = m.draft?.exercises.map((e) => e.nombre).join(', ') ?? '';
+      const names = m.draft?.exercises.map((e: EjercicioRutina) => e.nombre).join(', ') ?? '';
       return `Asistente (rutina previa: ${m.draft?.rutina.nombre ?? 'n/a'} — ${names}): ${m.content}`;
     })
     .join('\n');
@@ -92,7 +93,7 @@ export const summarizeDraft = (
   draft: ResolvedRoutineDraft,
   apiMeta?: GenerateRoutineApiResponse,
 ): string => {
-  const matched = draft.exercises.filter((e) => e.matchStatus === 'matched').length;
+  const matched = draft.exercises.filter((e: ResolvedRoutineDraft['exercises'][number]) => e.matchStatus === 'matched').length;
   const total = draft.exercises.length;
   const days = draft.dias_entrenamiento.join(', ');
   const reason = apiMeta?.razonamiento?.trim();

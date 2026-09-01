@@ -198,7 +198,7 @@ export const RoutineWeekDayNav = ({
               type="button"
               className="fp-btn fp-btn-secondary"
               style={{ fontSize: 12, gap: 6, padding: '8px 12px' }}
-              onClick={() => onCopyWeekFrom(semanaActiva - 1)}
+              onClick={() => onCopyWeekFrom?.(semanaActiva - 1)}
             >
               <Copy size={14} />
               Copiar desde semana {semanaActiva - 1}

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, Target, Layers, Pencil } from 'lucide-react';
-import { useDataStore } from '../store/useDataStore';
+import { useTemplates } from '../lib/gateway/hooks/useTemplates';
 import { useUnits } from '../hooks/useUnits';
 import { AppShell } from '../components/layout/AppShell';
 import { useWorkoutStore } from '../store/useWorkoutStore';
@@ -28,8 +28,8 @@ export const WorkoutDetail = () => {
   const navigate = useNavigate();
   const { formatearValor } = useUnits();
   const iniciarWorkout = useWorkoutStore((s) => s.iniciarWorkout);
-  const rutinas = useDataStore((s) => s.rutinas);
-  const rutina = rutinas.find((r) => r.id === Number(id));
+  const { data: rutinas = [] } = useTemplates();
+  const rutina = rutinas.find((r) => r.id === id);
 
   if (!rutina) {
     return (
