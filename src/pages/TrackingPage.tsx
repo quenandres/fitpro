@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Activity, ChevronLeft } from 'lucide-react';
+import { Activity, ChevronLeft, Users } from 'lucide-react';
+import { EmptyState } from '../components/common/EmptyState';
 import { AppShell } from '../components/layout/AppShell';
 import { ClienteSelector } from '../components/tracking/ClienteSelector';
 import { TrackingStats } from '../components/tracking/TrackingStats';
@@ -95,7 +96,16 @@ export function TrackingPage() {
   if (usuarios.length === 0) {
     return (
       <AppShell width="wide">
-        <p style={{ padding: 24, color: 'var(--text-muted)' }}>No hay clientes disponibles.</p>
+        <EmptyState
+          icon={Users}
+          title="Sin clientes disponibles"
+          description="Agrega clientes desde Usuarios para ver su historial de entrenamientos."
+          action={
+            <button type="button" className="fp-btn fp-btn-primary" onClick={() => navigate(ROUTES.usuarios)}>
+              Ir a usuarios
+            </button>
+          }
+        />
       </AppShell>
     );
   }
@@ -116,7 +126,7 @@ export function TrackingPage() {
           <div className="flex flex-wrap items-center gap-1.5 mb-2">
             <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
               <Activity size={10} style={{ marginRight: 3 }} />
-              Tracking
+              Seguimiento
             </span>
           </div>
 
@@ -124,7 +134,7 @@ export function TrackingPage() {
             className="font-sora text-[22px] sm:text-2xl"
             style={{ fontWeight: 700, lineHeight: 1.2, letterSpacing: '-.02em', color: 'var(--text-primary)' }}
           >
-            Tracking de entrenamientos
+            Seguimiento de entrenamientos
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
             Historial de actividad del cliente — datos de ejemplo (Fase 4 pendiente).

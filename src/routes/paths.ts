@@ -34,6 +34,8 @@ export const ROUTES = {
     ia: '/library/ia',
     planes: '/library/planes',
     unidades: '/library/unidades',
+    misEjercicios: '/library/mis-ejercicios',
+    datos: '/library/datos',
 
     /** Catálogo ExerciseDB (referencia externa, solo lectura) */
     catalogo: {
@@ -94,16 +96,16 @@ export const LEGACY_LIBRARY_REDIRECTS: ReadonlyArray<{ from: string; to: string 
   { from: '/library/musculos', to: ROUTES.library.catalogo.musculos },
   { from: '/library/rutina', to: ROUTES.library.rutinasNueva },
   { from: '/library/rutina/plantillas', to: ROUTES.library.rutinasPlantillas },
-  { from: '/library/mis-ejercicios', to: ROUTES.library.catalogo.ejercicios },
-  { from: '/library/datos', to: ROUTES.library.rutinas },
-  { from: '/admin', to: ROUTES.library.rutinas },
+  { from: '/library/mis-ejercicios', to: ROUTES.library.misEjercicios },
+  { from: '/library/datos', to: ROUTES.library.datos },
+  { from: '/admin', to: ROUTES.home },
   { from: '/admin/ejercicios', to: ROUTES.library.catalogo.ejercicios },
   { from: '/admin/catalogo', to: ROUTES.library.catalogo.root },
   { from: '/admin/planes', to: ROUTES.usuarios },
   { from: '/admin/planes/full', to: ROUTES.usuarios },
   { from: '/admin/unidades', to: ROUTES.library.unidades },
   { from: '/admin/unidades/full', to: ROUTES.library.unidades },
-  { from: '/admin/datos', to: ROUTES.library.rutinas },
+  { from: '/admin/datos', to: ROUTES.library.datos },
   { from: '/admin/rutina-ia', to: ROUTES.library.ia },
 ];
 

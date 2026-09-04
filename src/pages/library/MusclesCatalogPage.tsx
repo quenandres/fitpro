@@ -8,7 +8,7 @@ export const MusclesCatalogPage = () => {
     <ReferenceCatalogPage
       title="Músculos"
       subtitle="Objetivos musculares del catálogo ExerciseDB."
-      badge="Muscles"
+      badge="Músculos"
       accent="#f472b6"
       accentBg="rgba(244,114,182,.12)"
       filterKey="muscle"

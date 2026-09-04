@@ -1,10 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/common/Toast';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { WorkoutDetail } from './pages/WorkoutDetail';
 import { ExerciseLibrary } from './pages/ExerciseLibrary';
 import { LibraryLayout } from './components/library/LibraryLayout';
+import { LibraryDatosPage } from './pages/library/LibraryDatosPage';
+import { LibraryMisEjerciciosPage } from './pages/library/LibraryMisEjerciciosPage';
 import { LibraryRutinasPage } from './pages/library/LibraryRutinasPage';
 import { BodyPartsCatalogPage } from './pages/library/BodyPartsCatalogPage';
 import { EquipmentsCatalogPage } from './pages/library/EquipmentsCatalogPage';
@@ -127,6 +130,8 @@ function AppRoutes() {
 
         {/* Gestión del entrenador */}
         <Route path="planes" element={<UserPlansPage />} />
+        <Route path="mis-ejercicios" element={<LibraryMisEjerciciosPage />} />
+        <Route path="datos" element={<LibraryDatosPage />} />
       </Route>
 
       {/*
@@ -183,9 +188,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

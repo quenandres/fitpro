@@ -7,7 +7,7 @@ import { InviteMembersSheet } from '../../components/communities/modals/InviteMe
 import { ActionMenu } from '../../components/common/ActionMenu';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 import {
   useCommunitiesStore,
   useCommunityMembers,
@@ -23,7 +23,7 @@ export function CommunityMembersPage() {
   const { puedeModerar, puedeParticipar } = useCommunityPermissions(id ?? '');
   const toggleMemberSuspend = useCommunitiesStore((s) => s.toggleMemberSuspend);
   const removeMember = useCommunitiesStore((s) => s.removeMember);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
@@ -135,10 +135,9 @@ export function CommunityMembersPage() {
       <InviteMembersSheet
         open={showInvite}
         onClose={() => setShowInvite(false)}
-        onInvited={(count) => showToast(`Invitación enviada a ${count} persona${count === 1 ? '' : 's'}`)}
+        onInvited={(count) => toast.success(`Invitación enviada a ${count} persona${count === 1 ? '' : 's'}`)}
       />
 
-      <SimpleToast {...toast} />
 
       <ConfirmDialog
         open={removeTarget !== null}

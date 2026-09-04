@@ -126,11 +126,13 @@ export function AsignarEntrenoSheet({
             ) : null}
           </div>
 
-          <button type="submit" className="fp-btn fp-btn-primary w-full shrink-0 mt-3">
-            {clienteIds.length > 1
-              ? `Asignar a ${clienteIds.length} clientes`
-              : 'Asignar entrenamiento'}
-          </button>
+          <div className="shrink-0 pt-3 mt-auto border-t border-line">
+            <button type="submit" className="fp-btn fp-btn-primary w-full">
+              {clienteIds.length > 1
+                ? `Asignar a ${clienteIds.length} clientes`
+                : 'Asignar entrenamiento'}
+            </button>
+          </div>
         </form>
       </div>
     </Sheet>

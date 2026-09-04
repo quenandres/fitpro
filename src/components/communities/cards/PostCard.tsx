@@ -10,7 +10,7 @@ import { ReportModal } from '../modals/ReportModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { useMemberById, useCommunitiesStore, CURRENT_MEMBER_ID } from '../../../store/useCommunitiesStore';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
-import { useToast, SimpleToast } from '../../common/Toast';
+import { useToastHook } from '../../common/Toast';
 import { ROUTES } from '../../../routes/paths';
 import type { Post, TipoReaccion } from '../../../types/community';
 
@@ -33,7 +33,7 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
   const togglePostPin = useCommunitiesStore((s) => s.togglePostPin);
   const removePost = useCommunitiesStore((s) => s.removePost);
   const { puedeModerar } = useCommunityPermissions(post.comunidadId);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -155,7 +155,7 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
         onClose={() => setShowReport(false)}
         comunidadId={post.comunidadId}
         postId={post.id}
-        onSubmitted={() => showToast('Reporte enviado, gracias')}
+        onSubmitted={() => toast.success('Reporte enviado, gracias')}
       />
       <ConfirmDialog
         open={showDelete}
@@ -166,7 +166,6 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
         onConfirm={() => removePost(post.id)}
         onClose={() => setShowDelete(false)}
       />
-      <SimpleToast {...toast} />
     </article>
   );
 }

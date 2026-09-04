@@ -15,8 +15,6 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   height,
   animation = 'wave',
 }) => {
-  const baseClasses = 'bg-gray-700/50';
-  
   const variantClasses = {
     text: 'rounded',
     circular: 'rounded-full',
@@ -25,31 +23,33 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   const animationClasses = {
     pulse: 'animate-pulse',
-    wave: 'animate-shimmer',
+    wave: '',
     none: '',
   };
 
   const style: React.CSSProperties = {
     width: width || '100%',
     height: height || (variant === 'text' ? '1em' : '100%'),
-    backgroundImage: animation === 'wave' 
-      ? 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' 
-      : undefined,
+    backgroundColor: 'var(--bg-overlay)',
+    backgroundImage:
+      animation === 'wave'
+        ? 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-primary) 8%, transparent), transparent)'
+        : undefined,
     backgroundSize: animation === 'wave' ? '200% 100%' : undefined,
     animation: animation === 'wave' ? 'shimmer 1.5s infinite' : undefined,
   };
 
   return (
     <div
-      className={`${baseClasses} ${variantClasses[variant]} ${animationClasses[animation]} ${className}`}
+      className={`${variantClasses[variant]} ${animationClasses[animation]} ${className}`}
       style={style}
+      aria-hidden="true"
     />
   );
 };
 
-// Skeleton Card for lists
 export const SkeletonCard: React.FC = () => (
-  <div className="p-4 rounded-2xl bg-[#1a1a1a]/50 border border-white/5">
+  <div className="fp-card p-4">
     <div className="flex items-center gap-3 mb-4">
       <Skeleton variant="circular" width={48} height={48} />
       <div className="flex-1">
@@ -61,16 +61,14 @@ export const SkeletonCard: React.FC = () => (
   </div>
 );
 
-// Skeleton Table Row
 export const SkeletonRow: React.FC<{ columns?: number }> = ({ columns = 4 }) => (
-  <div className="flex items-center gap-4 p-4 border-b border-white/5">
+  <div className="flex items-center gap-4 p-4 border-b border-line">
     {Array.from({ length: columns }).map((_, i) => (
       <Skeleton key={i} variant="text" width={`${100 / columns}%`} height={16} />
     ))}
   </div>
 );
 
-// Skeleton Form
 export const SkeletonForm: React.FC = () => (
   <div className="space-y-4 p-4">
     <Skeleton variant="text" width={100} height={16} className="mb-2" />

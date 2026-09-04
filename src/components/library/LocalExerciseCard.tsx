@@ -49,10 +49,10 @@ export const LocalExerciseCard = ({ ejercicio, onEdit, onDelete }: Props) => {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-            <button onClick={() => onEdit(ejercicio)} className="fp-btn fp-btn-ghost" style={{ width: 28, height: 28, padding: 0, borderRadius: 7 }} title="Editar">
+            <button type="button" onClick={() => onEdit(ejercicio)} className="fp-btn fp-btn-ghost" style={{ width: 28, height: 28, padding: 0, borderRadius: 7 }} aria-label="Editar ejercicio">
               <Pencil size={12} color="var(--accent-blue)" />
             </button>
-            <button onClick={() => onDelete(ejercicio.id)} className="fp-btn fp-btn-ghost" style={{ width: 28, height: 28, padding: 0, borderRadius: 7 }} title="Eliminar">
+            <button type="button" onClick={() => onDelete(ejercicio.id)} className="fp-btn fp-btn-ghost" style={{ width: 28, height: 28, padding: 0, borderRadius: 7 }} aria-label="Eliminar ejercicio">
               <Trash2 size={12} color="var(--accent-red)" />
             </button>
           </div>

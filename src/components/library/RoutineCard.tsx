@@ -79,18 +79,20 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
           </div>
           <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
             <button
+              type="button"
               onClick={() => onEdit()}
               className="fp-btn fp-btn-ghost"
               style={{ width: 30, height: 30, padding: 0, borderRadius: 8 }}
-              title="Editar"
+              aria-label="Editar rutina"
             >
               <Pencil size={13} color="var(--accent-blue)" />
             </button>
             <button
+              type="button"
               onClick={() => onDelete(rutina.id)}
               className="fp-btn fp-btn-ghost"
               style={{ width: 30, height: 30, padding: 0, borderRadius: 8 }}
-              title="Eliminar"
+              aria-label="Eliminar rutina"
             >
               <Trash2 size={13} color="var(--accent-red)" />
             </button>

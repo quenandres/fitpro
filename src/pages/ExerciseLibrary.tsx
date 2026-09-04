@@ -12,6 +12,8 @@ import { useExerciseBrowse } from '../hooks/useExerciseBrowse';
 import { ExerciseCard } from '../components/exercise/ExerciseCard';
 import { ExerciseDetailModal } from '../components/exercise/ExerciseDetailModal';
 import { SkeletonCard } from '../components/common/Skeleton';
+import { EmptyState } from '../components/common/EmptyState';
+import { ErrorState } from '../components/common/ErrorState';
 
 const FILTER_KEYS = ['bodyPart', 'equipment', 'exerciseType', 'muscle'] as const;
 
@@ -132,22 +134,10 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
       </section>
       )}
 
-      <div className="animate-slide-up delay-100 flex gap-2" style={{ marginBottom: 12 }}>
-        <div className="relative flex-1">
-          <Search
-            size={14}
-            color="var(--text-muted)"
-            style={{
-              position: 'absolute',
-              left: 11,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-            }}
-          />
+      <div className="animate-slide-up delay-100 flex gap-2 mb-3">
+        <div className="fp-input-group flex-1">
+          <Search size={14} color="var(--text-muted)" />
           <input
-            className="fp-input"
-            style={{ paddingLeft: 32 }}
             type="text"
             placeholder="Buscar ejercicios…"
             value={search}
@@ -320,17 +310,11 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
       )}
 
       {isError && (
-        <div className="animate-fade-in text-center" style={{ paddingTop: 48 }}>
-          <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-            Error al cargar ejercicios
-          </p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-            {error?.message ?? 'Intenta de nuevo más tarde'}
-          </p>
-          <button type="button" className="fp-btn fp-btn-secondary" onClick={() => refetch()}>
-            Reintentar
-          </button>
-        </div>
+        <ErrorState
+          title="Error al cargar ejercicios"
+          description={error?.message ?? 'Intenta de nuevo más tarde'}
+          onRetry={() => void refetch()}
+        />
       )}
 
       {!isLoading && !isError && displayItems.length > 0 && (
@@ -348,28 +332,11 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
       )}
 
       {!isLoading && !isError && displayItems.length === 0 && (
-        <div className="animate-fade-in text-center" style={{ paddingTop: 48 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: 'var(--bg-overlay)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-            }}
-          >
-            <Search size={22} color="var(--text-muted)" />
-          </div>
-          <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-            Sin resultados
-          </p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Intenta con otros filtros o términos de búsqueda
-          </p>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="Sin resultados"
+          description="Intenta con otros filtros o términos de búsqueda"
+        />
       )}
 
       {!isSearching && !isLoading && !isError && listQuery.hasNextPage && (

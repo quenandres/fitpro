@@ -26,7 +26,7 @@ interface PlanDraft {
   semanas: number;
 }
 
-const ACCENT = '#a371f7';
+const ACCENT = 'var(--accent-purple)';
 
 export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Props) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -173,52 +173,32 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
     <Sheet
       open
       onClose={onClose}
+      flexColumn
       immersive
       zIndex={100}
       ariaLabel="Crear nuevo plan"
-      panelClassName="p-5 md:p-6"
+      panelClassName="md:max-w-lg"
     >
-      <div className="max-w-[520px] mx-auto w-full">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
-          <h2
-            className="font-sora"
-            style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}
-          >
-            Crear Nuevo Plan
+      <div className="flex flex-col min-h-0 flex-1 max-w-[520px] mx-auto w-full">
+        <div className="shrink-0 flex items-center justify-between px-5 pt-5 pb-3">
+          <h2 className="font-sora text-xl font-bold text-primary tracking-tight">
+            Crear nuevo plan
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'var(--bg-overlay)',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              cursor: 'pointer',
-              padding: 8,
-            }}
-            aria-label="Cerrar"
-          >
-            <X size={18} color="var(--text-muted)" />
+          <button type="button" onClick={onClose} className="fp-btn fp-btn-ghost p-2" aria-label="Cerrar">
+            <X size={18} />
           </button>
         </div>
 
-        {renderStepDots()}
+        <div className="shrink-0 px-5">{renderStepDots()}</div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
         {step === 1 && (
           <div className="animate-slide-up">
             <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
               PASO 1 · USUARIO
             </p>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Nombre
-              </p>
+            <div className="mb-3.5">
+              <label className="fp-cal-label">Nombre</label>
               <input
                 className="fp-input"
                 placeholder="Juan Pérez"
@@ -226,10 +206,8 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                 onChange={(e) => setUsuario({ ...usuario, nombre: e.target.value })}
               />
             </div>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Email
-              </p>
+            <div className="mb-3.5">
+              <label className="fp-cal-label">Email</label>
               <input
                 className="fp-input"
                 placeholder="juan@email.com"
@@ -239,9 +217,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                  Objetivo
-                </p>
+                <label className="fp-cal-label">Objetivo</label>
                 <input
                   className="fp-input"
                   placeholder="Ganar músculo"
@@ -250,9 +226,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                 />
               </div>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                  Nivel
-                </p>
+                <label className="fp-cal-label">Nivel</label>
                 <select
                   className="fp-input"
                   value={usuario.nivel}
@@ -264,10 +238,8 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                 </select>
               </div>
             </div>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Peso (kg)
-              </p>
+            <div className="mb-3.5">
+              <label className="fp-cal-label">Peso (kg)</label>
               <input
                 className="fp-input"
                 type="number"
@@ -286,10 +258,8 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
             <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
               PASO 2 · PLAN Y CALENDARIO
             </p>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Nombre del plan
-              </p>
+            <div className="mb-3.5">
+              <label className="fp-cal-label">Nombre del plan</label>
               <input
                 className="fp-input"
                 placeholder="Plan Fuerza 12 semanas"
@@ -297,10 +267,8 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                 onChange={(e) => setPlan({ ...plan, nombre: e.target.value })}
               />
             </div>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Descripción
-              </p>
+            <div className="mb-3.5">
+              <label className="fp-cal-label">Descripción</label>
               <input
                 className="fp-input"
                 placeholder="Descripción breve"
@@ -308,10 +276,8 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
                 onChange={(e) => setPlan({ ...plan, descripcion: e.target.value })}
               />
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
-                Duración (semanas)
-              </p>
+            <div className="mb-4">
+              <label className="fp-cal-label">Duración (semanas)</label>
               <input
                 type="number"
                 min={1}
@@ -535,32 +501,30 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+        </div>
+
+        <div className="shrink-0 flex gap-2.5 px-5 py-4 border-t border-line bg-elevated">
           {step > 1 && (
             <button
+              type="button"
               onClick={() => setStep((step - 1) as 1 | 2 | 3)}
-              className="fp-btn fp-btn-secondary"
-              style={{ flex: 1, gap: 6 }}
+              className="fp-btn fp-btn-secondary flex-1 gap-1.5"
             >
               <ChevronLeft size={14} /> Atrás
             </button>
           )}
           {step < 3 ? (
             <button
+              type="button"
               onClick={() => setStep((step + 1) as 1 | 2 | 3)}
-              className="fp-btn fp-btn-primary"
-              style={{ flex: 1, gap: 6 }}
+              className="fp-btn fp-btn-primary flex-1 gap-1.5"
               disabled={(step === 1 && !step1Valid) || (step === 2 && !step2Valid)}
             >
               Siguiente <ChevronRight size={14} />
             </button>
           ) : (
-            <button
-              onClick={handleCrear}
-              className="fp-btn fp-btn-primary"
-              style={{ flex: 1, gap: 6 }}
-            >
-              <Plus size={14} /> Crear Plan
+            <button type="button" onClick={handleCrear} className="fp-btn fp-btn-primary flex-1 gap-1.5">
+              <Plus size={14} /> Crear plan
             </button>
           )}
         </div>

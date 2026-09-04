@@ -206,7 +206,7 @@ export const RegisterPage = () => {
                 type="button"
                 className="auth-pw-toggle"
                 onClick={() => setShowPw(!showPw)}
-                tabIndex={-1}
+                aria-label={showPw ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>

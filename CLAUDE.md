@@ -3,9 +3,11 @@
 > Archivo de arranque para el asistente. Contiene el mínimo indispensable para
 > trabajar sin romper nada. Para el deep-dive (diagnóstico, modelo objetivo,
 > fases, ADR, backlog) leer siempre **[CONTEXT.md](./CONTEXT.md)** — es la
-> fuente de verdad. Este archivo es el *resumen ejecutivo*.
+> fuente de verdad. Para **crear o modificar pantallas/UI**, leer siempre
+> **[DESIGN.md](./DESIGN.md)** antes de tocar `src/`. Este archivo es el
+> *resumen ejecutivo*.
 >
-> Última revisión: 2026-08-27 (auditoría de código completa — ver `CONTEXT.md §12`)
+> Última revisión: 2026-09-04
 
 ---
 
@@ -268,21 +270,10 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 - No crear archivos nuevos si editar uno existente basta.
 - No agregar comentarios que narren el código; solo comentar intención no
   obvia, trade-offs o restricciones.
-- **Formularios:** siempre `fp-input` + `fp-btn` con variante (`fp-btn-primary`,
-  `fp-btn-secondary`, `fp-btn-ghost`). No recrear campos con `bg-overlay` +
-  `rounded-xl`. Búsqueda con icono: `fp-input-group`. Referencia viva:
-  [`CitaCreateSheet.tsx`](src/components/calendar/CitaCreateSheet.tsx).
-- **Calendario (`/calendario`):** dos flujos separados — **(1) Agendar cita**
-  (`CitaCreateSheet`: tipo `entrenamiento` | `medidas`, multi-cliente vía
-  `ClienteMultiPicker`, bulk `addCitas`) y **(2) Asignar entrenamiento**
-  (`AsignarEntrenoSheet`: rutina obligatoria, multi-cliente, muta plan semana 1
-  vía `useUsuariosStore.assignRutinaToUsers`). Desktop: dos CTAs en
-  `CalendarHeader`; móvil: FAB → `CalendarActionSheet`. El admin puede ajustar
-  planes con flexibilidad; calendario y `/library/planes` comparten
-  `useUsuariosStore`.
-- **Overlays (`Sheet`):** CTA de envío siempre visible en móvil (cuerpo con
-  scroll + botón `shrink-0` abajo, o footer fijo). `Sheet` default `zIndex`
-  60 (por encima del bottom nav). Usar `flexColumn` en formularios largos.
+- **UI y pantallas:** seguir **[DESIGN.md](./DESIGN.md)** (tokens, `AppShell`,
+  `Sheet`, formularios `fp-*`, estados vacío/error, copy en español). Resumen
+  mínimo: formularios con `fp-input` + `fp-btn`; búsqueda con `fp-input-group`;
+  referencia viva [`CitaCreateSheet.tsx`](src/components/calendar/CitaCreateSheet.tsx).
 - Al editar una página god (`UserPlansPage.tsx`, `AIRoutineChatPage.tsx`),
   **extraer** en vez de seguir agregando.
 
@@ -376,7 +367,8 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 ## 9. Cómo trabajar con este repo (protocolo para el asistente)
 
 1. Al arrancar una tarea, leer este `CLAUDE.md` y la sección relevante de
-   `CONTEXT.md`.
+   `CONTEXT.md`. Si la tarea toca UI (`src/pages/`, `src/components/`, estilos),
+   leer también **`DESIGN.md`** antes de implementar.
 2. Si la tarea toca datos de dominio (rutinas, ejercicios, sesiones),
    **revisar antes el modelo actual en `src/types/index.ts`** y tener presente
    el modelo objetivo (`CONTEXT.md §5`).
@@ -411,6 +403,7 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 ## 10. Archivos de referencia rápida
 
 - [CONTEXT.md](./CONTEXT.md) — fuente de verdad completa.
+- [DESIGN.md](./DESIGN.md) — guía de diseño y creación de pantallas.
 - [HISTORIAL.md](./HISTORIAL.md) — snapshots fechados de auditorías de código.
 - [README.md](./README.md) — documentación del modelo de datos (desactualizada
   en partes; confiar en `CONTEXT.md`/`CLAUDE.md` sobre auth y estructura).

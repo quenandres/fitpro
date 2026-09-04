@@ -8,7 +8,7 @@ import { ConfirmDialog } from '../../common/ConfirmDialog';
 import { ROUTES } from '../../../routes/paths';
 import { useCommunitiesStore } from '../../../store/useCommunitiesStore';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
-import { useToast, SimpleToast } from '../../common/Toast';
+import { useToastHook } from '../../common/Toast';
 
 interface CommunityHeaderProps {
   comunidad: Comunidad;
@@ -17,7 +17,7 @@ interface CommunityHeaderProps {
 export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
   const [showShare, setShowShare] = useState(false);
   const [showLeave, setShowLeave] = useState(false);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
   const joinCommunity = useCommunitiesStore((s) => s.joinCommunity);
   const leaveCommunity = useCommunitiesStore((s) => s.leaveCommunity);
   const { esMiembro } = useCommunityPermissions(comunidad.id);
@@ -60,7 +60,7 @@ export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
               style={{ background: 'var(--accent-pink)', color: '#fff' }}
               onClick={() => {
                 joinCommunity(comunidad.id);
-                showToast('Te uniste a la comunidad');
+                toast.success('Te uniste a la comunidad');
               }}
             >
               <UserPlus size={15} />
@@ -93,12 +93,10 @@ export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
         danger
         onConfirm={() => {
           leaveCommunity(comunidad.id);
-          showToast('Saliste de la comunidad');
+          toast.success('Saliste de la comunidad');
         }}
         onClose={() => setShowLeave(false)}
       />
-
-      <SimpleToast {...toast} />
     </div>
   );
 }

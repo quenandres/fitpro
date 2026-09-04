@@ -28,7 +28,7 @@ export const ProfilePage = () => {
   };
 
   return (
-    <AppShell width="narrow">
+    <AppShell width="default">
       <div className="min-w-0" style={{ paddingTop: 20, paddingBottom: 24 }}>
         <section className="animate-slide-up" style={{ marginBottom: 16 }}>
           <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>

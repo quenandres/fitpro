@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, Target, Layers, Pencil } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Target, Layers, Pencil, ClipboardList } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { useUnits } from '../hooks/useUnits';
+import { EmptyState } from '../components/common/EmptyState';
 import { AppShell } from '../components/layout/AppShell';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { routineEditPath } from '../utils/inferRoutineFormLevel';
@@ -34,9 +35,16 @@ export const WorkoutDetail = () => {
   if (!rutina) {
     return (
       <AppShell>
-        <div className="flex items-center justify-center min-h-[50dvh]">
-          <p className="text-secondary">Rutina no encontrada</p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title="Rutina no encontrada"
+          description="La rutina que buscas no existe o fue eliminada."
+          action={
+            <button type="button" className="fp-btn fp-btn-secondary" onClick={() => navigate(-1)}>
+              Volver
+            </button>
+          }
+        />
       </AppShell>
     );
   }

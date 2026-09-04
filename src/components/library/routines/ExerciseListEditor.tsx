@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Plus, Trash2, Link2, Unlink } from 'lucide-react';
+import { Eye, Plus, Trash2, Link2, Unlink, Dumbbell } from 'lucide-react';
 import {
   ExercisePickerOverlay,
   type PickedExercise,
@@ -8,6 +8,7 @@ import type { RoutineFormExercise, RoutineFormLevel } from '../../../types';
 import { getFieldError } from '../../../utils/routineFormValidators';
 import type { ValidationError } from '../../../utils/validators';
 import { ExercisePreviewModal } from './ExercisePreviewModal';
+import { EmptyState } from '../../common/EmptyState';
 
 interface Props {
   level: RoutineFormLevel;
@@ -62,18 +63,8 @@ export const ExerciseListEditor = ({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '.06em',
-          }}
-        >
-          Ejercicios (ExerciseDB)
-        </p>
+      <div className="flex justify-between items-center mb-2.5">
+        <label className="fp-cal-label mb-0">Ejercicios (ExerciseDB)</label>
         <button
           type="button"
           className="fp-btn fp-btn-secondary"
@@ -118,14 +109,17 @@ export const ExerciseListEditor = ({
         ))}
 
       {ejercicios.length === 0 && (
-        <div
-          className="fp-card text-center"
-          style={{ padding: '28px 16px', borderRadius: 12, marginBottom: 8 }}
-        >
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Añade ejercicios desde la biblioteca ExerciseDB
-          </p>
-        </div>
+        <EmptyState
+          icon={Dumbbell}
+          title="Sin ejercicios"
+          description="Añade ejercicios desde la biblioteca ExerciseDB"
+          className="py-8"
+          action={
+            <button type="button" className="fp-btn fp-btn-secondary text-xs gap-1" onClick={() => setPickerOpen(true)}>
+              <Plus size={14} /> Añadir ejercicio
+            </button>
+          }
+        />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -173,7 +167,7 @@ export const ExerciseListEditor = ({
                     className={`grid gap-2 ${showRpe ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}
                   >
                     <div>
-                      <label className="text-[10px] text-muted font-semibold">Series</label>
+                      <label className="fp-cal-label mb-1">Series</label>
                       <input
                         className="fp-input mt-1 py-1.5 px-2.5"
                         type="number"
@@ -187,7 +181,7 @@ export const ExerciseListEditor = ({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted font-semibold">Reps</label>
+                      <label className="fp-cal-label mb-1">Reps</label>
                       <input
                         className="fp-input mt-1 py-1.5 px-2.5"
                         type="number"
@@ -202,7 +196,7 @@ export const ExerciseListEditor = ({
                     </div>
                     {showRpe && (
                       <div className="col-span-2 sm:col-span-1">
-                        <label className="text-[10px] text-muted font-semibold">RPE</label>
+                        <label className="fp-cal-label mb-1">RPE</label>
                         <input
                           className="fp-input mt-1 py-1.5 px-2.5"
                           type="number"

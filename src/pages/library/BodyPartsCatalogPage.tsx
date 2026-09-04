@@ -8,7 +8,7 @@ export const BodyPartsCatalogPage = () => {
     <ReferenceCatalogPage
       title="Partes del cuerpo"
       subtitle="Al elegir una parte se abren los ejercicios filtrados."
-      badge="Body parts"
+      badge="Partes del cuerpo"
       accent="#22c55e"
       accentBg="rgba(34,197,94,.12)"
       filterKey="bodyPart"

@@ -6,7 +6,7 @@ import { ExploreFiltersSheet } from '../../components/communities/modals/Explore
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { Skeleton } from '../../components/common/Skeleton';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 import {
   CURRENT_MEMBER_ID,
   useCommunitiesStore,
@@ -30,7 +30,7 @@ export function CommunitiesExplorePage() {
   const [search, setSearch] = useState('');
   const [categorias, setCategorias] = useState<CategoriaComunidad[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
   const { isSuperadmin } = usePlatformRole();
 
   const comunidades = useCommunitiesStore((s) => s.comunidades);
@@ -146,7 +146,7 @@ export function CommunitiesExplorePage() {
               esMiembro={misComunidadIds.has(comunidad.id)}
               onJoin={() => {
                 joinCommunity(comunidad.id);
-                showToast(`Te uniste a ${comunidad.nombre}`);
+                toast.success(`Te uniste a ${comunidad.nombre}`);
               }}
             />
           ))}
@@ -164,8 +164,6 @@ export function CommunitiesExplorePage() {
         }
         onClear={() => setCategorias([])}
       />
-
-      <SimpleToast {...toast} />
     </div>
   );
 }

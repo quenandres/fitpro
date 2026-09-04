@@ -5,7 +5,7 @@ import { EventHeader } from '../../components/communities/events/EventHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { useCommunitiesStore, CURRENT_MEMBER_ID } from '../../store/useCommunitiesStore';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 import { ROUTES } from '../../routes/paths';
 
 export function CommunityEventDetailPage() {
@@ -14,7 +14,7 @@ export function CommunityEventDetailPage() {
   const rsvpEvent = useCommunitiesStore((s) => s.rsvpEvent);
   const removeEvent = useCommunitiesStore((s) => s.removeEvent);
   const { puedeParticipar, puedeModerar } = useCommunityPermissions(id ?? '');
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
   const [showCancel, setShowCancel] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
@@ -37,7 +37,7 @@ export function CommunityEventDetailPage() {
             disabled={!puedeParticipar}
             onClick={() => {
               rsvpEvent(evento.id, lleno ? 'lista_espera' : 'confirmado');
-              showToast(lleno ? 'Entraste en lista de espera' : 'Participación confirmada');
+              toast.success(lleno ? 'Entraste en lista de espera' : 'Participación confirmada');
             }}
           >
             {lleno ? 'Unirme a lista de espera' : 'Confirmar participación'}
@@ -77,7 +77,7 @@ export function CommunityEventDetailPage() {
         danger
         onConfirm={() => {
           rsvpEvent(evento.id, 'ninguno');
-          showToast('Participación cancelada');
+          toast.success('Participación cancelada');
         }}
         onClose={() => setShowCancel(false)}
       />
@@ -91,8 +91,6 @@ export function CommunityEventDetailPage() {
         onConfirm={() => removeEvent(evento.id)}
         onClose={() => setShowDelete(false)}
       />
-
-      <SimpleToast {...toast} />
     </div>
   );
 }

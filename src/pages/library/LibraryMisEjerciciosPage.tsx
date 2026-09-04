@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Activity, BookOpen, Plus, Search } from 'lucide-react';
 import { useDataStore } from '../../store/useDataStore';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 import { LocalExerciseForm } from '../../components/library/LocalExerciseForm';
 import { LocalExerciseCard } from '../../components/library/LocalExerciseCard';
 import { ExerciseLibrary } from '../ExerciseLibrary';
@@ -11,7 +11,7 @@ type Tab = 'local' | 'catalogo';
 
 export const LibraryMisEjerciciosPage = () => {
   const { ejercicios, addEjercicio, updateEjercicio, deleteEjercicio } = useDataStore();
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
   const [tab, setTab] = useState<Tab>('local');
   const [showForm, setShowForm] = useState(false);
   const [editingEjercicio, setEditingEjercicio] = useState<Ejercicio | null>(null);
@@ -34,14 +34,12 @@ export const LibraryMisEjerciciosPage = () => {
   const handleDelete = (id: number) => {
     if (window.confirm('¿Eliminar este ejercicio?')) {
       deleteEjercicio(id);
-      showToast('Ejercicio eliminado', 'success');
+      toast.success('Ejercicio eliminado');
     }
   };
 
   return (
-    <>
-      <SimpleToast {...toast} />
-      <div>
+    <div>
         <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
           <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
             <Activity size={10} style={{ marginRight: 3 }} />
@@ -107,9 +105,9 @@ export const LibraryMisEjerciciosPage = () => {
         ) : (
           <>
             <div className="fp-card" style={{ padding: 14, marginBottom: 14, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', borderRadius: 13 }}>
-              <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-                <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input className="fp-input" style={{ paddingLeft: 32 }} placeholder="Buscar ejercicios..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <div className="fp-input-group flex-1 min-w-[180px]">
+                <Search size={14} color="var(--text-muted)" />
+                <input placeholder="Buscar ejercicios..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <select className="fp-input" style={{ width: 'auto', minWidth: 140 }} value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                 <option value="">Todas las categorías</option>
@@ -157,7 +155,6 @@ export const LibraryMisEjerciciosPage = () => {
             <LocalExerciseForm isOpen={showForm} onClose={handleClose} editingEjercicio={editingEjercicio} onSave={handleSave} />
           </>
         )}
-      </div>
-    </>
+    </div>
   );
 };

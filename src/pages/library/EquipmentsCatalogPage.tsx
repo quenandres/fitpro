@@ -8,7 +8,7 @@ export const EquipmentsCatalogPage = () => {
     <ReferenceCatalogPage
       title="Equipamiento"
       subtitle="Filtra por el material que tienes disponible."
-      badge="Equipments"
+      badge="Equipamiento"
       accent="#a371f7"
       accentBg="rgba(163,113,247,.12)"
       filterKey="equipment"

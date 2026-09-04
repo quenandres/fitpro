@@ -8,7 +8,7 @@ export const ExerciseTypesCatalogPage = () => {
     <ReferenceCatalogPage
       title="Tipos de ejercicio"
       subtitle="Fuerza, cardio, yoga y más modalidades."
-      badge="Exercise types"
+      badge="Tipos de ejercicio"
       accent="#f59e0b"
       accentBg="rgba(245,158,11,.12)"
       filterKey="exerciseType"

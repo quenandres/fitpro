@@ -142,23 +142,13 @@ export const FormField = ({
   error?: string;
   children: React.ReactNode;
 }) => (
-  <div style={{ marginBottom: 16 }}>
-    <label
-      style={{
-        display: 'block',
-        fontSize: 10,
-        fontWeight: 700,
-        color: 'var(--text-muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '.06em',
-        marginBottom: 7,
-      }}
-    >
+  <div className="mb-4">
+    <label className="fp-cal-label">
       {label}
-      {required && <span style={{ color: 'var(--accent-red)', marginLeft: 3 }}>*</span>}
+      {required ? <span className="text-[var(--accent-red)] ml-0.5">*</span> : null}
     </label>
     {children}
-    {error && <p style={{ marginTop: 5, fontSize: 12, color: 'var(--accent-red)' }}>{error}</p>}
+    {error ? <p className="mt-1 text-xs text-[var(--accent-red)]">{error}</p> : null}
   </div>
 );
 

@@ -1,10 +1,10 @@
 import { Download, RotateCcw, Upload } from 'lucide-react';
 import { useDataStore } from '../../store/useDataStore';
-import { SimpleToast, useToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 
 export const LibraryDatosPage = () => {
   const { exportData, importData, resetToDefault, rutinas, ejercicios, unidades } = useDataStore();
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
 
   const handleExport = () => {
     const blob = new Blob([exportData()], { type: 'application/json' });
@@ -14,7 +14,7 @@ export const LibraryDatosPage = () => {
     a.download = `fitpro-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Datos exportados', 'success');
+    toast.success('Datos exportados');
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,8 +23,8 @@ export const LibraryDatosPage = () => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       importData(ev.target?.result as string)
-        ? showToast('Datos importados correctamente', 'success')
-        : showToast('Error al importar datos', 'error');
+        ? toast.success('Datos importados correctamente')
+        : toast.error('Error al importar datos');
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -33,14 +33,12 @@ export const LibraryDatosPage = () => {
   const handleReset = () => {
     if (window.confirm('¿Restaurar datos por defecto? Esto eliminará todos los cambios.')) {
       resetToDefault();
-      showToast('Datos restaurados', 'success');
+      toast.success('Datos restaurados');
     }
   };
 
   return (
-    <>
-      <SimpleToast {...toast} />
-      <div>
+    <div>
         <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
           <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
             <Download size={10} style={{ marginRight: 3 }} />
@@ -124,7 +122,6 @@ export const LibraryDatosPage = () => {
             <RotateCcw size={13} /> Restaurar por defecto
           </button>
         </div>
-      </div>
-    </>
+    </div>
   );
 };

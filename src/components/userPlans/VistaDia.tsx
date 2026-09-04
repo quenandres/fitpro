@@ -40,8 +40,8 @@ interface Props {
   ejercicios: Ejercicio[];
 }
 
-const ACCENT = '#a371f7';
-const ENTRENO = '#22c55e';
+const ACCENT = 'var(--accent-purple)';
+const ENTRENO = 'var(--brand)';
 
 export const VistaDia = ({
   user,
@@ -145,13 +145,13 @@ export const VistaDia = ({
           <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}> · Semana {semana}</span>
         </span>
         <button
+          type="button"
           onClick={onToggleEntreno}
-          className="fp-btn"
+          className="fp-btn fp-btn-secondary text-xs"
           style={{
-            background: isEntreno ? '#f8514920' : '#22c55e20',
-            color: isEntreno ? '#f85149' : ENTRENO,
-            border: 'none',
-            fontSize: 12,
+            background: isEntreno ? 'rgba(248,81,73,.12)' : 'var(--brand-dim)',
+            color: isEntreno ? 'var(--accent-red)' : ENTRENO,
+            borderColor: isEntreno ? 'rgba(248,81,73,.25)' : 'rgba(34,197,94,.25)',
           }}
         >
           {isEntreno ? 'Marcar descanso' : 'Activar día'}
@@ -170,10 +170,11 @@ export const VistaDia = ({
         }}
       >
         <button
+          type="button"
           onClick={() => onChangeSemana(Math.max(1, semana - 1))}
           disabled={semana === 1}
-          className="fp-btn fp-btn-ghost"
-          style={{ padding: 5 }}
+          className="fp-btn fp-btn-ghost p-1.5"
+          aria-label="Semana anterior"
         >
           <ChevronLeft size={14} />
         </button>

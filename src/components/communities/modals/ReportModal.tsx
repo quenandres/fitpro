@@ -76,9 +76,11 @@ export function ReportModal({ open, onClose, comunidadId, postId, discusionId, o
           />
         </div>
 
-        <button type="button" className="fp-btn fp-btn-primary w-full shrink-0 mt-4" onClick={handleSubmit}>
-          Enviar reporte
-        </button>
+        <div className="shrink-0 pt-4 mt-auto border-t border-line">
+          <button type="button" className="fp-btn fp-btn-primary w-full" onClick={handleSubmit}>
+            Enviar reporte
+          </button>
+        </div>
       </div>
     </Sheet>
   );

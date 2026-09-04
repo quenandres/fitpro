@@ -82,8 +82,10 @@ export const WorkoutPlayer = () => {
         {/* Top bar */}
         <header className="flex items-center justify-between py-3.5 px-1">
           <button
+            type="button"
             className="fp-btn fp-btn-ghost w-10 h-10 p-0 rounded-[11px] bg-overlay border border-line"
             onClick={terminarWorkout}
+            aria-label="Cerrar entrenamiento"
           >
             <X size={16} color="var(--text-secondary)" />
           </button>
@@ -136,30 +138,36 @@ export const WorkoutPlayer = () => {
         <div className="px-1 sm:px-5 pb-2">
           <div className="flex justify-center gap-4 mb-3.5">
             <button
+              type="button"
               className="fp-btn fp-btn-secondary w-14 h-14 p-0 rounded-[14px]"
               onClick={ejercicioAnterior}
               disabled={ejercicioActualIndex === 0}
+              aria-label="Ejercicio anterior"
             >
               <SkipBack size={20} />
             </button>
 
             <button
+              type="button"
               onClick={togglePausa}
-              className="flex items-center justify-center w-20 h-20 rounded-full transition-all duration-200"
+              className="fp-btn flex items-center justify-center w-20 h-20 rounded-full p-0"
               style={{
                 background: isPaused ? 'var(--brand)' : 'var(--bg-overlay)',
                 color: isPaused ? '#fff' : 'var(--text-primary)',
                 border: isPaused ? 'none' : '1px solid var(--border)',
                 boxShadow: isPaused ? 'var(--shadow-brand)' : 'var(--shadow-sm)',
               }}
+              aria-label={isPaused ? 'Reanudar entrenamiento' : 'Pausar entrenamiento'}
             >
               {isPaused ? <Play size={28} /> : <Pause size={28} />}
             </button>
 
             <button
+              type="button"
               className="fp-btn fp-btn-secondary w-14 h-14 p-0 rounded-[14px]"
               onClick={siguienteEjercicio}
               disabled={esUltimo}
+              aria-label="Siguiente ejercicio"
             >
               <SkipForward size={20} />
             </button>

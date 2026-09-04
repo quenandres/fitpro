@@ -179,6 +179,11 @@ input, select, textarea { font-family: inherit; -webkit-appearance: none; appear
 .delay-200 { animation-delay: 200ms; }
 .delay-250 { animation-delay: 250ms; }
 
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ─── Componentes reutilizables ─────────────────────────── */
 
 /* Card */

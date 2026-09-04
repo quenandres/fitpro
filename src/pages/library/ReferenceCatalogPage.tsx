@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, RefreshCw, Search } from 'lucide-react';
+import { ChevronRight, Search } from 'lucide-react';
 import type { ReferenceItem } from '../../lib/exercisedb';
 import { SkeletonCard } from '../../components/common/Skeleton';
+import { EmptyState } from '../../components/common/EmptyState';
+import { ErrorState } from '../../components/common/ErrorState';
 import { ROUTES } from '../../routes/paths';
 
 export type CatalogFilterKey = 'bodyPart' | 'equipment' | 'exerciseType' | 'muscle';
@@ -80,37 +82,15 @@ export const ReferenceCatalogPage = ({
     )}
 
     {isError && (
-      <div className="animate-fade-in text-center" style={{ paddingTop: 40 }}>
-        <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-          No se pudo cargar el catálogo
-        </p>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-          {errorMessage ?? 'Intenta de nuevo más tarde'}
-        </p>
-        <button type="button" className="fp-btn fp-btn-secondary" onClick={onRetry}>
-          <RefreshCw size={14} /> Reintentar
-        </button>
-      </div>
+      <ErrorState
+        title="No se pudo cargar el catálogo"
+        description={errorMessage ?? 'Intenta de nuevo más tarde'}
+        onRetry={onRetry}
+      />
     )}
 
     {!isLoading && !isError && items.length === 0 && (
-      <div className="animate-fade-in text-center" style={{ paddingTop: 40 }}>
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: 'var(--bg-overlay)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 12px',
-          }}
-        >
-          <Search size={22} color="var(--text-muted)" />
-        </div>
-        <p style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Sin datos</p>
-      </div>
+      <EmptyState icon={Search} title="Sin datos" description="No hay opciones disponibles en este catálogo." />
     )}
 
     {!isLoading && !isError && items.length > 0 && (

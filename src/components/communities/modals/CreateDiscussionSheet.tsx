@@ -45,14 +45,16 @@ export function CreateDiscussionSheet({ open, onClose, onSubmit }: CreateDiscuss
           />
         </div>
 
-        <button
-          type="button"
-          className="fp-btn fp-btn-primary w-full shrink-0 mt-4"
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-        >
-          Publicar discusión
-        </button>
+        <div className="shrink-0 pt-4 mt-auto border-t border-line">
+          <button
+            type="button"
+            className="fp-btn fp-btn-primary w-full"
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+          >
+            Publicar discusión
+          </button>
+        </div>
       </div>
     </Sheet>
   );

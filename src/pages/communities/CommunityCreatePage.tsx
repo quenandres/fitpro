@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 import { CATEGORY_LIST } from '../../components/communities/shared/categoryMeta';
 import { usePlatformRole } from '../../hooks/usePlatformRole';
 import { useCommunitiesStore } from '../../store/useCommunitiesStore';
@@ -15,7 +15,7 @@ export function CommunityCreatePage() {
   const navigate = useNavigate();
   const { isSuperadmin } = usePlatformRole();
   const createCommunity = useCommunitiesStore((s) => s.createCommunity);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
 
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -42,7 +42,7 @@ export function CommunityCreatePage() {
       reglas,
     });
 
-    showToast(`Comunidad «${nombre.trim()}» creada`);
+    toast.success(`Comunidad «${nombre.trim()}» creada`);
     navigate(ROUTES.communities.home(id));
   };
 
@@ -160,8 +160,6 @@ export function CommunityCreatePage() {
           </div>
         </form>
       </div>
-
-      <SimpleToast {...toast} />
     </div>
   );
 }

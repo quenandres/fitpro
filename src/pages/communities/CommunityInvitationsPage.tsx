@@ -1,13 +1,13 @@
 import { Check, Mail, X } from 'lucide-react';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useCommunitiesStore, useMemberById } from '../../store/useCommunitiesStore';
-import { useToast, SimpleToast } from '../../components/common/Toast';
+import { useToastHook } from '../../components/common/Toast';
 
 export function CommunityInvitationsPage() {
   const invitaciones = useCommunitiesStore((s) => s.invitaciones);
   const comunidades = useCommunitiesStore((s) => s.comunidades);
   const respondInvitation = useCommunitiesStore((s) => s.respondInvitation);
-  const { toast, showToast } = useToast();
+  const toast = useToastHook();
 
   const pendientes = invitaciones.filter((i) => i.estado === 'pendiente');
 
@@ -31,7 +31,7 @@ export function CommunityInvitationsPage() {
                 comunidadAvatar={comunidad?.avatarUrl}
                 onAccept={() => {
                   respondInvitation(inv.id, true);
-                  showToast(`Te uniste a ${comunidad?.nombre ?? 'la comunidad'}`);
+                  toast.success(`Te uniste a ${comunidad?.nombre ?? 'la comunidad'}`);
                 }}
                 onReject={() => respondInvitation(inv.id, false)}
               />
@@ -39,8 +39,6 @@ export function CommunityInvitationsPage() {
           })}
         </div>
       )}
-
-      <SimpleToast {...toast} />
     </div>
   );
 }

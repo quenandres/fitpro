@@ -363,21 +363,9 @@ export const ExercisePickerOverlay = ({
 
           {tab === 'api' && (
             <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ position: 'relative', marginBottom: 10 }}>
-                <Search
-                  size={14}
-                  color="var(--text-muted)"
-                  style={{
-                    position: 'absolute',
-                    left: 11,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                  }}
-                />
+              <div className="fp-input-group mb-2.5">
+                <Search size={14} color="var(--text-muted)" />
                 <input
-                  className="fp-input"
-                  style={{ paddingLeft: 32, fontSize: 13 }}
                   placeholder="Buscar en ExerciseDB..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -474,21 +462,9 @@ export const ExercisePickerOverlay = ({
 
           {tab === 'local' && (
             <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ position: 'relative' }}>
-                <Search
-                  size={14}
-                  color="var(--text-muted)"
-                  style={{
-                    position: 'absolute',
-                    left: 11,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                  }}
-                />
+              <div className="fp-input-group">
+                <Search size={14} color="var(--text-muted)" />
                 <input
-                  className="fp-input"
-                  style={{ paddingLeft: 32, fontSize: 13 }}
                   placeholder="Buscar ejercicios personalizados..."
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
