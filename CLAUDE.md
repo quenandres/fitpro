@@ -7,21 +7,26 @@
 > **[DESIGN.md](./DESIGN.md)** antes de tocar `src/`. Este archivo es el
 > *resumen ejecutivo*.
 >
-> Última revisión: 2026-09-04
+> Última revisión: 2026-09-09
 
 ---
 
 ## 1. Qué es FitPro
 
-SaaS fitness donde entrenadores crean rutinas/ejercicios/planes semanales y
-clientes los ejecutan y ven progreso. Modelo comercial por nº de clientes
-(Free / Pro / Gym).
+Herramienta para que un **entrenador** prescriba entrenamientos y vea si sus
+**clientes** los cumplen. El producto existe cuando cierra este loop: crear
+rutina → invitar cliente → el cliente ejecuta en **su PWA** → el entrenador
+ve el log. Detalle en `CONTEXT.md §1`.
 
-- **Idioma por defecto:** español (UI, commits, docs, nombres de variables de dominio).
-- **Estado del MVP:** el modelo de dominio (rutinas/ejercicios) sigue plano y
-  sin persistencia real de sesiones — eso sigue bloqueando el producto core.
-  Pero auth, routing y biblioteca avanzaron mucho más de lo que sugería la
-  revisión anterior. Ver `CONTEXT.md §2` para el detalle.
+- **Dos apps, un backend.** Este repo es **solo** el cockpit del entrenador
+  (SPA). El cliente usa una **PWA React aparte** (repo hermano, aún no
+  creado), mismo `gym-gateway`. No implementar un “modo cliente” aquí (D11).
+- **Idioma por defecto:** español (UI, commits, docs, nombres de dominio).
+- **Primera instancia (MVP):** clientes reales + plan persistido + player
+  de la PWA que escribe series + tracking que las lee. Comunidades, billing,
+  dashboards de plataforma e IA **no** son el MVP — no ampliarlos.
+- **Estado hoy:** auth y Biblioteca avanzadas; el loop sigue cortado
+  (clientes seed, player sin persist, tracking mock). Ver `CONTEXT.md §2`.
 
 ---
 
@@ -29,9 +34,10 @@ clientes los ejecutan y ven progreso. Modelo comercial por nº de clientes
 
 | Capa | Hoy | Objetivo |
 |---|---|---|
-| UI | React 19 + Vite 8 + TypeScript 5.9 (estricto) | — |
+| UI entrenador | React 19 + Vite 8 + TypeScript 5.9 (estricto) — **este repo** | — |
+| UI cliente | **no existe** | PWA React + Vite + TS, repo hermano, mismo gateway (D11) |
 | Routing | `react-router-dom` v7 | — |
-| Estado UI efímero | Zustand 5 (`useWorkoutStore`, `useCitasStore`, `useCommunitiesStore`) | Zustand (solo UI) |
+| Estado UI efímero | Zustand 5 (`useWorkoutStore`, `useCitasStore`, `useCommunitiesStore`, `useBillingStore`) | Zustand (solo UI) |
 | Estado local con `persist` | `useDataStore` (rutinas/ejercicios/unidades en localStorage) — hoy sigue así, sin cambios de código | **Migrar a Supabase vía `gym-gateway`, dentro de la Fase 2** (cambio de objetivo 2026-08-27, ver `CONTEXT.md §7`) |
 | Estado servidor | TanStack Query **declarado y cableado en código** (`src/main.tsx`, `src/lib/exercisedb/hooks.ts`) pero **no instalado** en `node_modules` — el build falla hoy por esto | TanStack Query funcionando |
 | Validación runtime | Zod ya instalado y en uso real (`src/lib/gateway/schemas/*`, `src/lib/exercisedb/schemas.ts`) | Extender a `importData` y formularios |
@@ -39,7 +45,7 @@ clientes los ejecutan y ven progreso. Modelo comercial por nº de clientes
 | Backend IA | **FastAPI** (`../fitpro_api`) + DeepSeek, `POST /api/ai/routine` | — |
 | Supabase en el frontend | Cliente **comentado** en `src/lib/supabase.ts` — el frontend nunca habla con Supabase directo, todo pasa por `gym-gateway` | Mantener así (gateway como única puerta) |
 | Estilos | Tailwind 4 + tokens CSS (`@theme` en `index.css`) — **D8 resuelto** 2026-08-24 | Migración oportunista del inline restante |
-| Pagos | — | Stripe |
+| Pagos | UI mock de billing en Biblioteca — **fuera de primera instancia** | Stripe, después del loop |
 | Observabilidad | — | Sentry + PostHog |
 | Tests | — (cero infraestructura: sin Vitest, sin `*.test.ts`) | Vitest + @testing-library/react |
 
@@ -72,16 +78,18 @@ fitpro/
 │   │   ├── calendar/      # Sidebar, Header, Scheduler, CitaForm, FiltersSheet…
 │   │   ├── common/        # Sheet, Skeleton, Toast, Avatar, EmptyState, ErrorState,
 │   │   │                  # ActionMenu, ConfirmDialog, MediaViewer, Fab — TODO en uso
+│   │   ├── billing/       # Módulo Suscripciones y Pagos (UI mock, ver más abajo)
 │   │   ├── communities/   # Módulo Comunidades (UI mock, ver más abajo)
 │   │   ├── dashboard/
 │   │   ├── exercise/
 │   │   ├── layout/        # AppShell, Navbar (+ campana notif.), ThemeToggle
 │   │   ├── library/       # LibraryLayout, catálogos, formularios de rutina
 │   │   ├── player/        # (vacía — candidata a limpieza)
-│   │   ├── userPlans/     # DiaCard, VistaDia, EjercicioSortable (@dnd-kit)
+│   │   ├── userPlans/     # planes por sesión (SesionPlan); GuidedPlanWizard (cliente existente), CreatePlanWizard (alta)
 │   │   └── workout/       # (vacía — candidata a limpieza)
 │   ├── context/           # AuthContext (REAL, vía gateway), ThemeContext
 │   ├── data/              # ejercicios.json, rutinas.json, unidades.json, usuarios.json
+│   │   ├── billing/       # Fixtures mock del módulo Suscripciones/Pagos (4 JSON)
 │   │   └── communities/   # Fixtures mock del módulo Comunidades (8 JSON)
 │   ├── hooks/             # useUnits, useMediaQuery, useNow, useCommunityPermissions…
 │   ├── lib/
@@ -89,12 +97,13 @@ fitpro/
 │   │   ├── exercisedb/    # Cliente ExerciseDB + hooks TanStack Query + Zod schemas
 │   │   ├── ai/            # Helpers del chat IA (fitpro_api)
 │   │   └── supabase.ts    # COMENTADO — no se usa (todo pasa por gateway)
-│   ├── pages/             # admin/AdminDashboardPage (inicio), CalendarPage, WorkoutPlayer, library/*, communities/*
+│   ├── pages/             # admin/AdminDashboardPage (inicio), CalendarPage, WorkoutPlayer, library/*, billing/*, communities/*
 │   ├── routes/paths.ts    # ROUTES tipado + redirects legacy
 │   ├── store/             # useDataStore (persist), useCitasStore (NO persist),
 │   │                      # useUsuariosStore (planes/usuarios mock compartido),
-│   │                      # useWorkoutStore (NO persist), useCommunitiesStore (NO persist, mock)
-│   ├── types/             # index.ts (modelo de rutinas — sigue plano) + community.ts
+│   │                      # useWorkoutStore (NO persist), useCommunitiesStore (NO persist, mock),
+│   │                      # useBillingStore (NO persist, mock)
+│   ├── types/             # index.ts (modelo de rutinas — sigue plano) + billing.ts + community.ts
 │   └── utils/             # validators, suggestions, routineMuscles
 ├── CONTEXT.md             # Fuente de verdad del estado/roadmap
 ├── HISTORIAL.md           # Snapshots fechados de auditorías de código
@@ -114,13 +123,17 @@ fitpro_api/                  # Hermano del repo — FastAPI + DeepSeek
 ├── app/main.py              # GET /health, POST /api/ai/routine
 ├── app/services/deepseek.py
 └── requirements.txt
+
+(PWA cliente — repo hermano React, nombre TBD, aún no creado — D11)
 ```
 
 **Módulo Comunidades** (`components/communities/`, `pages/communities/`,
-`store/useCommunitiesStore.ts`, `data/communities/`): implementado completo
-(Fases 0-6 de su propio plan) como **UI pura sobre datos mock en memoria**,
-sin backend, sin persistencia, sin relación con el auth real ni con
-`gym-gateway`. Ver `CONTEXT.md §12` (entrada 2026-08-27) para el detalle.
+`store/useCommunitiesStore.ts`, `data/communities/`): UI mock completa.
+**Fuera de primera instancia — no ampliar.** Ver `CONTEXT.md §7` Fase 6.
+
+**Módulo Suscripciones y Pagos** (`components/billing/`, `pages/billing/`,
+`store/useBillingStore.ts`, `data/billing/`): UI mock en Biblioteca.
+**Fuera de primera instancia — no ampliar.** Ver `CONTEXT.md §12` (2026-09-07 / 09-09).
 
 **Código muerto confirmado:** `components/player/`, `components/workout/`
 (carpetas vacías), `create-admin.js` en raíz. `RoutineWizard.tsx`,
@@ -168,9 +181,8 @@ Supabase del frontend está comentado; Supabase real se habla solo desde
    con refresh automático. **No reintroducir un mock** ni asumir que
    cualquier email/password entra — hoy hay validación real de credenciales.
 2. **RBAC existe en el backend, no en el frontend.** `gym-gateway` tiene
-   `require_role`/`require_admin` server-side y funcionando. El frontend
-   recibe `AuthUser.role` pero **no lo usa para gatear rutas ni UI** — no
-   asumir gating por rol en `src/` sin verificarlo primero.
+   `require_role`/`require_admin` server-side. Esta SPA no gatea rutas por
+   rol. El cliente **no** se resuelve aquí: va a la PWA (D11).
 3. **Supabase sigue sin cablear en el frontend** (`src/lib/supabase.ts`
    comentado, a propósito). Todo el tráfico a Supabase pasa por
    `gym-gateway`. No descomentar/instanciar el cliente del frontend sin
@@ -183,41 +195,36 @@ Supabase del frontend está comentado; Supabase real se habla solo desde
    campos según el nivel del formulario (básica los omite a propósito;
    intermedia/avanzada los persisten). No repetir esta advertencia como si
    siguiera vigente.
-5. **Ejercicios siguen referenciados por `nombre: string`**, no por ID.
-   Renombrar un ejercicio rompe rutinas existentes. Migración a
-   `ejercicio_id: number` sigue pendiente (deuda técnica de Fase 2, ya no es
-   una fase bloqueante separada — ver `CONTEXT.md §7`), **sin iniciar**.
-6. **`useWorkoutStore` sigue sin persistir.** No hay historial de entrenos: al
-   refrescar se pierde peso/RPE/reps/duración. **Sin esto no hay producto.**
-7. **`UserPlansPage` y `CalendarPage` comparten `useUsuariosStore`** (seed
-   desde `usuarios.json`). Asignaciones desde calendario y edición en
-   `/library/planes` mutan el mismo estado en memoria — se pierde al recargar
-   (sin persistencia Supabase aún).
+5. **Ejercicios referenciados por `ejercicio_id` en mock local** (2026-09-09):
+   rutinas, planes y sesiones ejecutadas usan FK al catálogo de
+   `useDataStore.ejercicios`; migración automática al hidratar
+   `localStorage`. Persistencia real vía Supabase/gateway sigue en Fase 2.
+6. **`useWorkoutStore` sigue sin persistir** (player = vista previa).
+   **`useSesionesStore` sí persiste mock** (`fitpro-sesiones`): el entrenador
+   registra sesiones con peso/reps por serie vía `RegistrarSesionSheet`.
+   La PWA cliente (aún no existe) será el write path de producción.
+7. **`UsuariosPage` y `CalendarPage` comparten `useUsuariosStore`** (seed
+   `usuarios.json`, sin persist). El plan es por **sesión** (`SesionPlan`),
+   no por weekday. Se pierde al recargar. `UserPlansPage.tsx` solo redirige
+   a `/usuarios`. **`GuidedPlanWizard`** crea/reconfigura el plan en 6 pasos
+   (mock local, guardado atómico al final); progresión prescrita, no adaptación
+   por RPE real. **`CreatePlanWizard`** sigue siendo solo alta de cliente.
 8. **`useCitasStore` (calendario) tampoco persiste** — `addCita`/`addCitas`/
    `deleteCita`; tipo `entrenamiento` | `medidas`; sin `updateCita`. IDs
    autoincrementales en variable de módulo que se resetean en cada carga.
-9. **Modelo de datos de rutinas sigue plano.** `EjercicioRutina` creció con
-   opcionales (`rpe`, `grupo_superset`, `exerciseDbId`, `musculos_anatomia`)
-   pero sigue sin bloques/series estructuradas. No soporta dropsets reales,
-   %1RM, tempo, warmup vs working como conceptos de primera clase. **La
-   Fase 2 ahora incluye migrar este dominio a Supabase** (§8) — al diseñar
-   ese schema, resolver el modelo `Bloque/BloqueItem/SerieDef` de una vez
-   (§5 de `CONTEXT.md`) en vez de llevar `EjercicioRutina` tal cual a
-   Supabase y tener que rediseñarlo otra vez después. Sigue sin iniciar.
+   El calendario son **citas con fecha**; el plan es **cuota de sesiones**.
+9. **Modelo de datos de rutinas sigue plano.** Para primera instancia basta
+   ejercicio por ID + N×reps + series ejecutadas con peso/reps. El
+   `Bloque/BloqueItem/SerieDef` se deja en el **schema** de Fase 2 para no
+   migrar dos veces; no es gate del loop. Ver `CONTEXT.md §1` y §5.
 10. **`importData` sigue sin validar con Zod** — solo comprueba que existan
     las claves `rutinas/ejercicios/unidades`, no la forma de sus items
     (vector de corrupción).
-11. **El módulo Comunidades (`/communities/*`) es 100% UI mock.** No toca
-    Supabase, no toca `gym-gateway`, no persiste (sin `persist` en
-    `useCommunitiesStore`). Su sistema de roles (`useCommunityPermissions`)
-    es un mock explícito y **no tiene relación con el auth real ni con el
-    RBAC de `gym-gateway`** — no confundir ambos sistemas de roles al tocar
-    permisos.
-12. **Páginas god hoy:** `UserPlansPage.tsx` (508 líneas) y
-    `AIRoutineChatPage.tsx` (472 líneas) son las más grandes. El antiguo
-    `RoutinePage.tsx` monolítico ya no existe (se descompuso en chooser +
-    3 formularios + galería de presets, cada uno <300 líneas) — no citarlo
-    como ejemplo de página god.
+11. **Comunidades y billing son UI mock y están congelados** para primera
+    instancia. No ampliar. El rol de `useCommunityPermissions` **no** es el
+    RBAC de `gym-gateway` ni el de la PWA cliente.
+12. **Páginas god hoy:** `UsuariosPage.tsx` y `AIRoutineChatPage.tsx`. Al
+    editarlas, extraer. `UserPlansPage.tsx` ya no es god (redirect).
 13. **Tres dependencias declaradas no están instaladas** (`@tanstack/react-query`,
     `@dnd-kit/*`, `@daypicker/react`) — ver §2 y §4. `npm run build` falla
     hoy por esto. No es un bug del código que las usa.
@@ -243,16 +250,20 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 - **D5** — RLS obligatorio desde día 1. Client-side gating es barrera
   secundaria. Confirmar que las migraciones SQL de `gym-gateway` (RLS)
   queden versionadas en su repo, no solo documentadas.
-- **D6** — Ejercicios referenciados por ID, nunca por nombre. **Sin
-  iniciar.**
-- **D7** — Modelo `Rutina → Bloque[] → BloqueItem[] → SerieDef[]`
-  (ver `CONTEXT.md §5` para el shape completo). **Sin iniciar.**
+- **D6** — Ejercicios referenciados por ID, nunca por nombre. **Entra en
+  primera instancia** (integridad). Sin iniciar.
+- **D7** — Modelo `Rutina → Bloque[] → BloqueItem[] → SerieDef[]` en el
+  **schema** (`CONTEXT.md §5`). La UI del MVP puede ser N×reps; no migrar
+  el modelo plano tal cual a Supabase.
 - **D8** — **Resuelto 2026-08-24:** Tailwind 4 + tokens `@theme` como
   sistema de estilos; `AppShell` progresivo (`narrow`/`default`/`wide`);
   `Sheet` como base de todos los overlays/modales.
 - **D9** — Tests con Vitest + @testing-library/react; validators y stores
   primero. **Sin iniciar** — cero infraestructura de testing hoy.
 - **D10** — No subir nada a prod sin Sentry + PostHog. **Sin iniciar.**
+- **D11** — App cliente = **PWA React independiente** (repo hermano, por
+  crear), mismo `gym-gateway`. Esta SPA no crece un modo cliente. Ver
+  `CONTEXT.md §1` y §9.
 
 ### Convenciones de código
 
@@ -270,11 +281,13 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 - No crear archivos nuevos si editar uno existente basta.
 - No agregar comentarios que narren el código; solo comentar intención no
   obvia, trade-offs o restricciones.
-- **UI y pantallas:** seguir **[DESIGN.md](./DESIGN.md)** (tokens, `AppShell`,
-  `Sheet`, formularios `fp-*`, estados vacío/error, copy en español). Resumen
-  mínimo: formularios con `fp-input` + `fp-btn`; búsqueda con `fp-input-group`;
-  referencia viva [`CitaCreateSheet.tsx`](src/components/calendar/CitaCreateSheet.tsx).
-- Al editar una página god (`UserPlansPage.tsx`, `AIRoutineChatPage.tsx`),
+- **UI y pantallas:** seguir **[DESIGN.md](./DESIGN.md)** (tokens, escala
+  tipo/espacio/radio, `AppShell`, `Sheet`, formularios `fp-*`, estados
+  vacío/error, copy en español). Resumen mínimo: un voltaje `--brand` en
+  CTAs; Sora 600–700 a 22–28px; formularios con `fp-input` + `fp-btn`;
+  búsqueda con `fp-input-group`; referencia viva
+  [`CitaCreateSheet.tsx`](src/components/calendar/CitaCreateSheet.tsx).
+- Al editar una página god (`UsuariosPage.tsx`, `AIRoutineChatPage.tsx`),
   **extraer** en vez de seguir agregando.
 
 ---
@@ -284,20 +297,18 @@ Extracto de `CONTEXT.md §9`. No desviarse sin abrir una ADR nueva allí.
 Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/paths.ts):
 
 - **Públicas:** `/login`, `/register`.
-- **App principal (protegidas):** `/` (dashboard de métricas por rol),
-  `/calendario`, `/tracking` (historial mock por cliente; Fase 4 pendiente),
-  `/workout/:id`, `/player`, `/anatomytracker`.
+- **App principal (protegidas) — cockpit entrenador:** `/` (dashboard mock
+  por rol), `/usuarios` y `/usuarios/:id` (clientes + planes por sesión),
+  `/calendario`, `/tracking` (historial mock; Fase 4), `/workout/:id`,
+  `/player` (prototipo; la ejecución real es la PWA cliente), `/anatomytracker`.
 - **Biblioteca** (bajo `LibraryLayout`, todo protegido): `/library` (hub),
   `/library/rutinas`, `/library/rutinas/nueva` (chooser de nivel),
   `/library/rutinas/plantillas`, `/library/rutinas/nueva/{basica,intermedia,avanzada}`,
   `/library/catalogo/{ejercicios,partes,equipo,tipos,musculos}`, `/library/ia`,
-  `/library/planes`.
-- **Comunidades** (mock, UI pura): `/communities` (Explorar),
-  `/communities/create` (solo `superadmin`; mock `createCommunity`),
-  `/communities/invitations`, `/communities/:id` (redirect → home) y todo el
-  árbol `/communities/:id/{home,posts,posts/create,posts/:postId,events,
-  events/create,events/:eventId,events/:eventId/participants,discussions,
-  discussions/:discussionId,members,about,admin,admin/members,admin/moderation}`.
+  `/library/planes` (redirect a `/usuarios`), `/library/suscripciones` y
+  `/library/pagos` (**mock, congelados** — fuera de primera instancia).
+- **Comunidades** (mock, **congelado**): `/communities` y el árbol
+  `/communities/:id/...`. No ampliar.
 - **Otras:** `/notifications`, `/perfil` (datos de cuenta + selector de rol de
   plataforma para pruebas — ver `usePlatformRole` / `useRoleOverrideStore`).
 - **Redirects legacy:** rutas viejas `/admin/*`, `/library/ejercicios`,
@@ -310,8 +321,7 @@ Definidas en [src/App.tsx](./src/App.tsx) + [src/routes/paths.ts](./src/routes/p
   al catch-all (`*` → `/`). No hay página de gestión de unidades hoy.
 
 Todo bajo `ProtectedRoute` salvo login/register (bajo `PublicRoute`). Sin
-gating por rol — pendiente tras Fase 3, y desconectado del RBAC real que ya
-existe en `gym-gateway`.
+gating por rol en esta SPA. El cliente no entra aquí: va a la PWA (D11).
 
 ---
 
@@ -328,39 +338,30 @@ actual:
 
 1. Fase 1 — Base del sistema (UI, routing, theming) → **~95%**
 2. Fase 2 — CRUD vía Supabase + Biblioteca → **UI ~80% / persistencia real
-   en Supabase 0%**. La UI/Biblioteca (hub, catálogos ExerciseDB, 3
-   formularios por nivel, galería de presets, chat IA) sigue tan completa
-   como antes, corriendo sobre `useDataStore` + `localStorage`. Lo nuevo
-   (0% iniciado): diseñar schema Supabase + RLS para rutinas/ejercicios/
-   unidades, exponerlo vía `gym-gateway`, migrar `useDataStore` a TanStack
-   Query. El rediseño del modelo (`Rutina → Bloque[] → BloqueItem[] →
-   SerieDef[]`, ex-Fase 2.5) se resuelve **como parte de este diseño de
-   schema**, no aparte — evita migrar el modelo plano y rediseñarlo otra
-   vez después.
-3. Fase 3 — Supabase + Auth real + TanStack Query → **~35%** (auth real y
-   RBAC server-side ya existen vía `gym-gateway`; falta TanStack Query
-   instalado, migrar `useCitasStore` a servidor — `useDataStore` se movió a
-   Fase 2 —, y gating por rol en el frontend)
-4. Fase 4 — Tracking real de sesiones (historial) → ~10% (sin cambios)
-5. Fase 5 — Multi-tenant entrenador ↔ cliente → ~5-10% (UI de planes avanzó
-   mucho; sigue sin persistencia ni `trainer_client_links`)
-6. **Fase 6 — Comunidades** → UI ~100% completa como mock (22 pantallas,
-   ~20 modales), **0% backend real**. Falta: esquema de datos, decidir si
-   pasa por `gym-gateway`, migrar `useCommunitiesStore` a servidor, y
-   resolver la relación entre el rol de comunidad y `AuthUser.role`.
-7. Fase 7 — Analytics + IA + móvil → IA de generación de rutinas ya funciona
-   end-to-end (adelantada fuera de orden); analytics/móvil en 0%
+   en Supabase 0%**. El schema del loop (rutinas por ID, planes, sessions)
+   entra aquí; `Bloque/SerieDef` se deja en tablas aunque la UI MVP sea N×reps.
+3. Fase 3 — Auth real + TanStack Query → **~35%** (auth/RBAC ya existen;
+   falta install, migrar citas, gating hacia la PWA)
+4. Fase 4 — Tracking real de sesiones → **~10%**. La **escribe la PWA
+   cliente**; `/tracking` en esta SPA solo lee.
+5. Fase 5 — Multi-tenant + **nacer la PWA cliente** → **~5-10%** (UI de
+   planes por sesión avanzada; sin persist, sin `trainer_client_links`,
+   sin repo cliente)
+6. **Fase 6 — Comunidades** → UI mock completa, **congelada** hasta que
+   el loop cierre. 0% backend.
+7. Fase 7 — Analytics + IA + offline-first / nativo → IA adelantada;
+   la PWA **instalable online** no es esta fase (es primera instancia).
 
-**Fuera del roadmap:** Monetización (Stripe/`subscriptions`) — despriorizada,
-no cancelada; retomar cuando el resto avance más.
+**Primera instancia (gate de producto, 2026-09-09):** dos apps + clientes
+reales + player que escribe + tracking real. Ver `CONTEXT.md §1` y §7.
 
-**Siguiente tarea crítica:** no hay un gate bloqueante formal. Prioridad
-sugerida: diseñar el schema Supabase de Fase 2 (rutinas/ejercicios/unidades,
-resolviendo de paso el modelo `Bloque/BloqueItem/SerieDef`), en paralelo a
-Fase 3 (`npm install`, `useCitasStore` a servidor, gating por rol) y a
-definir el backend de la Fase 6 (Comunidades) antes de seguir ampliando su
-UI. No agregar más superficie de escritura contra `EjercicioRutina` plano
-sin necesidad — cada formulario nuevo encarece la migración a Supabase.
+**Fuera / congelado:** Monetización (Stripe) y ampliar Comunidades/billing
+mock. Retomar cuando un entrenador tenga clientes que entrenen.
+
+**Siguiente tarea crítica:** schema mínimo del loop vía `gym-gateway`,
+persistir planes, crear la PWA cliente. No ampliar Comunidades, billing ni
+el creador avanzado de rutinas. `npm install` primero (build roto). No
+agregar más escritura contra `EjercicioRutina.nombre` sin necesidad.
 
 ---
 
@@ -377,16 +378,14 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
    `src/lib/gateway/` y potencialmente el repo `gym-gateway` — avisar al
    usuario si cruza ese límite de repos.
 4. Si la tarea implica gating por rol en el frontend: el RBAC ya existe
-   server-side en `gym-gateway`; conectar el frontend a eso en vez de crear
-   un sistema de roles nuevo (y no confundirlo con el mock de
-   `useCommunityPermissions`, que es solo del módulo Comunidades).
-5. Si la tarea implica el modelo de rutinas o Supabase como base de datos de
-   dominio: **estás tocando la Fase 2** (que desde 2026-08-27 apunta a
-   Supabase vía `gym-gateway`, ver §8) y la deuda técnica más cara del repo
-   (modelo plano, ex-Fase 2.5, sin fase bloqueante formal). No tocar sin
-   avisar — si se diseña el schema de Supabase, resolver el modelo
-   `Bloque/BloqueItem/SerieDef` ahí mismo; riesgo de doble migración si se
-   lleva `EjercicioRutina` tal cual a Supabase.
+   server-side en `gym-gateway`; conectar el frontend a eso. Rol `client` →
+   **PWA aparte**, no una vista nueva aquí. No confundir con el mock de
+   `useCommunityPermissions`.
+5. Si la tarea implica el modelo de rutinas o Supabase de dominio: **Fase 2**.
+   Primera instancia necesita ejercicio por ID y `session_sets`. Al diseñar
+   el schema, dejar `Bloque/BloqueItem/SerieDef` para no migrar dos veces;
+   no hace falta exponerlo en la UI del MVP. Avisar si se va a llevar
+   `EjercicioRutina` tal cual a Supabase.
 6. Al completar una tarea relevante:
    - Si es una decisión técnica → añadirla a `CONTEXT.md §13` (ADR).
    - Si es contexto nuevo de negocio/feedback → `CONTEXT.md §12` con fecha.
@@ -397,12 +396,15 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 7. Nunca borrar código "por estética". Si es código muerto, confirmarlo
    contra `CONTEXT.md §10` antes (y contra la lista de §3 de este archivo).
 8. No commitear sin que el usuario lo pida explícitamente.
+9. **No ampliar Comunidades ni billing** mientras primera instancia no
+   cierre. Si la tarea no está en el loop de `CONTEXT.md §1`, cuestionarla.
 
 ---
 
 ## 10. Archivos de referencia rápida
 
-- [CONTEXT.md](./CONTEXT.md) — fuente de verdad completa.
+- [CONTEXT.md](./CONTEXT.md) — fuente de verdad. Empieza por **§1** (visión /
+  primera instancia / dos apps).
 - [DESIGN.md](./DESIGN.md) — guía de diseño y creación de pantallas.
 - [HISTORIAL.md](./HISTORIAL.md) — snapshots fechados de auditorías de código.
 - [README.md](./README.md) — documentación del modelo de datos (desactualizada
@@ -424,11 +426,11 @@ sin necesidad — cada formulario nuevo encarece la migración a Supabase.
 - [src/store/useCitasStore.ts](./src/store/useCitasStore.ts) — citas del
   calendario (sin persist; `addCitas` bulk; tipo entrenamiento/medidas).
 - [src/store/useUsuariosStore.ts](./src/store/useUsuariosStore.ts) — usuarios y
-  planes compartidos entre calendario y `/library/planes` (sin persist).
+  planes por sesión (seed, sin persist); compartido con calendario.
 - [src/store/useSesionesStore.ts](./src/store/useSesionesStore.ts) — historial
-  de entrenos mock (`sesiones.json`); ruta `/tracking` (Fase 4 pendiente).
-- [src/store/useWorkoutStore.ts](./src/store/useWorkoutStore.ts) — runtime
-  del player (sin persistencia).
+  mock (`sesiones.json`); `/tracking` — la fuente real será la PWA cliente.
+- [src/store/useWorkoutStore.ts](./src/store/useWorkoutStore.ts) — runtime del
+  player en esta SPA (prototipo, sin persistencia).
 - [src/store/useCommunitiesStore.ts](./src/store/useCommunitiesStore.ts) —
   módulo Comunidades (mock, sin persist; `createCommunity` solo superadmin).
 - [src/hooks/usePlatformRole.ts](./src/hooks/usePlatformRole.ts) — rol plataforma

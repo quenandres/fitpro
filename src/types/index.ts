@@ -1,6 +1,9 @@
 export type RoutineTipo = 'estandar' | 'emom' | 'amrap' | 'fortime' | 'circuit';
 
 export interface EjercicioRutina {
+  /** FK al catálogo local mock (`useDataStore.ejercicios`) */
+  ejercicio_id: number;
+  /** Denormalizado para UI */
   nombre: string;
   series: number;
   valor: number;
@@ -101,15 +104,28 @@ export interface Unidad {
   descripcion: string;
 }
 
+export interface ReglaProgresion {
+  peso_incremento?: number;
+  reps_incremento?: number;
+  cada_semanas?: number;
+}
+
 export interface EjercicioPersonalizado {
+  /** FK al catálogo local mock */
+  ejercicio_id: number;
   nombre: string;
   series: number;
-  reps: number;
+  /** Reps, tiempo o distancia prescritos (según unidad_id) */
+  valor: number;
+  unidad_id: number;
+  /** Carga objetivo en kg — separada de reps cuando unidad_id es repeticiones */
+  peso_objetivo_kg?: number;
   notas?: string;
-  /** ID en biblioteca local — evita romper matching por nombre */
-  ejercicio_id?: number;
   rpe?: number;
   musculos_anatomia?: string[];
+  regla_progresion?: ReglaProgresion;
+  /** @deprecated usar valor — solo migración JSON legacy */
+  reps?: number;
 }
 
 export interface RutinaAsignada {
@@ -119,8 +135,13 @@ export interface RutinaAsignada {
   notas?: string;
 }
 
-export interface DiaSemana {
-  dia: number;
+export type PlanModo = 'repetitiva' | 'sesiones_variables';
+
+export type PlanProgresionModo = 'fijo' | 'incremental';
+
+/** Plantilla de sesión en el plan del cliente (no día fijo de la semana). */
+export interface SesionPlan {
+  orden: number;
   nombre: string;
   rutina_id: number | null;
   rutina_nombre: string;
@@ -129,7 +150,7 @@ export interface DiaSemana {
 
 export interface SemanaPlan {
   semana: number;
-  dias: DiaSemana[];
+  sesiones: SesionPlan[];
   notas?: string;
 }
 
@@ -138,7 +159,16 @@ export interface PlanUsuario {
   nombre: string;
   descripcion: string;
   semanas: number;
+  /** Cuota semanal objetivo (2 = pocos, 4 = ideal, 7 = muchos). */
   dias_entrenar_semana: number;
+  modo: PlanModo;
+  progresion: PlanProgresionModo;
+  /** ISO YYYY-MM-DD — ancla semanas del plan para detectar semanas completadas */
+  fecha_inicio?: string;
+  /** Días mínimos de recuperación entre sesiones (recomendación del plan, no weekday fijo) */
+  descanso_min_dias?: number;
+  /** Regla global de progresión aplicada al crear el plan guiado (mock local) */
+  regla_progresion_global?: ReglaProgresion;
   rutinas_asignadas: RutinaAsignada[];
   ejercicios_personalizados: EjercicioPersonalizado[];
   programacion_semanal: SemanaPlan[];
@@ -212,7 +242,23 @@ export interface WorkoutState {
 
 export type SesionModalidad = 'fuerza' | 'isometrico' | 'otro';
 
-/** Sesión completada; shape preparado para tabla Supabase `sessions` (Fase 4). */
+/** Serie ejecutada; shape preparado para tabla Supabase `session_sets` (mock local). */
+export interface SerieEjecutada {
+  n: number;
+  reps: number;
+  peso_kg: number | null;
+  rpe?: number;
+}
+
+/** Ejercicio dentro de una sesión completada. */
+export interface EjercicioEjecutado {
+  ejercicio_id: number;
+  nombre: string;
+  unidad_id: number;
+  series: SerieEjecutada[];
+}
+
+/** Sesión completada; mock local — sustituir por gateway en Fase 4. */
 export interface SesionEntrenamiento {
   id: string;
   usuario_id: number;
@@ -222,7 +268,12 @@ export interface SesionEntrenamiento {
   rutina_nombre: string;
   modalidad: SesionModalidad;
   duracion_min: number;
+  /** Derivado de ejercicios[].series.length al guardar */
   series_completadas: number;
+  /** Vínculo opcional con la plantilla SesionPlan.orden del plan activo. */
+  sesion_orden?: number;
+  /** Series reales con peso/reps — contrato futuro `session_sets` */
+  ejercicios: EjercicioEjecutado[];
 }
 
 export interface GenerateRoutineRequest {
@@ -242,6 +293,7 @@ export interface GenerateRoutineExercise {
 }
 
 export interface ResolvedExercise {
+  ejercicio_id?: number;
   nombre: string;
   series: number;
   valor: number;

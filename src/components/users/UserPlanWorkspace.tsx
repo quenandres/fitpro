@@ -1,31 +1,26 @@
-import { useMemo, useState } from 'react';
-import { ClipboardList, Dumbbell, Plus } from 'lucide-react';
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core';
-import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import type { Ejercicio, EjercicioPersonalizado, Rutina, Usuario } from '../../types';
+import { useEffect, useMemo, useState } from 'react';
+import { Sparkles } from 'lucide-react';
+import type { Ejercicio, Rutina, Usuario } from '../../types';
+import { GuidedPlanWizard } from '../userPlans/GuidedPlanWizard';
+import { planHasConfiguredSessions } from '../../utils/guidedPlanUtils';
 import { VistaSemana } from '../userPlans/VistaSemana';
-import { DiaCard } from '../userPlans/DiaCard';
-import { parseDragId, parseEjId } from '../userPlans/dragIds';
 import type { usePlanMutations } from '../../hooks/usePlanMutations';
-import type { DiaRef } from '../../hooks/usePlanMutations';
-import { ExercisePickerOverlay, type PickedExercise } from '../exercise/ExercisePickerOverlay';
-import { RoutineWeekDayNav } from '../library/routines/RoutineWeekDayNav';
+import type { SesionRef } from '../../hooks/usePlanMutations';
+import { PlanSessionNav } from '../userPlans/PlanSessionNav';
+import { FrecuenciaSelector } from '../userPlans/FrecuenciaSelector';
+import { PlanModoSelector } from '../userPlans/PlanModoSelector';
+import { PlanProgresionSelector } from '../userPlans/PlanProgresionSelector';
 import { UserPlannedLoadPanel } from './UserPlannedLoadPanel';
-import { DiaEditorSheet } from './DiaEditorSheet';
+import { CompliancePanel } from './CompliancePanel';
+import { SesionEditorSheet } from './SesionEditorSheet';
 import { RutinaPickerSheet } from './RutinaPickerSheet';
 import { formatPesoKg, isNivelAvanzado } from '../../utils/userSummary';
+import { sesionesForDisplay } from '../../utils/planScheduleUtils';
+import { isSemanaBloqueada } from '../../utils/planWeekUtils';
+import { entrenamientoLabel, isSesionConfigured } from '../../utils/sesionPlanUtils';
 
 type Mutations = ReturnType<typeof usePlanMutations>;
+type EditorMode = 'create' | 'edit';
 
 interface Props {
   user: Usuario;
@@ -34,10 +29,8 @@ interface Props {
   mutations: Mutations;
   semana: number;
   onSemanaChange: (semana: number) => void;
-  diaEditorIndex: number | null;
-  onDiaEditorChange: (diaIndex: number | null) => void;
-  selectedDiaIndex: number;
-  onSelectedDiaChange: (diaIndex: number) => void;
+  sesionEditorIndex: number | null;
+  onSesionEditorChange: (sesionIndex: number | null) => void;
 }
 
 const PLAN_ACCENT = '#a371f7';
@@ -49,107 +42,68 @@ export function UserPlanWorkspace({
   mutations,
   semana,
   onSemanaChange,
-  diaEditorIndex,
-  onDiaEditorChange,
-  selectedDiaIndex,
-  onSelectedDiaChange,
+  sesionEditorIndex,
+  onSesionEditorChange,
 }: Props) {
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
-  const [showRutinaPicker, setShowRutinaPicker] = useState(false);
-  const [showEjercicioPicker, setShowEjercicioPicker] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorMode>('create');
+  const [pickerSesionIndex, setPickerSesionIndex] = useState<number | null>(null);
+  const [guidedOpen, setGuidedOpen] = useState(false);
+
+  const hasConfiguredPlan = planHasConfiguredSessions(user.plan);
 
   const semanaPlan = useMemo(
     () => user.plan.programacion_semanal.find((s) => s.semana === semana),
     [user, semana],
   );
 
-  const selectedDia = semanaPlan?.dias[selectedDiaIndex];
-  const diaRef: DiaRef = { semana, diaIndex: selectedDiaIndex };
-  const editorRef: DiaRef | null =
-    diaEditorIndex != null ? { semana, diaIndex: diaEditorIndex } : null;
+  const displaySesiones = useMemo(
+    () => (semanaPlan ? sesionesForDisplay(semanaPlan, user.plan.modo) : []),
+    [semanaPlan, user.plan.modo],
+  );
+
+  const editorRef: SesionRef | null =
+    sesionEditorIndex != null ? { semana, sesionIndex: sesionEditorIndex } : null;
+
+  const pickerSesion = pickerSesionIndex != null ? displaySesiones[pickerSesionIndex] : null;
+  const pickerLabel =
+    pickerSesion && pickerSesionIndex != null
+      ? entrenamientoLabel(pickerSesion, pickerSesionIndex, user.plan.modo)
+      : 'Entrenamiento';
 
   const semanasRestantes = Math.max(0, user.plan.semanas - semana);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  useEffect(() => {
+    if (sesionEditorIndex == null) return;
+    const sesion = displaySesiones[sesionEditorIndex];
+    if (!sesion) return;
+    setEditorMode(isSesionConfigured(sesion) ? 'edit' : 'create');
+  }, [sesionEditorIndex, displaySesiones]);
 
-  const handleDragStart = (e: DragStartEvent) => {
-    setActiveDragId(String(e.active.id));
+  const openEditor = (sesionIndex: number, mode: EditorMode) => {
+    setEditorMode(mode);
+    onSesionEditorChange(sesionIndex);
   };
 
-  const handleDragEnd = (e: DragEndEvent) => {
-    setActiveDragId(null);
-    const { active, over } = e;
-    if (!over) return;
-    const activeId = String(active.id);
-    const overId = String(over.id);
-    if (activeId === overId) return;
-
-    const ejActive = parseEjId(activeId);
-    const ejOver = parseEjId(overId);
-    if (ejActive && ejOver && ejActive.semana === ejOver.semana && ejActive.diaIndex === ejOver.diaIndex) {
-      const sem = user.plan.programacion_semanal.find((s) => s.semana === ejActive.semana);
-      const dia = sem?.dias[ejActive.diaIndex];
-      if (!dia) return;
-      const newOrder = arrayMove(
-        dia.ejercicios_personalizados.map((_, i) => i),
-        ejActive.ejIndex,
-        ejOver.ejIndex,
-      );
-      if (newOrder[ejOver.ejIndex] === ejActive.ejIndex) return;
-      mutations.reorderEjerciciosInDia(
-        { semana: ejActive.semana, diaIndex: ejActive.diaIndex },
-        ejActive.ejIndex,
-        ejOver.ejIndex,
-      );
-      return;
-    }
-
-    const diaActive = parseDragId(activeId);
-    const diaOver = parseDragId(overId);
-    if (diaActive && diaOver) {
-      mutations.moveDia(diaActive as DiaRef, diaOver as DiaRef);
-    }
+  const openPicker = (sesionIndex: number) => {
+    setPickerSesionIndex(sesionIndex);
   };
 
-  const activeDragDia = useMemo(() => {
-    if (!activeDragId) return null;
-    const ref = parseDragId(activeDragId);
-    if (!ref) return null;
-    const sem = user.plan.programacion_semanal.find((s) => s.semana === ref.semana);
-    const dia = sem?.dias[ref.diaIndex];
-    if (!dia) return null;
-    return { dia, ...ref };
-  }, [activeDragId, user]);
+  const closeEditor = () => {
+    onSesionEditorChange(null);
+  };
 
-  const handleOpenDia = (sem: number, diaIndex: number) => {
-    onSemanaChange(sem);
-    onSelectedDiaChange(diaIndex);
-    onDiaEditorChange(diaIndex);
+  const closePicker = () => {
+    setPickerSesionIndex(null);
   };
 
   const handleSelectRutina = (rutina: Rutina, replicar: boolean) => {
+    if (pickerSesionIndex == null) return;
+    const ref: SesionRef = { semana, sesionIndex: pickerSesionIndex };
     if (replicar) {
-      mutations.selectRutinaForDiaReplicada(diaRef, rutina);
+      mutations.selectRutinaForSesionReplicada(ref, rutina);
     } else {
-      mutations.selectRutinaForDia(diaRef, rutina);
+      mutations.selectRutinaForSesion(ref, rutina);
     }
-  };
-
-  const handleQuickAddEjercicio = (pick: PickedExercise) => {
-    const ej: EjercicioPersonalizado = {
-      nombre: pick.nombre,
-      series: 3,
-      reps: pick.unidad_id_default === 1 ? 12 : 10,
-      notas: '',
-      ejercicio_id: pick.ejercicio_id,
-      musculos_anatomia: pick.musculos_anatomia,
-      rpe: 7,
-    };
-    mutations.addEjercicio(diaRef, ej);
-    setShowEjercicioPicker(false);
   };
 
   const handleSemanasChange = (n: number) => {
@@ -157,12 +111,29 @@ export function UserPlanWorkspace({
     if (semana > n) onSemanaChange(n);
   };
 
-  const diaLabel = selectedDia
-    ? `${selectedDia.nombre} · Semana ${semana}`
-    : `Semana ${semana}`;
+  useEffect(() => {
+    const definidas = user.plan.programacion_semanal.length;
+    if (definidas < user.plan.semanas) {
+      mutations.setPlanSemanas(user.plan.semanas);
+    }
+  }, [user.id, user.plan.semanas, user.plan.programacion_semanal.length, mutations]);
 
   return (
     <>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className="fp-btn fp-btn-primary inline-flex items-center gap-2"
+          onClick={() => setGuidedOpen(true)}
+        >
+          <Sparkles size={16} aria-hidden />
+          {hasConfiguredPlan ? 'Reconfigurar plan guiado' : 'Crear plan guiado'}
+        </button>
+        <p className="text-xs text-muted">
+          Asistente paso a paso — frecuencia, descanso, sesiones y progresión.
+        </p>
+      </div>
+
       <div className="fp-user-spec">
         <div className="fp-user-spec-item">
           <p className="fp-user-spec-k">Objetivo</p>
@@ -182,123 +153,102 @@ export function UserPlanWorkspace({
         </div>
       </div>
 
-      {semanaPlan ? (
-        <div className="fp-card mb-4" style={{ padding: 14, borderRadius: 14 }}>
-          <RoutineWeekDayNav
-            variant="embedded"
-            semanas={user.plan.semanas}
-            semanaActiva={semana}
-            diaIndex={selectedDiaIndex}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+        <FrecuenciaSelector
+          value={user.plan.dias_entrenar_semana}
+          onChange={mutations.setDiasEntrenarSemana}
+          accent={PLAN_ACCENT}
+        />
+        <div className="fp-card" style={{ padding: 14, borderRadius: 12 }}>
+          <p className="fp-cal-label mb-2">Modo del plan</p>
+          <PlanModoSelector
+            value={user.plan.modo}
+            onChange={mutations.setPlanModo}
+            frecuencia={user.plan.dias_entrenar_semana}
             accent={PLAN_ACCENT}
-            durationLabel="Duración del plan"
-            showBothWeekActions
-            dayHasExercises={(idx) => {
-              const d = semanaPlan.dias[idx];
-              return (d?.ejercicios_personalizados.length ?? 0) > 0;
-            }}
-            onSemanasChange={handleSemanasChange}
-            onSemanaChange={onSemanaChange}
-            onDiaChange={onSelectedDiaChange}
-            onApplyToAll={() => mutations.applyWeek1ToAll()}
-            onCopyWeekFrom={(origen) => mutations.copyWeekFrom(semana, origen)}
           />
-          <div className="flex flex-wrap gap-2 mt-1 pt-3 border-t border-[var(--border-subtle)]">
-            <button
-              type="button"
-              className="fp-btn fp-btn-secondary fp-btn-sm gap-1.5"
-              onClick={() => setShowRutinaPicker(true)}
-            >
-              <ClipboardList size={14} />
-              Asignar rutina
-            </button>
-            <button
-              type="button"
-              className="fp-btn fp-btn-primary fp-btn-sm gap-1.5"
-              onClick={() => setShowEjercicioPicker(true)}
-            >
-              <Plus size={14} />
-              Añadir ejercicio
-            </button>
-            <button
-              type="button"
-              className="fp-btn fp-btn-ghost fp-btn-sm gap-1.5"
-              onClick={() => onDiaEditorChange(selectedDiaIndex)}
-            >
-              <Dumbbell size={14} />
-              Editar día
-            </button>
-          </div>
         </div>
-      ) : null}
+      </div>
+
+      <div className="fp-card mb-4" style={{ padding: 14, borderRadius: 12 }}>
+        <p className="fp-cal-label mb-2">Progresión de carga</p>
+        <PlanProgresionSelector
+          value={user.plan.progresion}
+          onChange={mutations.setPlanProgresion}
+          accent={PLAN_ACCENT}
+        />
+      </div>
+
+      <div className="fp-card mb-4" style={{ padding: 14, borderRadius: 14 }}>
+        <PlanSessionNav
+          variant="embedded"
+          semanas={user.plan.semanas}
+          semanaActiva={semana}
+          durationLabel="Duración del plan"
+          showBothWeekActions
+          semanaBloqueada={isSemanaBloqueada(user.id, user.plan, semana)}
+          onSemanasChange={handleSemanasChange}
+          onSemanaChange={onSemanaChange}
+          onApplyToAll={() => mutations.applyWeek1ToAll()}
+          onCopyWeekFrom={(origen) => mutations.copyWeekFrom(semana, origen)}
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start min-w-0">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <VistaSemana
-            user={user}
-            selectedWeek={semana}
-            onSelectWeek={onSemanaChange}
-            onOpenDia={handleOpenDia}
-            rutinas={rutinas}
-            hideWeekNav
-          />
-          <DragOverlay>
-            {activeDragDia ? (
-              <DiaCard
-                dia={activeDragDia.dia}
-                semana={activeDragDia.semana}
-                diaIndex={activeDragDia.diaIndex}
-                variant="full"
-                draggable={false}
-              />
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+        <VistaSemana
+          user={user}
+          selectedWeek={semana}
+          rutinas={rutinas}
+          modo={user.plan.modo}
+          frecuencia={user.plan.dias_entrenar_semana}
+          onCreateRutina={(idx) => openEditor(idx, 'create')}
+          onAssignExisting={openPicker}
+          onEdit={(idx) => openEditor(idx, 'edit')}
+          onChangeRutina={openPicker}
+        />
 
-        <div className="lg:sticky lg:top-[78px] min-w-0">
+        <div className="lg:sticky lg:top-[78px] min-w-0 flex flex-col gap-4">
+          <CompliancePanel user={user} />
           <UserPlannedLoadPanel user={user} semana={semana} ejercicios={ejercicios} rutinas={rutinas} />
         </div>
       </div>
 
       {editorRef ? (
-        <DiaEditorSheet
-          open={diaEditorIndex != null}
+        <SesionEditorSheet
+          open={sesionEditorIndex != null}
+          mode={editorMode}
           user={user}
-          diaRef={editorRef}
+          sesionRef={editorRef}
           rutinas={rutinas}
           ejercicios={ejercicios}
-          onClose={() => onDiaEditorChange(null)}
-          onToggleEntreno={() => mutations.toggleDiaEntreno(editorRef)}
-          onSelectRutina={(r) => mutations.selectRutinaForDia(editorRef, r)}
-          onAddEjercicio={(ej, rep) =>
-            (rep ? mutations.addEjercicioReplicado : mutations.addEjercicio)(editorRef, ej)
-          }
-          onRemoveEjercicio={(idx) => mutations.removeEjercicio(editorRef, idx)}
-          onUpdateEjercicio={(idx, updates) => mutations.updateEjercicio(editorRef, idx, updates)}
-          onResync={(r) => mutations.resincronizarDesdeRutina(editorRef, r)}
+          onClose={closeEditor}
+          onSave={(ref, draft) => mutations.saveSesionPersonalizada(ref, draft)}
+          onResync={(ref, rutina) => mutations.resincronizarDesdeRutina(ref, rutina)}
         />
       ) : null}
 
       <RutinaPickerSheet
-        open={showRutinaPicker}
+        open={pickerSesionIndex != null}
         rutinas={rutinas}
         semanasRestantes={semanasRestantes}
-        diaLabel={diaLabel}
-        onClose={() => setShowRutinaPicker(false)}
+        entrenamientoLabel={pickerLabel}
+        semana={semana}
+        onClose={closePicker}
         onSelect={handleSelectRutina}
       />
 
-      {showEjercicioPicker ? (
-        <ExercisePickerOverlay
-          localExercises={ejercicios}
-          selectedNames={selectedDia?.ejercicios_personalizados.map((e) => e.nombre) ?? []}
-          onSelect={handleQuickAddEjercicio}
-          onClose={() => setShowEjercicioPicker(false)}
-          title={`Añadir a ${selectedDia?.nombre ?? 'día'}`}
+      {guidedOpen ? (
+        <GuidedPlanWizard
+          user={user}
+          rutinas={rutinas}
+          ejercicios={ejercicios}
+          reconfigure={hasConfiguredPlan}
+          onClose={() => setGuidedOpen(false)}
+          onSave={(plan) => {
+            mutations.replacePlan(plan);
+            setGuidedOpen(false);
+            onSemanaChange(1);
+          }}
         />
       ) : null}
     </>

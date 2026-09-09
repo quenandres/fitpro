@@ -1,76 +1,102 @@
 import { useCallback } from 'react';
 import type {
-  DiaSemana,
   EjercicioPersonalizado,
+  PlanModo,
+  PlanProgresionModo,
+  PlanUsuario,
   Rutina,
+  SesionPlan,
   Usuario,
 } from '../types';
-import { resincronizarDia as buildResync } from '../utils/compareRutinaSnapshot';
+import { resincronizarSesion as buildResync } from '../utils/compareRutinaSnapshot';
 import { toEjercicioPersonalizado } from '../utils/distributeExercises';
-import { mapDia, type DiaRef } from '../utils/planMutations';
-import { cloneSemanaPlan, expandPlanSemanas } from '../utils/planScheduleUtils';
+import { mapSesion, type SesionRef } from '../utils/planMutations';
+import {
+  applySaveSesionPersonalizada,
+  aplicarRutinaEnSemanasEditables,
+  recalcularPlanCompletoIncremental,
+  unificarPlanFijo,
+} from '../utils/planProgresionUtils';
+import {
+  cloneSemanaPlan,
+  expandPlanSemanas,
+  normalizePlanUsuario,
+  resizeSesiones,
+  sesionesForDisplay,
+} from '../utils/planScheduleUtils';
+import type { SesionPersonalizadaPayload } from '../utils/sesionPlanUtils';
+import { getSemanasEditables } from '../utils/planWeekUtils';
 
-export type { DiaRef };
+export type { SesionRef };
 
 type UpdateFn = (updated: Usuario) => void;
 
-const findDia = (user: Usuario, ref: DiaRef): DiaSemana | undefined =>
+const findSesion = (user: Usuario, ref: SesionRef): SesionPlan | undefined =>
   user.plan.programacion_semanal
     .find((s) => s.semana === ref.semana)
-    ?.dias[ref.diaIndex];
+    ?.sesiones[ref.sesionIndex];
 
 export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateFn) => {
-  const toggleDiaEntreno = useCallback(
-    (ref: DiaRef) => {
+  const saveSesionPersonalizada = useCallback(
+    (ref: SesionRef, payload: SesionPersonalizadaPayload) => {
       if (!selectedUser) return;
-      const dia = findDia(selectedUser, ref);
-      if (!dia) return;
-      const isEntreno = dia.rutina_id !== null && dia.rutina_id !== -1;
-      const patch: Partial<DiaSemana> = isEntreno
-        ? { rutina_id: null, rutina_nombre: '', ejercicios_personalizados: [] }
-        : { rutina_id: 0, rutina_nombre: 'Entrenamiento', ejercicios_personalizados: [] };
-      onUpdate(mapDia(selectedUser, ref, (d) => ({ ...d, ...patch })));
+      onUpdate({
+        ...selectedUser,
+        plan: applySaveSesionPersonalizada(selectedUser.id, selectedUser.plan, ref, payload),
+      });
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
-  const selectRutinaForDia = useCallback(
-    (ref: DiaRef, rutina: Rutina) => {
+  const toggleSesionEntreno = useCallback(
+    (ref: SesionRef) => {
+      if (!selectedUser) return;
+      const sesion = findSesion(selectedUser, ref);
+      if (!sesion) return;
+      const isEntreno = sesion.rutina_id !== null && sesion.rutina_id !== -1;
+      const patch: Partial<SesionPlan> = isEntreno
+        ? { rutina_id: null, rutina_nombre: '', ejercicios_personalizados: [] }
+        : { rutina_id: 0, rutina_nombre: 'Entrenamiento', ejercicios_personalizados: [] };
+      onUpdate(mapSesion(selectedUser, ref, (s) => ({ ...s, ...patch })));
+    },
+    [selectedUser, onUpdate],
+  );
+
+  const selectRutinaForSesion = useCallback(
+    (ref: SesionRef, rutina: Rutina) => {
       if (!selectedUser) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => ({
-          ...d,
+        mapSesion(selectedUser, ref, (s) => ({
+          ...s,
           rutina_id: rutina.id,
           rutina_nombre: rutina.nombre,
           ejercicios_personalizados: rutina.ejercicios.map(toEjercicioPersonalizado),
-        }))
+        })),
       );
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
-  const selectRutinaForDiaReplicada = useCallback(
-    (ref: DiaRef, rutina: Rutina) => {
+  const selectRutinaForSesionReplicada = useCallback(
+    (ref: SesionRef, rutina: Rutina) => {
       if (!selectedUser) return;
+      const editables = getSemanasEditables(selectedUser.id, selectedUser.plan);
       onUpdate({
         ...selectedUser,
         plan: {
           ...selectedUser.plan,
-          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => {
-            if (s.semana < ref.semana) return s;
-            return {
+          programacion_semanal: aplicarRutinaEnSemanasEditables(
+            selectedUser.plan.programacion_semanal,
+            ref,
+            (s) => ({
               ...s,
-              dias: s.dias.map((d, idx) => {
-                if (idx !== ref.diaIndex) return d;
-                return {
-                  ...d,
-                  rutina_id: rutina.id,
-                  rutina_nombre: rutina.nombre,
-                  ejercicios_personalizados: rutina.ejercicios.map(toEjercicioPersonalizado),
-                };
-              }),
-            };
-          }),
+              rutina_id: rutina.id,
+              rutina_nombre: rutina.nombre,
+              ejercicios_personalizados: rutina.ejercicios.map(toEjercicioPersonalizado),
+            }),
+            editables,
+            ref.semana,
+          ),
         },
       });
     },
@@ -78,133 +104,111 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
   );
 
   const addEjercicio = useCallback(
-    (ref: DiaRef, ejercicio: EjercicioPersonalizado) => {
+    (ref: SesionRef, ejercicio: EjercicioPersonalizado) => {
       if (!selectedUser) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => {
-          const nextId = d.rutina_id ?? 0;
+        mapSesion(selectedUser, ref, (s) => {
+          const nextId = s.rutina_id ?? 0;
           return {
-            ...d,
+            ...s,
             rutina_id: nextId === null ? 0 : nextId,
-            rutina_nombre: d.rutina_nombre || 'Entrenamiento',
-            ejercicios_personalizados: [...d.ejercicios_personalizados, ejercicio],
+            rutina_nombre: s.rutina_nombre || 'Entrenamiento',
+            ejercicios_personalizados: [...s.ejercicios_personalizados, ejercicio],
           };
-        })
+        }),
       );
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
   const addEjercicioReplicado = useCallback(
-    (ref: DiaRef, ejercicio: EjercicioPersonalizado) => {
+    (ref: SesionRef, ejercicio: EjercicioPersonalizado) => {
       if (!selectedUser) return;
+      const editables = getSemanasEditables(selectedUser.id, selectedUser.plan);
       onUpdate({
         ...selectedUser,
         plan: {
           ...selectedUser.plan,
-          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => {
-            if (s.semana < ref.semana) return s;
-            return {
-              ...s,
-              dias: s.dias.map((d, idx) => {
-                if (idx !== ref.diaIndex) return d;
-                const nextId = d.rutina_id ?? 0;
-                return {
-                  ...d,
-                  rutina_id: nextId === null ? 0 : nextId,
-                  rutina_nombre: d.rutina_nombre || 'Entrenamiento',
-                  ejercicios_personalizados: [...d.ejercicios_personalizados, ejercicio],
-                };
-              }),
-            };
-          }),
+          programacion_semanal: aplicarRutinaEnSemanasEditables(
+            selectedUser.plan.programacion_semanal,
+            ref,
+            (s) => {
+              const nextId = s.rutina_id ?? 0;
+              return {
+                ...s,
+                rutina_id: nextId === null ? 0 : nextId,
+                rutina_nombre: s.rutina_nombre || 'Entrenamiento',
+                ejercicios_personalizados: [...s.ejercicios_personalizados, ejercicio],
+              };
+            },
+            editables,
+            ref.semana,
+          ),
         },
       });
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
   const removeEjercicio = useCallback(
-    (ref: DiaRef, ejercicioIndex: number) => {
+    (ref: SesionRef, ejercicioIndex: number) => {
       if (!selectedUser) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => ({
-          ...d,
-          ejercicios_personalizados: d.ejercicios_personalizados.filter(
-            (_, i) => i !== ejercicioIndex
+        mapSesion(selectedUser, ref, (s) => ({
+          ...s,
+          ejercicios_personalizados: s.ejercicios_personalizados.filter(
+            (_, i) => i !== ejercicioIndex,
           ),
-        }))
+        })),
       );
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
   const updateEjercicio = useCallback(
-    (ref: DiaRef, ejercicioIndex: number, updates: Partial<EjercicioPersonalizado>) => {
+    (ref: SesionRef, ejercicioIndex: number, updates: Partial<EjercicioPersonalizado>) => {
       if (!selectedUser) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => ({
-          ...d,
-          ejercicios_personalizados: d.ejercicios_personalizados.map((e, i) =>
-            i === ejercicioIndex ? { ...e, ...updates } : e
+        mapSesion(selectedUser, ref, (s) => ({
+          ...s,
+          ejercicios_personalizados: s.ejercicios_personalizados.map((e, i) =>
+            i === ejercicioIndex ? { ...e, ...updates } : e,
           ),
-        }))
+        })),
       );
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
-  const reorderEjerciciosInDia = useCallback(
-    (ref: DiaRef, oldIndex: number, newIndex: number) => {
+  const reorderEjerciciosInSesion = useCallback(
+    (ref: SesionRef, oldIndex: number, newIndex: number) => {
       if (!selectedUser) return;
       if (oldIndex === newIndex) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => {
-          const copy = [...d.ejercicios_personalizados];
+        mapSesion(selectedUser, ref, (s) => {
+          const copy = [...s.ejercicios_personalizados];
           const [moved] = copy.splice(oldIndex, 1);
           copy.splice(newIndex, 0, moved);
-          return { ...d, ejercicios_personalizados: copy };
-        })
+          return { ...s, ejercicios_personalizados: copy };
+        }),
       );
     },
-    [selectedUser, onUpdate]
-  );
-
-  const moveDia = useCallback(
-    (origen: DiaRef, destino: DiaRef) => {
-      if (!selectedUser) return;
-      if (origen.semana === destino.semana && origen.diaIndex === destino.diaIndex) return;
-
-      const diaOrigen = findDia(selectedUser, origen);
-      const diaDestino = findDia(selectedUser, destino);
-      if (!diaOrigen || !diaDestino) return;
-
-      const payload = (source: DiaSemana): Pick<DiaSemana, 'rutina_id' | 'rutina_nombre' | 'ejercicios_personalizados'> => ({
-        rutina_id: source.rutina_id,
-        rutina_nombre: source.rutina_nombre,
-        ejercicios_personalizados: source.ejercicios_personalizados,
-      });
-
-      let next = mapDia(selectedUser, destino, (d) => ({ ...d, ...payload(diaOrigen) }));
-      next = mapDia(next, origen, (d) => ({ ...d, ...payload(diaDestino) }));
-      onUpdate(next);
-    },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
   const resincronizarDesdeRutina = useCallback(
-    (ref: DiaRef, rutina: Rutina) => {
+    (ref: SesionRef, rutina: Rutina) => {
       if (!selectedUser) return;
       onUpdate(
-        mapDia(selectedUser, ref, (d) => ({
-          ...d,
+        mapSesion(selectedUser, ref, (s) => ({
+          ...s,
           rutina_id: rutina.id,
           rutina_nombre: rutina.nombre,
-          ejercicios_personalizados: buildResync(rutina, d),
-        }))
+          ejercicios_personalizados: buildResync(rutina, s),
+        })),
       );
     },
-    [selectedUser, onUpdate]
+    [selectedUser, onUpdate],
   );
 
   const setPlanSemanas = useCallback(
@@ -214,6 +218,8 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
         selectedUser.plan.programacion_semanal,
         semanas,
         'clone_last',
+        selectedUser.plan.dias_entrenar_semana,
+        selectedUser.plan.modo,
       );
       onUpdate({
         ...selectedUser,
@@ -227,17 +233,75 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     [selectedUser, onUpdate],
   );
 
+  const setDiasEntrenarSemana = useCallback(
+    (n: number) => {
+      if (!selectedUser) return;
+      onUpdate({
+        ...selectedUser,
+        dias_entrenar: n,
+        plan: {
+          ...selectedUser.plan,
+          dias_entrenar_semana: n,
+          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => ({
+            ...s,
+            sesiones: resizeSesiones(s.sesiones, n, selectedUser.plan.modo),
+          })),
+        },
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
+  const setPlanModo = useCallback(
+    (modo: PlanModo) => {
+      if (!selectedUser) return;
+      const { dias_entrenar_semana } = selectedUser.plan;
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...selectedUser.plan,
+          modo,
+          programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => ({
+            ...s,
+            sesiones: resizeSesiones(s.sesiones, dias_entrenar_semana, modo),
+          })),
+        },
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
+  const setPlanProgresion = useCallback(
+    (progresion: PlanProgresionModo) => {
+      if (!selectedUser) return;
+      if (progresion === selectedUser.plan.progresion) return;
+
+      let plan = { ...selectedUser.plan, progresion };
+      if (progresion === 'incremental') {
+        plan = recalcularPlanCompletoIncremental(selectedUser.id, plan);
+      } else {
+        plan = unificarPlanFijo(selectedUser.id, plan);
+      }
+
+      onUpdate({ ...selectedUser, plan });
+    },
+    [selectedUser, onUpdate],
+  );
+
   const applyWeek1ToAll = useCallback(() => {
     if (!selectedUser) return;
     const week1 = selectedUser.plan.programacion_semanal.find((s) => s.semana === 1);
     if (!week1) return;
+    const editables = getSemanasEditables(selectedUser.id, selectedUser.plan);
     onUpdate({
       ...selectedUser,
       plan: {
         ...selectedUser.plan,
-        programacion_semanal: selectedUser.plan.programacion_semanal.map((s) =>
-          s.semana === 1 ? s : cloneSemanaPlan(week1, s.semana),
-        ),
+        programacion_semanal: selectedUser.plan.programacion_semanal.map((s) => {
+          if (s.semana === 1) return s;
+          if (!editables.includes(s.semana)) return s;
+          return cloneSemanaPlan(week1, s.semana);
+        }),
       },
     });
   }, [selectedUser, onUpdate]);
@@ -247,6 +311,7 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
       if (!selectedUser) return;
       const source = selectedUser.plan.programacion_semanal.find((s) => s.semana === origenSemana);
       if (!source) return;
+      if (!getSemanasEditables(selectedUser.id, selectedUser.plan).includes(destinoSemana)) return;
       onUpdate({
         ...selectedUser,
         plan: {
@@ -260,19 +325,47 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     [selectedUser, onUpdate],
   );
 
+  const getDisplaySesiones = useCallback(
+    (semanaNum: number) => {
+      if (!selectedUser) return [];
+      const semana = selectedUser.plan.programacion_semanal.find((s) => s.semana === semanaNum);
+      if (!semana) return [];
+      return sesionesForDisplay(semana, selectedUser.plan.modo);
+    },
+    [selectedUser],
+  );
+
+  const replacePlan = useCallback(
+    (plan: PlanUsuario) => {
+      if (!selectedUser) return;
+      const normalized = normalizePlanUsuario(plan);
+      onUpdate({
+        ...selectedUser,
+        dias_entrenar: normalized.dias_entrenar_semana,
+        plan: normalized,
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
   return {
-    toggleDiaEntreno,
-    selectRutinaForDia,
-    selectRutinaForDiaReplicada,
+    saveSesionPersonalizada,
+    toggleSesionEntreno,
+    selectRutinaForSesion,
+    selectRutinaForSesionReplicada,
     addEjercicio,
     addEjercicioReplicado,
     removeEjercicio,
     updateEjercicio,
-    reorderEjerciciosInDia,
-    moveDia,
+    reorderEjerciciosInSesion,
     resincronizarDesdeRutina,
     setPlanSemanas,
+    setDiasEntrenarSemana,
+    setPlanModo,
+    setPlanProgresion,
     applyWeek1ToAll,
     copyWeekFrom,
+    getDisplaySesiones,
+    replacePlan,
   };
 };
