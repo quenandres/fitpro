@@ -37,6 +37,8 @@ export type InviteClientResult = {
   already_existed: boolean;
   link: ClientLink;
   plan: GatewayPlanTree;
+  email_mode?: string;
+  invite_url?: string;
 };
 
 export async function listTrainerClients(): Promise<{ clients: ClientLink[] }> {

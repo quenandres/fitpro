@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, ClipboardList, Plus, Sparkles, X } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Copy,
+  Loader2,
+  Plus,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import type { SemanaPlan, Usuario } from '../../types';
 import { FRECUENCIA_IDEAL, createEmptySemanaPlan } from '../../utils/planScheduleUtils';
 import { fechaLocalISO } from '../../utils/trackingUtils';
@@ -41,7 +51,7 @@ const ACCENT = 'var(--accent-purple)';
 const MODO_INICIAL = 'sesiones_variables';
 
 export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [usuario, setUsuario] = useState<UsuarioDraft>({
     nombre: '',
     email: '',
@@ -55,7 +65,24 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
   const [saving, setSaving] = useState(false);
   const [phase, setPhase] = useState<'idle' | 'generating' | 'inviting'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [pendingUser, setPendingUser] = useState<Usuario | null>(null);
+  const [copied, setCopied] = useState(false);
   const addRutina = useDataStore((s) => s.addRutina);
+
+  const finishCreated = (user: Usuario) => {
+    onCreate(user);
+  };
+
+  const copyInvite = async () => {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const emailOk = EMAIL_RE.test(usuario.email.trim());
   const objetivoMcp = composeClienteObjetivo(usuario.objetivo, plan.descripcion);
@@ -150,6 +177,12 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
           programacion_semanal: programacion,
         },
       };
+      if (created.invite_url) {
+        setInviteUrl(created.invite_url);
+        setPendingUser(newUser);
+        setStep(3);
+        return;
+      }
       onCreate(newUser);
     } catch (err) {
       if (currentPhase === 'generating') {
@@ -207,7 +240,14 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
   return (
     <Sheet
       open
-      onClose={onClose}
+      onClose={() => {
+        if (saving) return;
+        if (pendingUser) {
+          finishCreated(pendingUser);
+          return;
+        }
+        onClose();
+      }}
       flexColumn
       immersive
       zIndex={100}
@@ -219,12 +259,24 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
           <h2 className="font-sora text-xl font-bold text-primary tracking-tight">
             Nuevo cliente
           </h2>
-          <button type="button" onClick={onClose} className="fp-btn fp-btn-ghost p-2" aria-label="Cerrar">
+          <button
+            type="button"
+            onClick={() => {
+              if (pendingUser) {
+                finishCreated(pendingUser);
+                return;
+              }
+              onClose();
+            }}
+            className="fp-btn fp-btn-ghost p-2"
+            aria-label="Cerrar"
+            disabled={saving}
+          >
             <X size={18} />
           </button>
         </div>
 
-        <div className="shrink-0 px-5">{renderStepDots()}</div>
+        {step < 3 ? <div className="shrink-0 px-5">{renderStepDots()}</div> : null}
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
           {step === 1 && (
@@ -253,7 +305,7 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
                   onChange={(e) => setUsuario({ ...usuario, email: e.target.value })}
                 />
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-                  Le enviaremos un enlace para entrar a la app.
+                  En desarrollo te daremos el enlace para copiarlo. Con dominio propio se enviará por correo.
                 </p>
                 {usuario.email.trim() && !emailOk ? (
                   <p style={{ fontSize: 12, color: 'var(--accent-red)', marginTop: 6 }}>
@@ -311,6 +363,7 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
                   placeholder="Plan Fuerza 12 semanas"
                   value={plan.nombre}
                   onChange={(e) => setPlan({ ...plan, nombre: e.target.value })}
+                  disabled={saving}
                 />
               </div>
               <div className="mb-3.5">
@@ -325,6 +378,7 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
                   placeholder="Hipertrofia de tren superior, 4 días, sin lesiones. Prefiere mancuernas y polea."
                   value={plan.descripcion}
                   onChange={(e) => setPlan({ ...plan, descripcion: e.target.value })}
+                  disabled={saving}
                 />
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
                   Se combina con el objetivo del paso 1
@@ -383,11 +437,18 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
                   className="fp-input"
                   value={plan.semanas}
                   onChange={(e) => setPlan({ ...plan, semanas: Math.max(1, parseInt(e.target.value) || 1) })}
+                  disabled={saving}
                 />
               </div>
 
               <div className="mb-4">
-                <FrecuenciaSelector value={frecuencia} onChange={setFrecuencia} accent={ACCENT} />
+                <FrecuenciaSelector
+                  value={frecuencia}
+                  onChange={(n) => {
+                    if (!saving) setFrecuencia(n);
+                  }}
+                  accent={ACCENT}
+                />
               </div>
 
               <div
@@ -410,6 +471,39 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
               </div>
             </div>
           )}
+
+          {step === 3 && inviteUrl ? (
+            <div className="animate-slide-up">
+              <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
+                ACCESO · MODO DEV
+              </p>
+              <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 10, lineHeight: 1.5 }}>
+                El correo no se envió. Copia este enlace y ábrelo como el cliente.
+              </p>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: 'var(--text-secondary)',
+                  wordBreak: 'break-all',
+                  padding: 12,
+                  borderRadius: 12,
+                  background: 'var(--bg-overlay)',
+                  border: '1px solid var(--border)',
+                  marginBottom: 12,
+                }}
+              >
+                {inviteUrl}
+              </p>
+              <button
+                type="button"
+                className="fp-btn fp-btn-secondary w-full gap-1.5"
+                onClick={() => void copyInvite()}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? 'Enlace copiado' : 'Copiar enlace'}
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div className="shrink-0 flex flex-col gap-2.5 px-5 py-4 border-t border-line bg-elevated">
@@ -419,7 +513,7 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
             </p>
           ) : null}
           <div className="flex gap-2.5">
-          {step > 1 && (
+          {step === 2 && (
             <button
               type="button"
               onClick={() => setStep(1)}
@@ -438,21 +532,37 @@ export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
             >
               Siguiente <ChevronRight size={14} />
             </button>
+          ) : step === 3 && pendingUser ? (
+            <button
+              type="button"
+              onClick={() => finishCreated(pendingUser)}
+              className="fp-btn fp-btn-primary flex-1"
+            >
+              Listo
+            </button>
           ) : (
             <button
               type="button"
               onClick={() => void handleCrear()}
               className="fp-btn fp-btn-primary flex-1 gap-1.5"
               disabled={!step2Valid || saving}
+              aria-busy={saving}
+              style={saving ? { cursor: 'wait', opacity: 0.85 } : undefined}
             >
-              {generateAi ? <Sparkles size={14} /> : <Plus size={14} />}{' '}
-              {phase === 'generating'
-                ? 'Generando rutina…'
-                : phase === 'inviting'
-                  ? 'Enviando acceso…'
-                  : generateAi
-                    ? 'Crear con rutina IA'
-                    : 'Crear y enviar acceso'}
+              {saving ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : generateAi ? (
+                <Sparkles size={14} />
+              ) : (
+                <Plus size={14} />
+              )}{' '}
+              {saving
+                ? phase === 'generating'
+                  ? 'Generando rutina…'
+                  : 'Enviando acceso…'
+                : generateAi
+                  ? 'Crear con rutina IA'
+                  : 'Crear y enviar acceso'}
             </button>
           )}
           </div>
