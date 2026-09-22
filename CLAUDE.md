@@ -42,7 +42,7 @@ ve el log. Detalle en `CONTEXT.md §1`.
 | Estado servidor | TanStack Query **declarado y cableado en código** (`src/main.tsx`, `src/lib/exercisedb/hooks.ts`) pero **no instalado** en `node_modules` — el build falla hoy por esto | TanStack Query funcionando |
 | Validación runtime | Zod ya instalado y en uso real (`src/lib/gateway/schemas/*`, `src/lib/exercisedb/schemas.ts`) | Extender a `importData` y formularios |
 | Backend auth/datos | **`gym-gateway`** (FastAPI, repo hermano) — proxy real hacia **Supabase Auth + PostgREST**, JWT ES256 vía JWKS, RBAC server-side (`require_role`/`require_admin`) | Mismo, con migraciones SQL versionadas |
-| Backend IA | **FastAPI** (`../fitpro_api`) + DeepSeek, `POST /api/ai/routine` | — |
+| Backend IA | **gym-gateway** — OpenRouter en `POST /api/ai/routine` (antes `fitpro_api` / `gym-mcp`) | — |
 | Supabase en el frontend | Cliente **comentado** en `src/lib/supabase.ts` — el frontend nunca habla con Supabase directo, todo pasa por `gym-gateway` | Mantener así (gateway como única puerta) |
 | Estilos | Tailwind 4 + tokens CSS (`@theme` en `index.css`) — **D8 resuelto** 2026-08-24 | Migración oportunista del inline restante |
 | Pagos | UI mock de billing en Biblioteca — **fuera de primera instancia** | Stripe, después del loop |
@@ -154,18 +154,15 @@ npm run lint                # ESLint (flat config, strict TS + react-hooks + rea
 npm run preview
 npm run download:anatomy    # descarga SVGs de anatomía
 
-docker-compose up --build   # db (Postgres) + frontend en :5174 + api en :8000
-docker-compose up api       # solo backend IA en :8000
+# Stack completo (raíz gymapp/):
+# docker compose up --build   # gateway :8008 + FitPro :5174 + PWA :5175
 
-# Backend IA (local sin Docker):
-# cd ../fitpro_api && uvicorn app.main:app --reload --port 8000
-
-# Backend gateway (auth + proxy Supabase, local sin Docker):
-# cd ../gym-gateway && uvicorn app.main:app --reload
+# Backend gateway (auth + Supabase + IA rutinas, local sin Docker):
+# cd ../gym-gateway && uvicorn app.main:app --reload --port 8000
 ```
 
 Variables de entorno: copiar `.env.example` → `.env`. Ver `VITE_GATEWAY_URL`
-(gym-gateway, auth real), `VITE_API_URL` (backend IA), `VITE_RAPIDAPI_KEY`
+(gym-gateway, auth + IA rutinas), `VITE_RAPIDAPI_KEY`
 (ExerciseDB). `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` están en el
 `.env.example` marcadas como "futuro" — **no se usan** porque el cliente
 Supabase del frontend está comentado; Supabase real se habla solo desde
@@ -208,7 +205,10 @@ Supabase del frontend está comentado; Supabase real se habla solo desde
    no por weekday. Se pierde al recargar. `UserPlansPage.tsx` solo redirige
    a `/usuarios`. **`GuidedPlanWizard`** crea/reconfigura el plan en 6 pasos
    (mock local, guardado atómico al final); progresión prescrita, no adaptación
-   por RPE real. **`CreatePlanWizard`** sigue siendo solo alta de cliente.
+   por RPE real. **`CreatePlanWizard`** da de alta al cliente (2 pasos) y
+   puede generar la rutina con gym-gateway a partir de la descripción de qué
+   quiere entrenar; si la IA está apagada deja el plan vacío. Al crear
+   navega a `/usuarios/:id?tab=entrenamientos` (2026-09-21).
 8. **`useCitasStore` (calendario) tampoco persiste** — `addCita`/`addCitas`/
    `deleteCita`; tipo `entrenamiento` | `medidas`; sin `updateCita`. IDs
    autoincrementales en variable de módulo que se resetean en cada carga.

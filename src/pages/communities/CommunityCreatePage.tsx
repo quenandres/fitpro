@@ -2,10 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { EmptyState } from '../../components/common/EmptyState';
+import { PageBackRow } from '../../components/common/PageBackButton';
+import { getCommunityExploreBack } from '../../utils/communityBackUtils';
 import { useToastHook } from '../../components/common/Toast';
 import { CATEGORY_LIST } from '../../components/communities/shared/categoryMeta';
 import { usePlatformRole } from '../../hooks/usePlatformRole';
-import { useCommunitiesStore } from '../../store/useCommunitiesStore';
+import { useCreateComunidad } from '../../lib/gateway/hooks';
 import type { CategoriaComunidad, VisibilidadComunidad } from '../../types/community';
 import { ROUTES } from '../../routes/paths';
 
@@ -14,7 +16,7 @@ const labelClass = 'fp-cal-label';
 export function CommunityCreatePage() {
   const navigate = useNavigate();
   const { isSuperadmin } = usePlatformRole();
-  const createCommunity = useCommunitiesStore((s) => s.createCommunity);
+  const createMutation = useCreateComunidad();
   const toast = useToastHook();
 
   const [nombre, setNombre] = useState('');
@@ -34,16 +36,21 @@ export function CommunityCreatePage() {
       .map((line) => line.trim())
       .filter(Boolean);
 
-    const id = createCommunity({
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim(),
-      categoria,
-      visibilidad,
-      reglas,
-    });
-
-    toast.success(`Comunidad «${nombre.trim()}» creada`);
-    navigate(ROUTES.communities.home(id));
+    createMutation.mutate(
+      {
+        nombre: nombre.trim(),
+        descripcion: descripcion.trim(),
+        categoria,
+        visibilidad,
+        reglas,
+      },
+      {
+        onSuccess: (created) => {
+          toast.success(`Comunidad «${nombre.trim()}» creada`);
+          navigate(ROUTES.communities.home(created.id));
+        },
+      },
+    );
   };
 
   if (!isSuperadmin) {
@@ -65,8 +72,11 @@ export function CommunityCreatePage() {
     );
   }
 
+  const exploreBack = getCommunityExploreBack();
+
   return (
     <div className="animate-slide-up max-w-xl mx-auto">
+      <PageBackRow to={exploreBack.to} label={exploreBack.label} />
       <h1 className="font-sora text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
         Crear comunidad
       </h1>

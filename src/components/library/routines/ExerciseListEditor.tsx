@@ -14,7 +14,7 @@ interface Props {
   level: RoutineFormLevel;
   ejercicios: RoutineFormExercise[];
   errors: ValidationError[];
-  selectedNames: string[];
+  selectedExerciseIds: number[];
   restBetweenSetsSec?: number;
   showRpe?: boolean;
   showSuperset?: boolean;
@@ -29,7 +29,7 @@ export const ExerciseListEditor = ({
   level,
   ejercicios,
   errors,
-  selectedNames,
+  selectedExerciseIds,
   restBetweenSetsSec = 60,
   showRpe = false,
   showSuperset = false,
@@ -69,7 +69,10 @@ export const ExerciseListEditor = ({
           type="button"
           className="fp-btn fp-btn-secondary"
           style={{ gap: 5, fontSize: 12, padding: '6px 10px' }}
-          onClick={() => setPickerOpen(true)}
+          onClick={() => {
+            setPreviewKey(null);
+            setPickerOpen(true);
+          }}
         >
           <Plus size={14} /> Añadir
         </button>
@@ -115,7 +118,7 @@ export const ExerciseListEditor = ({
           description="Añade ejercicios desde la biblioteca ExerciseDB"
           className="py-8"
           action={
-            <button type="button" className="fp-btn fp-btn-secondary text-xs gap-1" onClick={() => setPickerOpen(true)}>
+            <button type="button" className="fp-btn fp-btn-secondary text-xs gap-1" onClick={() => { setPreviewKey(null); setPickerOpen(true); }}>
               <Plus size={14} /> Añadir ejercicio
             </button>
           }
@@ -271,7 +274,7 @@ export const ExerciseListEditor = ({
       {pickerOpen && (
         <ExercisePickerOverlay
           title={`Añadir ejercicio — rutina ${level}`}
-          selectedNames={selectedNames}
+          selectedExerciseIds={selectedExerciseIds}
           onClose={() => setPickerOpen(false)}
           onSelect={onAdd}
         />

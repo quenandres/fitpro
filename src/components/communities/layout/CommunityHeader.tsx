@@ -6,7 +6,7 @@ import { CommunityStats } from '../shared/CommunityStats';
 import { ShareSheet } from '../modals/ShareSheet';
 import { ConfirmDialog } from '../../common/ConfirmDialog';
 import { ROUTES } from '../../../routes/paths';
-import { useCommunitiesStore } from '../../../store/useCommunitiesStore';
+import { useJoinComunidad, useLeaveComunidad } from '../../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
 import { useToastHook } from '../../common/Toast';
 
@@ -18,8 +18,8 @@ export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
   const [showShare, setShowShare] = useState(false);
   const [showLeave, setShowLeave] = useState(false);
   const toast = useToastHook();
-  const joinCommunity = useCommunitiesStore((s) => s.joinCommunity);
-  const leaveCommunity = useCommunitiesStore((s) => s.leaveCommunity);
+  const joinMutation = useJoinComunidad();
+  const leaveMutation = useLeaveComunidad();
   const { esMiembro } = useCommunityPermissions(comunidad.id);
   const { label } = CATEGORY_META[comunidad.categoria];
 
@@ -59,8 +59,9 @@ export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
               className="fp-btn flex items-center gap-2 text-sm"
               style={{ background: 'var(--accent-pink)', color: '#fff' }}
               onClick={() => {
-                joinCommunity(comunidad.id);
-                toast.success('Te uniste a la comunidad');
+                joinMutation.mutate(comunidad.id, {
+                  onSuccess: () => toast.success('Te uniste a la comunidad'),
+                });
               }}
             >
               <UserPlus size={15} />
@@ -92,8 +93,9 @@ export function CommunityHeader({ comunidad }: CommunityHeaderProps) {
         confirmLabel="Salir"
         danger
         onConfirm={() => {
-          leaveCommunity(comunidad.id);
-          toast.success('Saliste de la comunidad');
+          leaveMutation.mutate(comunidad.id, {
+            onSuccess: () => toast.success('Saliste de la comunidad'),
+          });
         }}
         onClose={() => setShowLeave(false)}
       />

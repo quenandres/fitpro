@@ -9,6 +9,7 @@ import type {
   Rutina,
 } from '../types';
 import { createProgramacionSemanas } from './routineScheduleUtils';
+import { ensureLocalExerciseInStore } from './ensureLocalExercise';
 
 const normalize = (value: string): string =>
   value
@@ -125,6 +126,13 @@ export const resolveExercisesAgainstApi = async (
   );
 
   const rutinaExercises: EjercicioRutina[] = exercises.map((ex) => ({
+    ejercicio_id: ensureLocalExerciseInStore({
+      nombre: ex.nombre,
+      unidad_id_default: ex.unidad_id,
+      exerciseDbId: ex.exerciseDbId,
+      imageUrl: ex.imageUrl,
+      musculos_anatomia: ex.musculos_anatomia,
+    }),
     nombre: ex.nombre,
     series: ex.series,
     valor: ex.valor,
@@ -145,20 +153,45 @@ export const resolveExercisesAgainstApi = async (
   };
 };
 
+const ensureEjercicioIds = (ejercicios: EjercicioRutina[]): EjercicioRutina[] =>
+  ejercicios.map((ex) => ({
+    ...ex,
+    ejercicio_id:
+      ex.ejercicio_id ??
+      ensureLocalExerciseInStore({
+        nombre: ex.nombre,
+        unidad_id_default: ex.unidad_id,
+        exerciseDbId: ex.exerciseDbId,
+        imageUrl: ex.imageUrl,
+        musculos_anatomia: ex.musculos_anatomia,
+      }),
+  }));
+
 export const draftToRutinaPayload = (draft: ResolvedRoutineDraft): Omit<Rutina, 'id'> => {
+  const ejercicios = ensureEjercicioIds(draft.rutina.ejercicios);
+
   if (draft.rutina.programacion_semanal?.length) {
     return {
       ...draft.rutina,
+      ejercicios,
+      programacion_semanal: draft.rutina.programacion_semanal.map((s) => ({
+        ...s,
+        dias: s.dias.map((d) => ({
+          ...d,
+          ejercicios: ensureEjercicioIds(d.ejercicios),
+        })),
+      })),
       semanas: draft.rutina.semanas ?? draft.rutina.programacion_semanal.length,
     };
   }
 
   const programacion = createProgramacionSemanas(1);
   const lunes = programacion[0].dias.find((d) => d.dia === 1);
-  if (lunes) lunes.ejercicios = draft.rutina.ejercicios;
+  if (lunes) lunes.ejercicios = ejercicios;
 
   return {
     ...draft.rutina,
+    ejercicios,
     semanas: 1,
     programacion_semanal: programacion,
   };

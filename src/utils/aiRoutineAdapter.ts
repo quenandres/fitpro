@@ -48,6 +48,7 @@ const mapExercise = (
   const exact = catalogByName.get(normalizeText(exercise.nombre));
   if (exact) {
     return {
+      ejercicio_id: exact.id,
       nombre: exact.nombre,
       series: clampNumber(Math.round(exercise.series || 3), 1, 10),
       valor: clampNumber(Math.round(exercise.valor || 10), 1, 1000),
@@ -67,6 +68,7 @@ export const adaptGeneratedRoutine = (
     .filter((exercise): exercise is Rutina['ejercicios'][number] => Boolean(exercise));
 
   const fallbackExercisePool = catalog.slice(0, 4).map((exercise) => ({
+    ejercicio_id: exercise.id,
     nombre: exercise.nombre,
     series: 3,
     valor: 10,

@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { FitProCalendar } from './FitProCalendar';
 import { clienteIniciales } from './calendarUtils';
+import type { CuotaSemanalCliente } from './calendarUtils';
 import type { Usuario } from '../../types';
 
 export interface CalendarSidebarBodyProps {
   selected: Date;
   onSelectDate: (date: Date) => void;
-  entrenoWeekdays: number[];
+  loggedSessionDates: Date[];
   citaDates: Date[];
+  cuotasSemanales: CuotaSemanalCliente[];
   usuarios: Usuario[];
   visibleClientIds: number[];
   onToggleClient: (clienteId: number) => void;
@@ -18,8 +20,9 @@ export interface CalendarSidebarBodyProps {
 export function CalendarSidebarBody({
   selected,
   onSelectDate,
-  entrenoWeekdays,
+  loggedSessionDates,
   citaDates,
+  cuotasSemanales,
   usuarios,
   visibleClientIds,
   onToggleClient,
@@ -27,6 +30,11 @@ export function CalendarSidebarBody({
 }: CalendarSidebarBodyProps) {
   const [search, setSearch] = useState('');
   const allVisible = visibleClientIds.length === 0;
+
+  const cuotaById = useMemo(
+    () => new Map(cuotasSemanales.map((c) => [c.clienteId, c])),
+    [cuotasSemanales],
+  );
 
   const filteredUsuarios = useMemo(() => {
     if (!search.trim()) return usuarios;
@@ -44,7 +52,7 @@ export function CalendarSidebarBody({
         variant="mini"
         selected={selected}
         onSelect={(date) => date && onSelectDate(date)}
-        entrenoWeekdays={entrenoWeekdays}
+        loggedSessionDates={loggedSessionDates}
         citaDates={citaDates}
         month={selected}
       />
@@ -71,6 +79,7 @@ export function CalendarSidebarBody({
         <ul className="fp-cal-client-list">
           {filteredUsuarios.map((usuario) => {
             const checked = allVisible || visibleClientIds.includes(usuario.id);
+            const cuota = cuotaById.get(usuario.id);
             return (
               <li key={usuario.id}>
                 <label className="fp-cal-client-row">
@@ -83,6 +92,27 @@ export function CalendarSidebarBody({
                     {clienteIniciales(usuario.nombre)}
                   </span>
                   <span className="fp-cal-client-name">{usuario.nombre}</span>
+                  {cuota ? (
+                    <span
+                      className="badge shrink-0 tabular-nums"
+                      style={{
+                        fontSize: 10,
+                        padding: '2px 7px',
+                        marginLeft: 'auto',
+                        background:
+                          cuota.completadas >= cuota.objetivo
+                            ? 'rgba(34,197,94,.15)'
+                            : 'var(--bg-overlay)',
+                        color:
+                          cuota.completadas >= cuota.objetivo
+                            ? 'var(--brand)'
+                            : 'var(--text-muted)',
+                        border: '1px solid var(--border-subtle)',
+                      }}
+                    >
+                      {cuota.completadas}/{cuota.objetivo}
+                    </span>
+                  ) : null}
                 </label>
               </li>
             );
@@ -94,15 +124,18 @@ export function CalendarSidebarBody({
       </section>
 
       <section className="fp-cal-sidebar-section">
-        <h3>Categorías</h3>
+        <h3>Leyenda</h3>
         <ul className="fp-cal-category-list">
           <li>
             <span className="fp-cal-dot fp-cal-dot-entreno" />
-            Entrenos programados
+            Entrenos registrados
           </li>
           <li>
             <span className="fp-cal-dot fp-cal-dot-cita" />
             Citas agendadas
+          </li>
+          <li style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            Badge 2/4 = cumplimiento demo (mock)
           </li>
         </ul>
       </section>

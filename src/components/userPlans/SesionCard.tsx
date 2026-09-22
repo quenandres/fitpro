@@ -1,59 +1,39 @@
 import type { CSSProperties } from 'react';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { Dumbbell, Calendar, ChevronRight, GripVertical, RefreshCw } from 'lucide-react';
-import type { DiaSemana } from '../../types';
-import { isDiaEntreno, isDiaNueva } from './diasSemana';
+import { Dumbbell, ChevronRight, RefreshCw } from 'lucide-react';
+import type { SesionPlan } from '../../types';
 import type { SyncStatus } from '../../utils/compareRutinaSnapshot';
-import { buildDragId } from './dragIds';
 
-export type DiaCardVariant = 'full' | 'compact' | 'mini';
+export type SesionCardVariant = 'full' | 'compact' | 'mini';
 
-export interface DiaCardProps {
-  dia: DiaSemana;
+export interface SesionCardProps {
+  sesion: SesionPlan;
   semana: number;
-  diaIndex: number;
-  variant: DiaCardVariant;
+  sesionIndex: number;
+  variant: SesionCardVariant;
   syncStatus?: SyncStatus;
   selected?: boolean;
   onClick?: () => void;
-  draggable?: boolean;
+  /** En modo repetitiva, cuántas veces por semana se repite. */
+  repeticiones?: number;
 }
 
 const ENTRENO = '#22c55e';
 const NUEVA = '#a371f7';
 const WARN = '#f0883e';
 
-export const DiaCard = ({
-  dia,
+export const SesionCard = ({
+  sesion,
   semana,
-  diaIndex,
   variant,
   syncStatus,
   selected,
   onClick,
-  draggable = true,
-}: DiaCardProps) => {
-  const id = buildDragId(semana, diaIndex);
-  const isEntreno = isDiaEntreno(dia.rutina_id) && !isDiaNueva(dia.rutina_id);
-  const isNueva = isDiaNueva(dia.rutina_id);
-  const tieneEjercicios = dia.ejercicios_personalizados.length > 0;
+  repeticiones,
+}: SesionCardProps) => {
+  const isEntreno = sesion.rutina_id !== null && sesion.rutina_id !== 0 && sesion.rutina_id !== -1;
+  const isNueva = sesion.rutina_id === 0 || sesion.rutina_id === -1;
+  const tieneEjercicios = sesion.ejercicios_personalizados.length > 0;
   const driftActivo = syncStatus === 'modificada' || syncStatus === 'desasignada';
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDragRef,
-    transform,
-    isDragging,
-  } = useDraggable({ id, disabled: !draggable });
-
-  const { setNodeRef: setDropRef, isOver } = useDroppable({ id });
-
-  const setRefs = (node: HTMLElement | null) => {
-    setDragRef(node);
-    setDropRef(node);
-  };
 
   const bgByState = isEntreno
     ? '#22c55e10'
@@ -65,28 +45,29 @@ export const DiaCard = ({
     : isNueva
       ? `1px solid ${NUEVA}40`
       : '1px solid var(--border)';
-  const overBorder = isOver ? `2px solid ${NUEVA}` : borderByState;
 
   const commonStyle: CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.4 : 1,
-    transition: isDragging ? undefined : 'border-color .15s, background .15s',
-    cursor: onClick ? 'pointer' : draggable ? 'grab' : 'default',
+    transition: 'border-color .15s, background .15s',
+    cursor: onClick ? 'pointer' : 'default',
     userSelect: 'none',
-    background: isOver ? `${NUEVA}15` : bgByState,
-    border: overBorder,
+    background: bgByState,
+    border: borderByState,
     outline: selected ? `2px solid ${NUEVA}` : 'none',
     outlineOffset: -1,
   };
 
+  const titulo = sesion.nombre || `Sesión ${sesion.orden}`;
+  const subtitulo = isEntreno
+    ? sesion.rutina_nombre
+    : isNueva
+      ? 'Sin configurar'
+      : 'Vacía';
+
   if (variant === 'mini') {
     return (
       <div
-        ref={setRefs}
         onClick={onClick}
-        {...attributes}
-        {...listeners}
-        title={`${dia.nombre} · Semana ${semana}${dia.rutina_nombre ? ` · ${dia.rutina_nombre}` : ''}`}
+        title={`${titulo} · Semana ${semana}`}
         style={{
           ...commonStyle,
           borderRadius: 6,
@@ -100,7 +81,7 @@ export const DiaCard = ({
           color: isEntreno ? ENTRENO : 'var(--text-muted)',
         }}
       >
-        {tieneEjercicios ? dia.ejercicios_personalizados.length : isEntreno ? '·' : ''}
+        {sesion.orden}
       </div>
     );
   }
@@ -108,10 +89,7 @@ export const DiaCard = ({
   if (variant === 'compact') {
     return (
       <div
-        ref={setRefs}
         onClick={onClick}
-        {...attributes}
-        {...listeners}
         style={{
           ...commonStyle,
           borderRadius: 10,
@@ -124,7 +102,7 @@ export const DiaCard = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
-            {dia.nombre.slice(0, 3).toUpperCase()}
+            SESIÓN {sesion.orden}
           </span>
           {driftActivo && <RefreshCw size={10} color={WARN} />}
         </div>
@@ -139,18 +117,11 @@ export const DiaCard = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {isEntreno ? dia.rutina_nombre : isNueva ? 'Nueva' : 'Descanso'}
+          {subtitulo}
         </p>
         {tieneEjercicios && (
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 600,
-              color: ENTRENO,
-              marginTop: 'auto',
-            }}
-          >
-            {dia.ejercicios_personalizados.length} ejercicios
+          <span style={{ fontSize: 9, fontWeight: 600, color: ENTRENO, marginTop: 'auto' }}>
+            {sesion.ejercicios_personalizados.length} ejercicios
           </span>
         )}
       </div>
@@ -159,7 +130,6 @@ export const DiaCard = ({
 
   return (
     <div
-      ref={setRefs}
       onClick={onClick}
       style={{
         ...commonStyle,
@@ -169,24 +139,6 @@ export const DiaCard = ({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {draggable && (
-            <button
-              {...attributes}
-              {...listeners}
-              onClick={(e) => e.stopPropagation()}
-              aria-label="Mover día"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'grab',
-                padding: 4,
-                color: 'var(--text-muted)',
-                touchAction: 'none',
-              }}
-            >
-              <GripVertical size={16} />
-            </button>
-          )}
           <div
             style={{
               width: 40,
@@ -198,21 +150,16 @@ export const DiaCard = ({
               justifyContent: 'center',
             }}
           >
-            {isEntreno ? (
-              <Dumbbell size={18} color={ENTRENO} />
-            ) : (
-              <Calendar size={18} color={isNueva ? NUEVA : 'var(--text-muted)'} />
-            )}
+            <Dumbbell size={18} color={isEntreno ? ENTRENO : isNueva ? NUEVA : 'var(--text-muted)'} />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-primary">{dia.nombre}</p>
+            <p className="text-sm font-semibold text-primary">{titulo}</p>
             <p
               className="text-[11px] truncate"
-              style={{
-                color: isEntreno ? ENTRENO : isNueva ? NUEVA : 'var(--text-muted)',
-              }}
+              style={{ color: isEntreno ? ENTRENO : isNueva ? NUEVA : 'var(--text-muted)' }}
             >
-              {isEntreno ? dia.rutina_nombre : isNueva ? 'Nueva Rutina' : 'Descanso'}
+              {subtitulo}
+              {repeticiones != null && repeticiones > 1 ? ` · ×${repeticiones}/sem` : ''}
             </p>
           </div>
         </div>
@@ -244,7 +191,7 @@ export const DiaCard = ({
                 color: ENTRENO,
               }}
             >
-              {dia.ejercicios_personalizados.length} ejer
+              {sesion.ejercicios_personalizados.length} ejer
             </span>
           )}
           <ChevronRight size={16} color="var(--text-muted)" />
@@ -254,7 +201,7 @@ export const DiaCard = ({
       {tieneEjercicios && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {dia.ejercicios_personalizados.slice(0, 4).map((ej, i) => (
+            {sesion.ejercicios_personalizados.slice(0, 4).map((ej, i) => (
               <span
                 key={i}
                 style={{
@@ -268,7 +215,7 @@ export const DiaCard = ({
                 {ej.nombre}
               </span>
             ))}
-            {dia.ejercicios_personalizados.length > 4 && (
+            {sesion.ejercicios_personalizados.length > 4 && (
               <span
                 style={{
                   fontSize: 10,
@@ -278,7 +225,7 @@ export const DiaCard = ({
                   color: 'var(--text-muted)',
                 }}
               >
-                +{dia.ejercicios_personalizados.length - 4}
+                +{sesion.ejercicios_personalizados.length - 4}
               </span>
             )}
           </div>

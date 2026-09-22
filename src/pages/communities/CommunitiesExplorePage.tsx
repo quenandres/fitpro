@@ -7,12 +7,9 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { Skeleton } from '../../components/common/Skeleton';
 import { useToastHook } from '../../components/common/Toast';
-import {
-  CURRENT_MEMBER_ID,
-  useCommunitiesStore,
-} from '../../store/useCommunitiesStore';
 import type { CategoriaComunidad } from '../../types/community';
 import { usePlatformRole } from '../../hooks/usePlatformRole';
+import { useComunidadesList, useJoinComunidad } from '../../lib/gateway/hooks';
 import { ROUTES } from '../../routes/paths';
 
 type ExploreTab = 'para-ti' | 'mis-comunidades' | 'descubrir';
@@ -32,27 +29,14 @@ export function CommunitiesExplorePage() {
   const [showFilters, setShowFilters] = useState(false);
   const toast = useToastHook();
   const { isSuperadmin } = usePlatformRole();
-
-  const comunidades = useCommunitiesStore((s) => s.comunidades);
-  const miembros = useCommunitiesStore((s) => s.miembros);
-  const joinCommunity = useCommunitiesStore((s) => s.joinCommunity);
-
-  const misComunidadIds = useMemo(
-    () => new Set(miembros.filter((m) => m.id === CURRENT_MEMBER_ID).map((m) => m.comunidadId)),
-    [miembros],
-  );
+  const { data: comunidades = [], isLoading, isError, refetch } = useComunidadesList(tab, search);
+  const joinMutation = useJoinComunidad();
 
   const filtered = useMemo(() => {
     let list = comunidades;
-    if (tab === 'mis-comunidades') list = list.filter((c) => misComunidadIds.has(c.id));
-    if (tab === 'descubrir') list = list.filter((c) => !misComunidadIds.has(c.id));
     if (categorias.length > 0) list = list.filter((c) => categorias.includes(c.categoria));
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter((c) => c.nombre.toLowerCase().includes(q) || c.descripcion.toLowerCase().includes(q));
-    }
     return list;
-  }, [comunidades, tab, misComunidadIds, categorias, search]);
+  }, [comunidades, categorias]);
 
   if (demoState === 'loading') {
     return (
@@ -85,69 +69,72 @@ export function CommunitiesExplorePage() {
         ) : null}
       </div>
 
-      <div className="flex items-center gap-2 mt-4">
-        <div className="fp-input-group flex-1">
-          <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-          <input
-            type="search"
-            placeholder="Buscar comunidades…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      <div className="fp-input-group mt-4">
+        <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+        <input
+          type="search"
+          placeholder="Buscar comunidades…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <button
           type="button"
-          className="fp-btn fp-btn-secondary flex items-center gap-1.5 relative"
+          className="fp-btn fp-btn-ghost shrink-0"
           onClick={() => setShowFilters(true)}
-          aria-label="Filtros"
+          aria-label="Filtrar por categoría"
         >
           <Filter size={16} />
-          {categorias.length > 0 ? (
-            <span
-              className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-[10px] font-bold"
-              style={{ width: 16, height: 16, background: 'var(--accent-pink)', color: '#fff' }}
-            >
-              {categorias.length}
-            </span>
-          ) : null}
         </button>
       </div>
 
-      <div className="flex gap-1 mt-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-        {TABS.map((t) => (
+      <div className="flex gap-1 mt-3 overflow-x-auto">
+        {TABS.map(({ key, label }) => (
           <button
-            key={t.key}
+            key={key}
             type="button"
-            className="fp-com-tab"
+            className="fp-com-tab whitespace-nowrap"
             style={
-              tab === t.key
+              tab === key
                 ? { background: 'var(--accent-pink-dim)', color: 'var(--accent-pink)' }
                 : undefined
             }
-            onClick={() => setTab(t.key)}
+            onClick={() => setTab(key)}
           >
-            {t.label}
+            {label}
           </button>
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col gap-3 mt-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height={200} className="rounded-2xl" />
+          ))}
+        </div>
+      ) : isError ? (
+        <ErrorState onRetry={() => void refetch()} />
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No hay comunidades"
-          description="Prueba con otra categoría, otro término de búsqueda o revisa más tarde."
+          title={tab === 'mis-comunidades' ? 'Sin comunidades' : 'Nada por aquí'}
+          description={
+            tab === 'mis-comunidades'
+              ? 'Aún no te has unido a ninguna comunidad.'
+              : 'Prueba otra búsqueda o categoría.'
+          }
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+        <div className="flex flex-col gap-3 mt-4">
           {filtered.map((comunidad) => (
             <CommunityCard
               key={comunidad.id}
               comunidad={comunidad}
-              esMiembro={misComunidadIds.has(comunidad.id)}
-              onJoin={() => {
-                joinCommunity(comunidad.id);
-                toast.success(`Te uniste a ${comunidad.nombre}`);
-              }}
+              esMiembro={comunidad.esMiembro ?? false}
+              onJoin={() =>
+                joinMutation.mutate(comunidad.id, {
+                  onSuccess: () => toast.success(`Te uniste a ${comunidad.nombre}`),
+                })
+              }
             />
           ))}
         </div>
@@ -159,7 +146,9 @@ export function CommunitiesExplorePage() {
         selected={categorias}
         onToggle={(categoria) =>
           setCategorias((prev) =>
-            prev.includes(categoria) ? prev.filter((c) => c !== categoria) : [...prev, categoria],
+            prev.includes(categoria)
+              ? prev.filter((c) => c !== categoria)
+              : [...prev, categoria],
           )
         }
         onClear={() => setCategorias([])}

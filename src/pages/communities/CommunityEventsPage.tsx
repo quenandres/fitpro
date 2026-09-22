@@ -1,31 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Plus } from 'lucide-react';
 import { EventCard } from '../../components/communities/cards/EventCard';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useCommunityEvents } from '../../store/useCommunitiesStore';
+import { Skeleton } from '../../components/common/Skeleton';
+import { useComunidadEventos } from '../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
-import { useNow } from '../../hooks/useNow';
 import { ROUTES } from '../../routes/paths';
 
 type Tab = 'proximos' | 'pasados';
 
 export function CommunityEventsPage() {
   const { id } = useParams<{ id: string }>();
-  const eventos = useCommunityEvents(id);
-  const { puedeModerar } = useCommunityPermissions(id ?? '');
   const [tab, setTab] = useState<Tab>('proximos');
-  const now = useNow();
-
-  const filtered = useMemo(() => {
-    const list = eventos.filter((e) =>
-      tab === 'proximos' ? new Date(e.inicioEn).getTime() >= now : new Date(e.inicioEn).getTime() < now,
-    );
-    return [...list].sort((a, b) => {
-      const diff = new Date(a.inicioEn).getTime() - new Date(b.inicioEn).getTime();
-      return tab === 'proximos' ? diff : -diff;
-    });
-  }, [eventos, tab, now]);
+  const { data: filtered = [], isLoading } = useComunidadEventos(id, tab);
+  const { puedeModerar } = useCommunityPermissions(id ?? '');
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,14 +53,16 @@ export function CommunityEventsPage() {
         </button>
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <Skeleton height={160} className="rounded-2xl" />
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={Calendar}
-          title={tab === 'proximos' ? 'No hay eventos próximos' : 'No hay eventos pasados'}
-          description="Vuelve más tarde o crea uno nuevo si eres líder o moderador."
+          title={tab === 'proximos' ? 'Sin eventos próximos' : 'Sin eventos pasados'}
+          description="Los eventos de la comunidad aparecerán aquí."
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {filtered.map((evento) => (
             <EventCard key={evento.id} evento={evento} />
           ))}

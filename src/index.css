@@ -12,6 +12,7 @@
   --color-brand: var(--brand);
   --color-accent-blue: var(--accent-blue);
   --color-accent-purple: var(--accent-purple);
+  --color-accent-teal: var(--accent-teal);
   --color-line: var(--border);
   --font-sora: 'Sora', sans-serif;
 }
@@ -35,6 +36,7 @@
   --brand-dim:    rgba(34, 197, 94, 0.12);
   --brand-glow:   rgba(34, 197, 94, 0.25);
   --brand-bright: #4ade80;
+  --on-brand:     #ffffff;
 
   /* Acentos */
   --accent-blue:   #58a6ff;
@@ -45,6 +47,7 @@
   --accent-sand:   #d2a679;
   --accent-pink:   #f778ba;
   --accent-pink-dim: rgba(247, 120, 186, 0.12);
+  --accent-teal:   #2dd4bf;
 
   /* Bordes */
   --border:         rgba(48, 54, 61, 0.8);
@@ -82,6 +85,7 @@
   --brand-dim:    rgba(26, 127, 55, 0.08);
   --brand-glow:   rgba(26, 127, 55, 0.15);
   --brand-bright: #2da44e;
+  --on-brand:     #ffffff;
 
   --accent-blue:   #0969da;
   --accent-blue-dim: rgba(9, 105, 218, 0.08);
@@ -91,6 +95,7 @@
   --accent-sand:   #9a6700;
   --accent-pink:   #bf3989;
   --accent-pink-dim: rgba(191, 57, 137, 0.08);
+  --accent-teal:   #0f766e;
 
   --border:        rgba(208, 215, 222, 0.8);
   --border-subtle: rgba(208, 215, 222, 0.4);
@@ -271,12 +276,32 @@ textarea.fp-input {
   transition: all .15s ease;
 }
 .fp-btn:active { transform: scale(.97); }
-.fp-btn-primary  { background: var(--brand); color: #fff; box-shadow: var(--shadow-brand); }
+.fp-btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+.fp-btn-primary  { background: var(--brand); color: var(--on-brand); box-shadow: var(--shadow-brand); }
+.fp-btn-primary:focus-visible {
+  box-shadow: var(--shadow-brand), 0 0 0 3px var(--brand-dim);
+}
 .fp-btn-primary:hover  { background: var(--brand-bright); }
 .fp-btn-secondary{ background: var(--bg-overlay); color: var(--text-primary); border: 1px solid var(--border); }
 .fp-btn-secondary:hover{ background: var(--bg-elevated); border-color: rgba(34,197,94,.25); }
 .fp-btn-ghost    { background: transparent; color: var(--text-secondary); }
 .fp-btn-ghost:hover    { background: var(--bg-overlay); color: var(--text-primary); }
+
+/* Volver de página interna — hit target cuadrado 44px */
+.fp-page-back-btn {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  text-decoration: none;
+}
+.fp-page-back-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
 /* Accent bar lateral (para tarjetas) */
 .fp-accent-bar {
@@ -4061,4 +4086,268 @@ textarea.fp-input {
   width: 5px;
   height: 5px;
   border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Módulo Suscripciones y Pagos — utilidades mínimas
+   Listas y detalle usan fp-card / fp-accent-bar / fp-cal-label.
+   Tabs de filtro: fp-lib-tab (acento biblioteca = --accent-blue).
+   ═══════════════════════════════════════════════════════════ */
+
+.fp-lib-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.fp-lib-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.fp-lib-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.fp-lib-tab:hover {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
+
+.fp-lib-tab.is-active {
+  background: var(--accent-blue-dim);
+  color: var(--accent-blue);
+}
+
+.fp-bill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fp-bill-row-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fp-bill-row-inner {
+  padding: 12px 14px 12px 15px;
+}
+
+.fp-bill-row-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.fp-bill-row-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fp-bill-row-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.fp-bill-row-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.fp-bill-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.fp-bill-row-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.fp-bill-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.fp-bill-avatar-lg {
+  width: 48px;
+  height: 48px;
+}
+
+.fp-bill-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-overlay);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.fp-bill-monto {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fp-bill-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fp-bill-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .fp-bill-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.fp-bill-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fp-bill-detail-field-full {
+  grid-column: 1 / -1;
+}
+
+.fp-bill-detail-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.fp-bill-mono {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.fp-bill-cancel-block {
+  padding: 16px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 22%, transparent);
+}
+
+.fp-bill-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fp-bill-timeline-item {
+  display: flex;
+  gap: 12px;
+}
+
+.fp-bill-timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.fp-bill-timeline-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-blue-dim);
+  color: var(--accent-blue);
+}
+
+.fp-bill-timeline-line {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  margin: 4px 0;
+  background: var(--border-subtle);
+  border-radius: 100px;
+}
+
+.fp-bill-timeline-content {
+  padding-bottom: 18px;
+  min-width: 0;
+  flex: 1;
+}
+
+.fp-bill-timeline-desc {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.fp-bill-timeline-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.fp-bill-timeline-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+
+.fp-bill-plan-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.fp-bill-plan-option:hover {
+  border-color: var(--border-focus);
 }

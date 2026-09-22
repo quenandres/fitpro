@@ -1,9 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import type { Rutina, Usuario } from '../../types';
-import { dateToPlanRef, useUsuariosStore } from '../../store/useUsuariosStore';
+import { useUsuariosStore } from '../../store/useUsuariosStore';
 import { Sheet } from '../common/Sheet';
 import { ClienteMultiPicker } from './ClienteMultiPicker';
-import { fechaLocalISO } from './calendarUtils';
 
 interface AsignarEntrenoSheetProps {
   open: boolean;
@@ -17,7 +16,6 @@ interface AsignarEntrenoSheetProps {
 export function AsignarEntrenoSheet({
   open,
   onClose,
-  selectedDate,
   usuarios,
   rutinas,
   defaultClienteIds = [],
@@ -25,7 +23,7 @@ export function AsignarEntrenoSheet({
   const assignRutinaToUsers = useUsuariosStore((s) => s.assignRutinaToUsers);
 
   const [clienteIds, setClienteIds] = useState<number[]>(() => [...defaultClienteIds]);
-  const [fecha, setFecha] = useState(() => fechaLocalISO(selectedDate));
+  const [sesionOrden, setSesionOrden] = useState('1');
   const [rutinaId, setRutinaId] = useState('');
   const [error, setError] = useState('');
 
@@ -34,14 +32,11 @@ export function AsignarEntrenoSheet({
     [rutinas, rutinaId],
   );
 
-  const resumenFecha = useMemo(() => {
-    const d = new Date(`${fecha}T12:00:00`);
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'short',
-    }).format(d);
-  }, [fecha]);
+  const maxSesiones = useMemo(() => {
+    if (clienteIds.length === 0) return 7;
+    const selected = usuarios.filter((u) => clienteIds.includes(u.id));
+    return Math.max(1, ...selected.map((u) => u.plan.dias_entrenar_semana));
+  }, [clienteIds, usuarios]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -57,10 +52,12 @@ export function AsignarEntrenoSheet({
       return;
     }
 
-    const ref = dateToPlanRef(new Date(`${fecha}T12:00:00`), 1);
+    const sesionIndex = Math.max(0, Number(sesionOrden) - 1);
+    const ref = { semana: 1, sesionIndex };
     assignRutinaToUsers(clienteIds, ref, rutina);
     setClienteIds([]);
     setRutinaId('');
+    setSesionOrden('1');
     onClose();
   };
 
@@ -71,10 +68,10 @@ export function AsignarEntrenoSheet({
       <div className="fp-cal-create-sheet flex flex-col min-h-0 flex-1">
         <div className="shrink-0">
           <h2 className="font-sora text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-            Asignar entrenamiento
+            Asignar rutina a sesión
           </h2>
           <p className="mb-4" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            Actualiza el plan semanal de los clientes seleccionados
+            Actualiza la plantilla de sesión en el plan del cliente (no fija un día de la semana)
           </p>
         </div>
 
@@ -87,15 +84,21 @@ export function AsignarEntrenoSheet({
             />
 
             <div>
-              <label htmlFor="asignar-fecha" className="fp-cal-label">Fecha</label>
-              <input
-                id="asignar-fecha"
-                type="date"
+              <label htmlFor="asignar-sesion" className="fp-cal-label">Sesión del plan</label>
+              <select
+                id="asignar-sesion"
                 className="fp-input w-full"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                value={sesionOrden}
+                onChange={(e) => setSesionOrden(e.target.value)}
                 required
-              />
+              >
+                {Array.from({ length: maxSesiones }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>Sesión {n}</option>
+                ))}
+              </select>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                Semana 1 del plan · el cliente elige el día concreto en móvil
+              </p>
             </div>
 
             <div>
@@ -115,8 +118,8 @@ export function AsignarEntrenoSheet({
             </div>
 
             {rutina && clienteIds.length > 0 ? (
-              <p className="fp-cal-asignar-resumen capitalize">
-                {resumenFecha} · {rutina.nombre} · {clienteIds.length}{' '}
+              <p className="fp-cal-asignar-resumen">
+                Sesión {sesionOrden} · {rutina.nombre} · {clienteIds.length}{' '}
                 {clienteIds.length === 1 ? 'cliente' : 'clientes'}
               </p>
             ) : null}
@@ -130,7 +133,7 @@ export function AsignarEntrenoSheet({
             <button type="submit" className="fp-btn fp-btn-primary w-full">
               {clienteIds.length > 1
                 ? `Asignar a ${clienteIds.length} clientes`
-                : 'Asignar entrenamiento'}
+                : 'Asignar rutina'}
             </button>
           </div>
         </form>

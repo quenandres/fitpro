@@ -1,0 +1,52 @@
+[
+  {
+    "id": "plan-basico",
+    "nombre": "Básico",
+    "descripcion": "Ideal para entrenadores que empiezan con hasta 10 clientes activos.",
+    "precio": 30000,
+    "moneda": "COP",
+    "periodicidad": "mensual",
+    "diasPrueba": 14,
+    "activo": true,
+    "beneficios": [
+      "Hasta 10 clientes",
+      "Biblioteca de rutinas",
+      "Calendario de citas",
+      "Soporte por email"
+    ]
+  },
+  {
+    "id": "plan-premium",
+    "nombre": "Premium",
+    "descripcion": "Para entrenadores en crecimiento con clientes ilimitados y analytics.",
+    "precio": 59900,
+    "moneda": "COP",
+    "periodicidad": "mensual",
+    "diasPrueba": 7,
+    "activo": true,
+    "beneficios": [
+      "Clientes ilimitados",
+      "Chat IA para rutinas",
+      "Tracking avanzado",
+      "Comunidades privadas",
+      "Soporte prioritario"
+    ]
+  },
+  {
+    "id": "plan-anual",
+    "nombre": "Anual Pro",
+    "descripcion": "Plan anual con descuento para estudios y gimnasios consolidados.",
+    "precio": 600000,
+    "moneda": "COP",
+    "periodicidad": "anual",
+    "diasPrueba": 0,
+    "activo": true,
+    "beneficios": [
+      "Todo lo de Premium",
+      "2 meses gratis vs mensual",
+      "Onboarding dedicado",
+      "Exportación de datos",
+      "API de integraciones (próximamente)"
+    ]
+  }
+]

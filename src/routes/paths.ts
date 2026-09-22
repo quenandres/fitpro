@@ -4,7 +4,7 @@ import type { RoutineFormLevel } from '../types';
  * Rutas canónicas del frontend.
  *
  * - `library.catalogo.*` → datos de referencia (ExerciseDB / proxy read-only).
- * - `library.rutinas|planes|unidades|ia` → recursos del usuario vía gateway (`VITE_API_URL`).
+ * - `library.rutinas|planes|unidades|ia` → recursos del usuario vía gateway (`VITE_GATEWAY_URL`).
  */
 export const ROUTES = {
   home: '/',
@@ -13,8 +13,10 @@ export const ROUTES = {
   calendar: '/calendario',
   tracking: '/tracking',
   trackingUsuario: (id: string | number) => `/tracking?usuario=${id}`,
+  trackingSesion: (id: string) => `/tracking/${id}`,
   usuarios: '/usuarios',
   usuario: (id: string | number) => `/usuarios/${id}`,
+  usuarioEntrenamientos: (id: string | number) => `/usuarios/${id}?tab=entrenamientos`,
   perfil: '/perfil',
   player: '/player',
   anatomy: '/anatomytracker',
@@ -26,6 +28,7 @@ export const ROUTES = {
     /** Recursos del entrenador (persistidos en backend) */
     rutinas: '/library/rutinas',
     rutinasNueva: '/library/rutinas/nueva',
+    miRutinaNueva: '/library/rutinas/nueva?para=mi',
     rutinasPlantillas: '/library/rutinas/plantillas',
     rutinaNueva: (level: RoutineFormLevel, id?: number) => {
       const base = `/library/rutinas/nueva/${level}`;
@@ -36,6 +39,12 @@ export const ROUTES = {
     unidades: '/library/unidades',
     misEjercicios: '/library/mis-ejercicios',
     datos: '/library/datos',
+
+    /** Suscripciones y pagos — UI mock (`useBillingStore`), sin backend */
+    suscripciones: '/library/suscripciones',
+    suscripcion: (id: string) => `/library/suscripciones/${id}`,
+    pagos: '/library/pagos',
+    pago: (id: string) => `/library/pagos/${id}`,
 
     /** Catálogo ExerciseDB (referencia externa, solo lectura) */
     catalogo: {

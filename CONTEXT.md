@@ -114,7 +114,7 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
 > **Delta 2026-09-09** (producto + código desde la auditoría de abajo):
 >
 > - **Visión recortada** a primera instancia y **app cliente = PWA React aparte** — ver §1. Esta SPA es solo el cockpit del entrenador. La PWA **no existe aún**.
-> - **Planes por sesión, no por día de la semana.** `PlanUsuario` usa `SesionPlan[]` (cuota `dias_entrenar_semana`, modos `repetitiva` \| `sesiones_variables`, progresión `fijo` \| `incremental`, `descanso_min_dias`, `regla_progresion_global` opcional). Superficie: `/usuarios` y `/usuarios/:id` (`UsuariosPage`). **`GuidedPlanWizard`** (6 pasos) en ficha cliente → Entrenamientos: crear/reconfigurar plan con draft local y guardado atómico al final; **`CreatePlanWizard`** sigue solo para alta de cliente. Store: `useUsuariosStore` (sigue **sin persist**, seed `usuarios.json`). Progresión prescrita es mock — adaptación por RPE/resultados reales pendiente de backend.
+> - **Planes por sesión, no por día de la semana.** `PlanUsuario` usa `SesionPlan[]` (cuota `dias_entrenar_semana`, modos `repetitiva` \| `sesiones_variables`, progresión `fijo` \| `incremental`, `descanso_min_dias`, `regla_progresion_global` opcional). Superficie: `/usuarios` y `/usuarios/:id` (`UsuariosPage`). **`GuidedPlanWizard`** (6 pasos) en ficha cliente → Entrenamientos: crear/reconfigurar plan con draft local y guardado atómico al final; **`CreatePlanWizard`** (2 pasos) da de alta al cliente y, si el entrenador lo pide, genera la rutina con gym-gateway (`POST /api/ai/routine`) a partir de «qué quiere entrenar» y la manda en el invite. Al terminar lleva a `/usuarios/:id?tab=entrenamientos` (2026-09-21). Store: `useUsuariosStore` (sigue **sin persist**, seed `usuarios.json`). Progresión prescrita es mock — adaptación por RPE/resultados reales pendiente de backend.
 > - **Tracking** (`/tracking`) lee `useSesionesStore` (mock con persist, series reales
 >   peso/reps); el entrenador registra vía `RegistrarSesionSheet`. Cumplimiento
 >   sigue contando días, no contenido de sesión. Player de biblioteca no escribe.
@@ -259,7 +259,8 @@ modelo `series: number` escalar **siguen sin resolverse** — ver §3/§4/§9.
   Fase 2), y gating por rol en frontend.
 - Fase 4 (tracking de sesiones): **~10%, sin cambios**
 - Fase 5 (multi-tenant): **~5-10%** (UI de planes avanzó, dato sigue sin persistir)
-- Fase 6 (Comunidades): **UI ~100% mock / 0% backend real** (nueva fase,
+- Fase 6 (Comunidades): **núcleo en Supabase + gateway (~40% backend)**; discusiones,
+  reportes, notificaciones e invitaciones siguen mock (nueva fase,
   implementada el mismo día)
 - Fase 7: sin cambios de fondo (IA de rutinas ya funciona, adelantada fuera de orden)
 
@@ -843,6 +844,39 @@ offline-first, modelo avanzado en el creador de rutinas.
 >
 > Estructura sugerida: agregar bloques con fecha y encabezado.
 
+### 2026-09-21 — Alta de cliente sin picker propio de plantillas
+
+El alta de cliente duplicaba la asignación de plantilla: `CreatePlanWizard`
+tenía su propia lista de «rutina base» + checkbox «aplicar a todas», con menos
+información que la pestaña Entrenamientos (sin cumplimiento, sin carga
+planificada, sin estado de sincronización, sin editor de sesión). Se unifica en
+una sola pantalla:
+
+- `CreatePlanWizard` queda en **2 pasos** — cliente y plan (nombre, descripción,
+  duración, frecuencia). Crea el plan con las semanas y los huecos de sesión
+  vacíos; `modo` arranca en `sesiones_variables` y `progresion` en `fijo`.
+- Al crear, `UsuariosPage` navega a `ROUTES.usuarioEntrenamientos(id)`
+  (`/usuarios/:id?tab=entrenamientos`): la asignación usa `RutinaPickerSheet`
+  (con alcance «solo esta semana» / «hasta el final») y `SesionEditorSheet`,
+  los mismos de la edición.
+- `UserPlanWorkspace` muestra un bloque de arranque mientras la semana 1 no
+  tenga sesiones configuradas, con «Asignar plantilla» (abre el picker en el
+  primer entrenamiento pendiente) y «Crear plan guiado».
+
+Sigue siendo mock local (`useUsuariosStore` sin persist); el cliente nuevo no
+tiene `client_uuid`, así que no hay escritura en el gateway hasta Fase 2/3.
+
+### 2026-09-21 — Alta de cliente con rutina IA (gym-gateway)
+
+Al registrar un cliente el entrenador puede describir qué quiere entrenar
+(objetivo corto + textarea) y, con el toggle «Crear rutina automáticamente
+con IA» (activo por defecto), FitPro llama a gym-gateway (`VITE_GATEWAY_URL` →
+`POST /api/ai/routine`), resuelve el catálogo y envía los ejercicios en
+`POST /api/trainers/clients/invite`. Si la IA falla no se invita: se puede
+desactivar el toggle y crear el plan vacío. La plantilla se intenta guardar
+también en Biblioteca, pero eso no bloquea el alta. El sidecar `gym-mcp`
+queda congelado para HTTP de producto (solo tools MCP opcionales en Cursor).
+
 ### 2026-09-09 — Primera instancia + PWA cliente
 
 Se recorta la visión a **qué / para qué / cómo** (loop entrenador → cliente
@@ -1099,6 +1133,7 @@ se documenta como trade-off consciente.
 | 2026-09-09 | **Primera instancia = cerrar el loop** (crear rutina → invitar cliente → ejecutar en PWA → entrenador ve el log). Comunidades, billing, dashboards de plataforma y nativo quedan fuera hasta entonces. El modelo avanzado de rutinas no es gate del MVP de ejecución (sí del diseño de schema). | El repo tenía mucha superficie y el producto no existía: clientes seed, player sin persist, tracking mock. Ver §1 y §12 |
 | 2026-09-09 | **D11 — App cliente = PWA React independiente** (repo hermano, aún no creado), mismo `gym-gateway` y misma identidad (`DESIGN.md`). Esta SPA no crece un “modo cliente”. Primera instancia de la PWA: instalable, online, escribe `sessions`/`session_sets`. Offline-first profundo = Fase 7 | El cliente necesita una superficie de ejecución en el teléfono; meterla en el cockpit del entrenador mezcla UX y retrasa las dos apps |
 | 2026-09-09 | **Modelo mínimo de entrenamiento en mock local:** `ejercicio_id` en plantillas de rutina/plan; sesiones ejecutadas con `SerieEjecutada` (peso/reps); `useSesionesStore` con persist; registro manual del entrenador. Sin Supabase — contrato alineado a `sessions`/`session_sets` para Fase 4 | Cerrar el loop del entrenador (prescribir → registrar → ver log) sin esperar PWA ni gateway; evitar rediseño al cablear backend |
+| 2026-09-21 | **IA de rutinas integrada en gym-gateway** (`POST /api/ai/routine`, OpenRouter + catálogo Supabase directo). FitPro deja `VITE_API_URL`/gym-mcp para producto; un solo origen (`VITE_GATEWAY_URL`). `gym-mcp` congelado como sidecar MCP opcional | CORS, un proceso menos, mismo JWT/RBAC; alinea D1 (FastAPI solo cuando duele — aquí el gateway ya es la puerta) |
 
 ---
 

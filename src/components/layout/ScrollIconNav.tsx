@@ -15,11 +15,6 @@ interface Props {
   ariaLabel?: string;
 }
 
-const accentRgb = (hex: string): string => {
-  const n = hex.replace('#', '');
-  return `${parseInt(n.slice(0, 2), 16)}, ${parseInt(n.slice(2, 4), 16)}, ${parseInt(n.slice(4, 6), 16)}`;
-};
-
 export const ScrollIconNav = ({
   items,
   accent,
@@ -27,7 +22,6 @@ export const ScrollIconNav = ({
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const rgb = accentRgb(accent);
 
   useEffect(() => {
     const active = scrollRef.current?.querySelector('[aria-current="page"]');
@@ -65,9 +59,15 @@ export const ScrollIconNav = ({
               lineHeight: 1,
               textDecoration: 'none',
               whiteSpace: 'nowrap',
-              background: isActive ? `rgba(${rgb}, .14)` : 'var(--bg-elevated)',
+              background: isActive
+                ? `color-mix(in srgb, ${accent} 14%, transparent)`
+                : 'var(--bg-elevated)',
               color: isActive ? accent : 'var(--text-muted)',
-              border: `1px solid ${isActive ? `rgba(${rgb}, .35)` : 'var(--border)'}`,
+              border: `1px solid ${
+                isActive
+                  ? `color-mix(in srgb, ${accent} 35%, transparent)`
+                  : 'var(--border)'
+              }`,
               transition:
                 'background .15s, color .15s, border-color .15s, padding .2s ease, gap .2s ease, min-width .2s ease',
             })}

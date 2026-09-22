@@ -17,8 +17,11 @@ interface Props {
   isEdit: boolean;
   errors: ValidationError[];
   savedId: number | null;
+  isSaving?: boolean;
+  saveError?: string | null;
+  assignToSelf?: boolean;
   accent: string;
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   onValidateStep1: () => boolean;
   onMusclesResolved?: (updates: Array<{ key: string; musculos_anatomia: string[] }>) => void;
   children: ReactNode;
@@ -31,6 +34,9 @@ export const RoutineBuilderShell = ({
   isEdit,
   errors,
   savedId,
+  isSaving,
+  saveError,
+  assignToSelf,
   accent,
   onSave,
   onValidateStep1,
@@ -147,10 +153,24 @@ export const RoutineBuilderShell = ({
               type="button"
               className="fp-btn fp-btn-primary"
               style={{ width: '100%', justifyContent: 'center', gap: 7 }}
-              onClick={onSave}
+              onClick={() => void onSave()}
+              disabled={isSaving}
             >
-              <Save size={14} /> {isEdit ? 'Guardar cambios' : 'Crear rutina'}
+              <Save size={14} /> {isSaving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear rutina'}
             </button>
+            {saveError && (
+              <p
+                role="alert"
+                style={{
+                  fontSize: 12,
+                  color: 'var(--accent-red)',
+                  textAlign: 'center',
+                  margin: 0,
+                }}
+              >
+                {saveError}
+              </p>
+            )}
           </>
         )}
 
@@ -165,7 +185,9 @@ export const RoutineBuilderShell = ({
               background: 'var(--brand-dim)',
             }}
           >
-            Rutina guardada. Puedes verla en Admin → Rutinas.
+            {assignToSelf
+              ? 'Rutina guardada. Ya es tu plan activo: ábrela en la app de cliente.'
+              : 'Rutina guardada. Puedes verla en Admin → Rutinas.'}
           </p>
         )}
       </div>

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Search, Plus, Sparkles, Users } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
@@ -8,6 +9,7 @@ import { useUsuariosStore } from '../store/useUsuariosStore';
 import { getUltimaSesion } from '../store/useSesionesStore';
 import type { Usuario } from '../types';
 import { CreatePlanWizard } from '../components/userPlans/CreatePlanWizard';
+import { useClientesSync } from '../hooks/useClientesSync';
 import { usePlanMutations } from '../hooks/usePlanMutations';
 import { UserProgressPanel } from '../components/users/UserProgressPanel';
 import { UserDetailHeader } from '../components/users/UserDetailHeader';
@@ -17,6 +19,10 @@ import { UserMedidasPanel } from '../components/users/UserMedidasPanel';
 import { UserPlanWorkspace } from '../components/users/UserPlanWorkspace';
 import { recencyToneFromSesion } from '../utils/userSummary';
 import { ROUTES } from '../routes/paths';
+import { useToastHook } from '../components/common/Toast';
+import { gatewayErrorMessage } from '../lib/gateway/errors';
+import { createPlan, type ClientLink } from '../lib/gateway/training.service';
+import { planUsuarioToCreatePlanBody } from '../utils/planGatewayAdapter';
 
 function parseDetailTab(raw: string | null): UserDetailTab {
   if (raw === 'entrenamientos') return 'entrenamientos';
@@ -30,17 +36,21 @@ function parseSemana(raw: string | null, max: number): number {
   return Math.min(max, Math.floor(n));
 }
 
-function parseDiaIndex(raw: string | null): number | null {
+function parseSesionIndex(raw: string | null): number | null {
   if (raw == null || raw === '') return null;
   const n = Number(raw);
-  if (Number.isNaN(n) || n < 0 || n > 6) return null;
-  return Math.floor(n);
+  if (Number.isNaN(n) || n < 1) return null;
+  return Math.floor(n) - 1;
 }
 
 export function UsuariosPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const toast = useToastHook();
   const { userId: userIdParam } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  useClientesSync();
+  const persistTimer = useRef<number | null>(null);
   const { rutinas, ejercicios } = useDataStore();
   const usuarios = useUsuariosStore((s) => s.usuarios);
   const updateUsuario = useUsuariosStore((s) => s.updateUsuario);
@@ -48,7 +58,6 @@ export function UsuariosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
   const [showWizard, setShowWizard] = useState(false);
-  const [selectedDiaIndex, setSelectedDiaIndex] = useState(0);
 
   const detailTab = parseDetailTab(searchParams.get('tab'));
 
@@ -59,7 +68,7 @@ export function UsuariosPage() {
 
   const maxSemanas = selectedUserLive?.plan.semanas ?? 1;
   const semana = parseSemana(searchParams.get('semana'), maxSemanas);
-  const diaEditorIndex = parseDiaIndex(searchParams.get('dia'));
+  const sesionEditorIndex = parseSesionIndex(searchParams.get('sesion'));
 
   const setDetailTab = useCallback(
     (tab: UserDetailTab) => {
@@ -68,7 +77,7 @@ export function UsuariosPage() {
           const next = new URLSearchParams(prev);
           if (tab === 'progreso') next.delete('tab');
           else next.set('tab', tab);
-          if (tab !== 'entrenamientos') next.delete('dia');
+          if (tab !== 'entrenamientos') next.delete('sesion');
           return next;
         },
         { replace: true },
@@ -92,13 +101,13 @@ export function UsuariosPage() {
     [setSearchParams],
   );
 
-  const setDiaEditorIndex = useCallback(
-    (diaIndex: number | null) => {
+  const setSesionEditorIndex = useCallback(
+    (sesionIndex: number | null) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          if (diaIndex == null) next.delete('dia');
-          else next.set('dia', String(diaIndex));
+          if (sesionIndex == null) next.delete('sesion');
+          else next.set('sesion', String(sesionIndex + 1));
           return next;
         },
         { replace: true },
@@ -125,20 +134,8 @@ export function UsuariosPage() {
     }
   }, [userIdParam, usuarios, navigate]);
 
-  useEffect(() => {
-    if (selectedUserLive && diaEditorIndex != null) {
-      setSelectedDiaIndex(diaEditorIndex);
-    }
-  }, [diaEditorIndex, selectedUserLive]);
-
-  const handleBack = () => {
-    setSelectedUser(null);
-    navigate(ROUTES.usuarios);
-  };
-
   const handleSelectUser = (user: Usuario) => {
     setSelectedUser(user);
-    setSelectedDiaIndex(0);
     navigate(ROUTES.usuario(user.id));
   };
 
@@ -159,20 +156,56 @@ export function UsuariosPage() {
     [usuarios],
   );
 
+  useEffect(() => () => {
+    if (persistTimer.current != null) window.clearTimeout(persistTimer.current);
+  }, []);
+
   const handleUpdateUser = useCallback(
     (updated: Usuario) => {
       updateUsuario(updated.id, () => updated);
       setSelectedUser(updated);
+      if (!updated.client_uuid) return;
+      if (persistTimer.current != null) window.clearTimeout(persistTimer.current);
+      const clientId = updated.client_uuid;
+      const plan = updated.plan;
+      persistTimer.current = window.setTimeout(() => {
+        void createPlan(planUsuarioToCreatePlanBody(clientId, plan)).catch((err: unknown) => {
+          toast.error(
+            'No se guardó el plan',
+            gatewayErrorMessage(err, 'Revisa que los ejercicios estén en el catálogo.'),
+          );
+        });
+      }, 800);
     },
-    [updateUsuario],
+    [toast, updateUsuario],
   );
 
   const mutations = usePlanMutations(selectedUserLive, handleUpdateUser);
 
   const handleCreateUser = (newUser: Usuario) => {
     addUsuario(newUser);
+    if (newUser.client_uuid) {
+      const clientId = newUser.client_uuid;
+      queryClient.setQueryData<ClientLink[]>(['trainer-clients'], (current) => {
+        const row: ClientLink = {
+          id: clientId,
+          client_id: clientId,
+          status: 'active',
+          profile: {
+            id: clientId,
+            full_name: newUser.nombre,
+            role: 'client',
+          },
+          plan: null,
+        };
+        const list = current ?? [];
+        if (list.some((item) => item.client_id === clientId)) return list;
+        return [row, ...list];
+      });
+    }
     setShowWizard(false);
-    handleSelectUser(newUser);
+    setSelectedUser(newUser);
+    navigate(ROUTES.usuarioEntrenamientos(newUser.id));
   };
 
   return (
@@ -285,7 +318,6 @@ export function UsuariosPage() {
               user={selectedUserLive}
               tab={detailTab}
               onTabChange={setDetailTab}
-              onBack={handleBack}
             />
 
             {detailTab === 'progreso' ? (
@@ -300,10 +332,8 @@ export function UsuariosPage() {
                 mutations={mutations}
                 semana={semana}
                 onSemanaChange={setSemana}
-                diaEditorIndex={diaEditorIndex}
-                onDiaEditorChange={setDiaEditorIndex}
-                selectedDiaIndex={selectedDiaIndex}
-                onSelectedDiaChange={setSelectedDiaIndex}
+                sesionEditorIndex={sesionEditorIndex}
+                onSesionEditorChange={setSesionEditorIndex}
               />
             )}
           </div>
@@ -311,7 +341,6 @@ export function UsuariosPage() {
 
         {showWizard ? (
           <CreatePlanWizard
-            rutinas={rutinas}
             nextUserId={Math.max(0, ...usuarios.map((u) => u.id)) + 1}
             onClose={() => setShowWizard(false)}
             onCreate={handleCreateUser}

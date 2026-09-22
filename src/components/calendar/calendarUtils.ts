@@ -1,5 +1,6 @@
-import { isDiaEntreno } from '../userPlans/diasSemana';
 import type { Cita, CitaTipo, Rutina, Usuario } from '../../types';
+import { getAllSesiones } from '../../store/useSesionesStore';
+import { getWeeklyCompliance } from '../../utils/planComplianceUtils';
 
 export type CalendarViewMode = 'week' | 'month' | 'day';
 
@@ -197,53 +198,47 @@ function usuariosVisibles(usuarios: Usuario[], visibleClientIds: number[]): Usua
   return usuarios.filter((u) => visibleClientIds.includes(u.id));
 }
 
-export function getEntrenoWeekdays(usuarios: Usuario[], visibleClientIds: number[]): number[] {
-  const weekdays = new Set<number>();
-
-  for (const usuario of usuariosVisibles(usuarios, visibleClientIds)) {
-    const semana1 = usuario.plan.programacion_semanal.find((s) => s.semana === 1);
-    if (!semana1) continue;
-
-    for (const dia of semana1.dias) {
-      if (isDiaEntreno(dia.rutina_id)) {
-        weekdays.add(dia.dia);
-      }
-    }
-  }
-
-  return [...weekdays].sort((a, b) => a - b);
-}
-
-export interface EntrenoDelDia {
+export interface CuotaSemanalCliente {
   clienteId: number;
   clienteNombre: string;
-  rutinaNombre: string;
-  rutinaId: number | null;
+  completadas: number;
+  objetivo: number;
 }
 
-export function getEntrenosDelDia(
+export function getCuotaSemanalClientes(
   usuarios: Usuario[],
   date: Date,
   visibleClientIds: number[],
-): EntrenoDelDia[] {
-  const weekday = date.getDay();
-  const result: EntrenoDelDia[] = [];
+): CuotaSemanalCliente[] {
+  const list = usuariosVisibles(usuarios, visibleClientIds);
+  return list.map((usuario) => {
+    const compliance = getWeeklyCompliance(
+      usuario.id,
+      usuario.plan.dias_entrenar_semana,
+      date,
+    );
+    return {
+      clienteId: usuario.id,
+      clienteNombre: usuario.nombre,
+      completadas: compliance.completadas,
+      objetivo: compliance.objetivo,
+    };
+  });
+}
 
-  for (const usuario of usuariosVisibles(usuarios, visibleClientIds)) {
-    const semana1 = usuario.plan.programacion_semanal.find((s) => s.semana === 1);
-    const dia = semana1?.dias.find((d) => d.dia === weekday);
-
-    if (dia && isDiaEntreno(dia.rutina_id)) {
-      result.push({
-        clienteId: usuario.id,
-        clienteNombre: usuario.nombre,
-        rutinaNombre: dia.rutina_nombre,
-        rutinaId: dia.rutina_id,
-      });
-    }
+/** Fechas con sesiones registradas (reales) para resaltar en el calendario. */
+export function getSesionLogDates(
+  usuarios: Usuario[],
+  visibleClientIds: number[],
+): Date[] {
+  const ids = new Set(
+    usuariosVisibles(usuarios, visibleClientIds).map((u) => u.id),
+  );
+  const fechas = new Set<string>();
+  for (const sesion of getAllSesiones()) {
+    if (ids.has(sesion.usuario_id)) fechas.add(sesion.fecha);
   }
-
-  return result;
+  return [...fechas].map(parseFechaLocal);
 }
 
 export function filterCitas(citas: Cita[], visibleClientIds: number[]): Cita[] {
@@ -297,21 +292,22 @@ export function buildCalendarEvents(
     });
   }
 
-  for (const day of weekDays) {
-    const entrenos = getEntrenosDelDia(usuarios, day, visibleClientIds);
-    entrenos.forEach((entreno, index) => {
-      events.push({
-        id: `entreno-${entreno.clienteId}-${fechaLocalISO(day)}-${index}`,
-        kind: 'entreno',
-        title: entreno.rutinaNombre,
-        subtitle: entreno.clienteNombre,
-        fecha: fechaLocalISO(day),
-        startMinutes: 5 * 60 + index * 75,
-        durationMin: 60,
-        accent: ENTRENO_ACCENT,
-        clienteId: entreno.clienteId,
-        rutinaId: entreno.rutinaId,
-      });
+  for (const sesion of getAllSesiones()) {
+    if (!fechasSemana.has(sesion.fecha)) continue;
+    if (visibleClientIds.length > 0 && !visibleClientIds.includes(sesion.usuario_id)) continue;
+    const cliente = usuarios.find((u) => u.id === sesion.usuario_id);
+    if (!cliente) continue;
+    events.push({
+      id: `sesion-${sesion.id}`,
+      kind: 'entreno',
+      title: sesion.rutina_nombre,
+      subtitle: cliente.nombre,
+      fecha: sesion.fecha,
+      startMinutes: 6 * 60,
+      durationMin: sesion.duracion_min,
+      accent: ENTRENO_ACCENT,
+      clienteId: sesion.usuario_id,
+      rutinaId: sesion.rutina_id,
     });
   }
 

@@ -178,10 +178,14 @@ export type NivelUsuario = 'Principiante' | 'Intermedio' | 'Avanzado';
 
 export interface Usuario {
   id: number;
+  /** UUID de auth.users cuando el cliente viene del gateway */
+  client_uuid?: string;
   nombre: string;
   email: string;
   objetivo: string;
   nivel: NivelUsuario | string;
+  /** Edad en años — mock hasta perfil Supabase */
+  edad?: number;
   /** Peso corporal de referencia (kg) — mock/read-only en esta fase */
   peso_kg?: number;
   dias_entrenar: number;
@@ -276,8 +280,20 @@ export interface SesionEntrenamiento {
   ejercicios: EjercicioEjecutado[];
 }
 
+export interface GenerateRoutineCliente {
+  usuario_id?: string | number;
+  edad?: number;
+  peso_kg?: number;
+  nivel?: string;
+  objetivo?: string;
+  dias_entrenar?: number;
+  equipamiento?: string;
+  limitaciones?: string;
+}
+
 export interface GenerateRoutineRequest {
   objetivo: string;
+  cliente?: GenerateRoutineCliente;
   nivel?: string;
   duracion_min?: number;
   equipamiento?: string;
@@ -294,6 +310,8 @@ export interface GenerateRoutineExercise {
 
 export interface ResolvedExercise {
   ejercicio_id?: number;
+  /** ID en exercises.exercises (Supabase) */
+  catalogExerciseId?: number;
   nombre: string;
   series: number;
   valor: number;

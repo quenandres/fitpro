@@ -23,8 +23,13 @@ import { WorkoutPlayer } from './pages/WorkoutPlayer';
 import { RoutinePageRedirect } from './pages/RoutinePage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { UserPlansPage } from './pages/UserPlansPage';
+import { SuscripcionesPage } from './pages/billing/SuscripcionesPage';
+import { SuscripcionDetailPage } from './pages/billing/SuscripcionDetailPage';
+import { PagosPage } from './pages/billing/PagosPage';
+import { PagoDetailPage } from './pages/billing/PagoDetailPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { TrackingPage } from './pages/TrackingPage';
+import { TrackingSessionDetailPage } from './pages/TrackingSessionDetailPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import AnatomyRecoveryTracker from './pages/AnatomyRecoveryTracker';
@@ -96,6 +101,7 @@ function AppRoutes() {
       <Route path={ROUTES.admin.dashboard} element={<Navigate to={ROUTES.home} replace />} />
       <Route path={ROUTES.calendar} element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path={ROUTES.tracking} element={<ProtectedRoute><TrackingPage /></ProtectedRoute>} />
+      <Route path="/tracking/:sesionId" element={<ProtectedRoute><TrackingSessionDetailPage /></ProtectedRoute>} />
       <Route path={ROUTES.usuarios} element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
       <Route path="/usuarios/:userId" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
       <Route path="/workout/:id" element={<ProtectedRoute><WorkoutDetail /></ProtectedRoute>} />
@@ -130,6 +136,10 @@ function AppRoutes() {
 
         {/* Gestión del entrenador */}
         <Route path="planes" element={<UserPlansPage />} />
+        <Route path="suscripciones" element={<SuscripcionesPage />} />
+        <Route path="suscripciones/:id" element={<SuscripcionDetailPage />} />
+        <Route path="pagos" element={<PagosPage />} />
+        <Route path="pagos/:id" element={<PagoDetailPage />} />
         <Route path="mis-ejercicios" element={<LibraryMisEjerciciosPage />} />
         <Route path="datos" element={<LibraryDatosPage />} />
       </Route>

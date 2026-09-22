@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useDataStore } from '../store/useDataStore';
 import type {
@@ -21,6 +21,7 @@ import {
   programacionToPayload,
 } from '../utils/routineScheduleUtils';
 import { validateRoutineByLevel } from '../utils/routineFormValidators';
+import { persistRoutineToGateway } from '../utils/persistRoutineToGateway';
 
 const uid = (): string =>
   `ex_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -102,6 +103,8 @@ export const useRoutineForm = (
   initialCreateMode: RoutineCreateMode = 'semana_tipo',
 ) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const assignToSelf = searchParams.get('para') === 'mi';
   const addRutina = useDataStore((s) => s.addRutina);
   const updateRutina = useDataStore((s) => s.updateRutina);
   const [form, setForm] = useState<RoutineFormData>(
@@ -109,6 +112,8 @@ export const useRoutineForm = (
   );
   const [errors, setErrors] = useState<ReturnType<typeof validateRoutineByLevel>>([]);
   const [savedId, setSavedId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [createMode, setCreateModeState] = useState<RoutineCreateMode>(initialCreateMode);
   const [semanaActiva, setSemanaActiva] = useState(1);
   const [diaIndex, setDiaIndex] = useState(0);
@@ -118,17 +123,18 @@ export const useRoutineForm = (
     )),
   );
   const [modeSwitchNotice, setModeSwitchNotice] = useState<string | null>(null);
+  const syncedInitialFormRef = useRef<RoutineFormData | undefined>(undefined);
 
   useEffect(() => {
-    if (initialForm) {
-      setForm(initialForm);
-      setSemanaActiva(1);
-      setDiaIndex(0);
-      const hasContent = initialForm.programacion_semanal.some((s) =>
-        s.dias.some((d) => d.ejercicios.length > 0),
-      );
-      if (hasContent) setTemplateApplied(true);
-    }
+    if (!initialForm || syncedInitialFormRef.current === initialForm) return;
+    syncedInitialFormRef.current = initialForm;
+    setForm(initialForm);
+    setSemanaActiva(1);
+    setDiaIndex(0);
+    const hasContent = initialForm.programacion_semanal.some((s) =>
+      s.dias.some((d) => d.ejercicios.length > 0),
+    );
+    if (hasContent) setTemplateApplied(true);
   }, [initialForm]);
 
   const activeEjercicios = useMemo(
@@ -305,6 +311,7 @@ export const useRoutineForm = (
 
   const addExercise = useCallback(
     (picked: {
+      ejercicio_id: number;
       nombre: string;
       unidad_id_default: number;
       exerciseDbId?: string;
@@ -313,6 +320,7 @@ export const useRoutineForm = (
     }) => {
       const entry: RoutineFormExercise = {
         _key: uid(),
+        ejercicio_id: picked.ejercicio_id,
         nombre: picked.nombre,
         series: 3,
         valor: 10,
@@ -417,22 +425,33 @@ export const useRoutineForm = (
     return payload;
   }, [form, level]);
 
-  const save = useCallback((): number | null => {
+  const save = useCallback(async (): Promise<number | null> => {
     const validation = validateRoutineByLevel(level, form);
     if (validation.length > 0) {
       setErrors(validation);
       return null;
     }
     const payload = toRutinaPayload();
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await persistRoutineToGateway(payload, { assignToSelf });
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'No se pudo guardar la rutina en el servidor.');
+      setIsSaving(false);
+      return null;
+    }
     if (editingId != null) {
       updateRutina(editingId, payload);
       setSavedId(editingId);
+      setIsSaving(false);
       return editingId;
     }
     const id = addRutina(payload);
     setSavedId(id);
+    setIsSaving(false);
     return id;
-  }, [addRutina, editingId, form, level, toRutinaPayload, updateRutina]);
+  }, [addRutina, assignToSelf, editingId, form, level, toRutinaPayload, updateRutina]);
 
   const validateStep1 = useCallback((): boolean => {
     const stepErrors = validateRoutineByLevel(level, form);
@@ -440,12 +459,16 @@ export const useRoutineForm = (
     return stepErrors.length === 0;
   }, [form, level]);
 
-  const selectedNames = useMemo(() => {
-    const names = new Set<string>();
+  const selectedExerciseIds = useMemo(() => {
+    const ids = new Set<number>();
     form.programacion_semanal.forEach((s) =>
-      s.dias.forEach((d) => d.ejercicios.forEach((e) => names.add(e.nombre))),
+      s.dias.forEach((d) =>
+        d.ejercicios.forEach((e) => {
+          if (e.ejercicio_id != null) ids.add(e.ejercicio_id);
+        }),
+      ),
     );
-    return [...names];
+    return [...ids];
   }, [form.programacion_semanal]);
 
   const activeSemanaPlan = form.programacion_semanal.find((s) => s.semana === semanaActiva);
@@ -454,6 +477,9 @@ export const useRoutineForm = (
     form,
     errors,
     savedId,
+    isSaving,
+    saveError,
+    assignToSelf,
     editingId: editingId ?? null,
     isEdit: editingId != null,
     durationBreakdown,
@@ -481,7 +507,7 @@ export const useRoutineForm = (
     save,
     validateStep1,
     loadForm,
-    selectedNames,
+    selectedExerciseIds,
     navigate,
   };
 };

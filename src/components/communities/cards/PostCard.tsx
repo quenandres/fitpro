@@ -8,7 +8,12 @@ import { PostMedia } from '../feed/PostMedia';
 import { ReactionButton } from '../feed/ReactionButton';
 import { ReportModal } from '../modals/ReportModal';
 import { ShareSheet } from '../modals/ShareSheet';
-import { useMemberById, useCommunitiesStore, CURRENT_MEMBER_ID } from '../../../store/useCommunitiesStore';
+import { useAuth } from '../../../context/AuthContext';
+import {
+  useDeletePublicacion,
+  useToggleReaccion,
+  useUpdatePublicacion,
+} from '../../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
 import { useToastHook } from '../../common/Toast';
 import { ROUTES } from '../../../routes/paths';
@@ -28,12 +33,13 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, linkToDetail = true }: PostCardProps) {
-  const autor = useMemberById(post.autorId);
-  const toggleReaction = useCommunitiesStore((s) => s.toggleReaction);
-  const togglePostPin = useCommunitiesStore((s) => s.togglePostPin);
-  const removePost = useCommunitiesStore((s) => s.removePost);
+  const { user } = useAuth();
+  const toggleReactionMut = useToggleReaccion(post.comunidadId);
+  const updatePostMut = useUpdatePublicacion(post.comunidadId);
+  const deletePostMut = useDeletePublicacion(post.comunidadId);
   const { puedeModerar } = useCommunityPermissions(post.comunidadId);
   const toast = useToastHook();
+  const autorNombre = (post as Post & { autorNombre?: string }).autorNombre ?? 'Miembro';
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -41,17 +47,17 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
   const [showDelete, setShowDelete] = useState(false);
 
   const reactionCounts = (tipo: TipoReaccion) => post.reacciones.filter((r) => r.tipo === tipo).length;
-  const myReaction = post.reacciones.find((r) => r.miembroId === CURRENT_MEMBER_ID)?.tipo;
+  const myReaction = post.reacciones.find((r) => r.miembroId === user?.id)?.tipo;
 
   const detailPath = ROUTES.communities.post(post.comunidadId, post.id);
 
   const content = (
     <>
       <div className="fp-com-post-header">
-        <Avatar src={autor?.avatarUrl} nombre={autor?.nombre ?? '?'} size={38} />
+        <Avatar src="" nombre={autorNombre} size={38} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-            {autor?.nombre ?? 'Miembro'}
+            {autorNombre}
           </p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(
@@ -79,7 +85,8 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
                     key: 'pin',
                     label: post.fijado ? 'Dejar de fijar' : 'Fijar publicación',
                     icon: post.fijado ? PinOff : Pin,
-                    onSelect: () => togglePostPin(post.id),
+                    onSelect: () =>
+                      updatePostMut.mutate({ postId: post.id, fijado: !post.fijado }),
                   },
                 ]
               : []),
@@ -89,7 +96,7 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
               icon: Flag,
               onSelect: () => setShowReport(true),
             },
-            ...(puedeModerar || post.autorId === CURRENT_MEMBER_ID
+            ...(puedeModerar || post.autorId === user?.id
               ? [
                   {
                     key: 'delete',
@@ -115,19 +122,19 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
           tipo="like"
           count={reactionCounts('like')}
           active={myReaction === 'like'}
-          onToggle={() => toggleReaction(post.id, 'like')}
+          onToggle={() => toggleReactionMut.mutate({ postId: post.id, tipo: 'like' })}
         />
         <ReactionButton
           tipo="fuego"
           count={reactionCounts('fuego')}
           active={myReaction === 'fuego'}
-          onToggle={() => toggleReaction(post.id, 'fuego')}
+          onToggle={() => toggleReactionMut.mutate({ postId: post.id, tipo: 'fuego' })}
         />
         <ReactionButton
           tipo="aplauso"
           count={reactionCounts('aplauso')}
           active={myReaction === 'aplauso'}
-          onToggle={() => toggleReaction(post.id, 'aplauso')}
+          onToggle={() => toggleReactionMut.mutate({ postId: post.id, tipo: 'aplauso' })}
         />
         <div className="flex-1" />
         {linkToDetail ? (
@@ -163,7 +170,7 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
         description="Esta acción no se puede deshacer."
         confirmLabel="Eliminar"
         danger
-        onConfirm={() => removePost(post.id)}
+        onConfirm={() => deletePostMut.mutate(post.id)}
         onClose={() => setShowDelete(false)}
       />
     </article>

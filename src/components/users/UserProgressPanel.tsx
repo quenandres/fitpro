@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { ActivityHeatmap } from '../tracking/ActivityHeatmap';
 import { RecentSessionsList } from '../tracking/RecentSessionsList';
 import { TrackingPeriodNav } from '../tracking/TrackingPeriodNav';
 import { TrackingStats } from '../tracking/TrackingStats';
-import { getSesionesByUsuario, getSesionesEnRango } from '../../store/useSesionesStore';
+import { RegistrarSesionSheet } from '../tracking/RegistrarSesionSheet';
+import { DemoBadge } from '../common/DemoBadge';
+import { useSesionesStore } from '../../store/useSesionesStore';
+import { useUsuariosStore } from '../../store/useUsuariosStore';
 import { useDataStore } from '../../store/useDataStore';
 import {
   TRACKING_PERIOD_LABELS,
@@ -18,9 +22,12 @@ interface Props {
 
 export function UserProgressPanel({ usuarioId }: Props) {
   const { rutinas, ejercicios } = useDataStore();
+  const usuarios = useUsuariosStore((s) => s.usuarios);
+  const allSesiones = useSesionesStore((s) => s.sesiones);
   const [period, setPeriod] = useState<TrackingPeriod>('semana');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [showMuscleMap, setShowMuscleMap] = useState(false);
+  const [showRegistrar, setShowRegistrar] = useState(false);
 
   const periodRange = useMemo(
     () => getPeriodRange(period, anchorDate),
@@ -28,19 +35,41 @@ export function UserProgressPanel({ usuarioId }: Props) {
   );
 
   const sesionesPeriodo = useMemo(
-    () => getSesionesEnRango(usuarioId, periodRange.desde, periodRange.hasta),
-    [usuarioId, periodRange.desde, periodRange.hasta],
+    () =>
+      allSesiones
+        .filter(
+          (s) =>
+            s.usuario_id === usuarioId &&
+            s.fecha >= periodRange.desde &&
+            s.fecha <= periodRange.hasta,
+        )
+        .sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    [allSesiones, usuarioId, periodRange.desde, periodRange.hasta],
   );
 
   const sesionesAll = useMemo(
-    () => getSesionesByUsuario(usuarioId),
-    [usuarioId],
+    () =>
+      allSesiones
+        .filter((s) => s.usuario_id === usuarioId)
+        .sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    [allSesiones, usuarioId],
   );
 
   const statsPeriodLabel = TRACKING_PERIOD_LABELS[period].toLowerCase();
 
   return (
     <div className="flex flex-col gap-4 min-w-0 animate-slide-up">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <DemoBadge label="Demo · mock" />
+        <button
+          type="button"
+          className="fp-btn fp-btn-secondary text-sm"
+          onClick={() => setShowRegistrar(true)}
+        >
+          <Plus size={14} />
+          Registrar sesión
+        </button>
+      </div>
       <TrackingStats sesiones={sesionesPeriodo} periodLabel={statsPeriodLabel} />
 
       <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
@@ -88,7 +117,7 @@ export function UserProgressPanel({ usuarioId }: Props) {
               </span>
             </span>
             <span className="text-[10px] text-muted leading-snug block">
-              Prototipo de prueba. Semana, mes y trimestre en desktop; datos estimados desde rutinas mock.
+              Mapa desde ejercicios ejecutados (series reales). Mock local hasta backend.
             </span>
           </span>
         </label>
@@ -112,6 +141,13 @@ export function UserProgressPanel({ usuarioId }: Props) {
         </div>
         <RecentSessionsList sesiones={sesionesPeriodo} />
       </div>
+
+      <RegistrarSesionSheet
+        open={showRegistrar}
+        onClose={() => setShowRegistrar(false)}
+        usuarios={usuarios}
+        defaultUsuarioId={usuarioId}
+      />
     </div>
   );
 }

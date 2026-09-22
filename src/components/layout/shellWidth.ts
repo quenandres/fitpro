@@ -23,8 +23,9 @@ export function resolveShellWidth(pathname: string): ShellWidth {
   const { library: lib } = ROUTES;
 
   if (pathname.startsWith(lib.planes) || pathname.startsWith(ROUTES.usuarios)) return 'wide';
+  if (pathname.startsWith(lib.suscripciones) || pathname.startsWith(lib.pagos)) return 'wide';
   if (pathname.startsWith(ROUTES.calendar)) return 'wide';
-  if (pathname.includes('/rutinas/nueva') || pathname.endsWith('/ia')) return 'narrow';
+  if (/\/rutinas\/nueva\/(basica|intermedia|avanzada)/.test(pathname)) return 'narrow';
 
   return 'default';
 }

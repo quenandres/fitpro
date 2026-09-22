@@ -30,6 +30,9 @@ export interface Comunidad {
   reglas: string[];
   liderIds: string[];
   creadaEn: string;
+  esMiembro?: boolean;
+  miRol?: RolComunidad | null;
+  suspendido?: boolean;
 }
 
 export interface MiembroComunidad {
@@ -78,6 +81,7 @@ export interface Post {
   comentarios: Comentario[];
   fijado?: boolean;
   creadoEn: string;
+  autorNombre?: string;
 }
 
 export type EstadoRsvp = 'confirmado' | 'lista_espera' | 'ninguno';
@@ -98,7 +102,8 @@ export interface EventoComunidad {
   finEn: string;
   cupoMax: number | null;
   participantes: Participante[];
-  creadoPorId: string;
+  creadoPorId?: string;
+  estadoParticipacion?: EstadoRsvp;
 }
 
 export interface RespuestaDiscusion {

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Check, LogOut, Shield, User } from 'lucide-react';
+import { Check, Dumbbell, LogOut, Shield, User } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { useAuth } from '../context/AuthContext';
 import { usePlatformRole } from '../hooks/usePlatformRole';
@@ -71,6 +71,29 @@ export const ProfilePage = () => {
               «{ROLE_LABEL[rolReal]}» como valor por defecto.
             </p>
           ) : null}
+        </section>
+
+        <section className="fp-card animate-slide-up delay-100" style={{ padding: 16, marginBottom: 14 }}>
+          <div className="flex items-start gap-2" style={{ marginBottom: 12 }}>
+            <Dumbbell size={14} style={{ color: 'var(--brand)', marginTop: 2 }} />
+            <div className="min-w-0">
+              <p className="font-sora text-sm" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                Tu entrenamiento
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 2 }}>
+                Crea una rutina para ti. Queda como tu plan activo y la puedes
+                ejecutar en la app de cliente.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="fp-btn fp-btn-primary w-full"
+            onClick={() => navigate(ROUTES.library.miRutinaNueva)}
+          >
+            <Dumbbell size={15} style={{ marginRight: 6 }} />
+            Crearme una rutina
+          </button>
         </section>
 
         <section className="fp-card animate-slide-up delay-150" style={{ padding: 16, marginBottom: 14 }}>

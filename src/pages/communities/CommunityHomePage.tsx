@@ -3,28 +3,24 @@ import { Calendar, MapPin } from 'lucide-react';
 import { Avatar } from '../../components/common/Avatar';
 import { ROUTES } from '../../routes/paths';
 import {
-  useCommunity,
-  useCommunityEvents,
-  useCommunityMembers,
-} from '../../store/useCommunitiesStore';
+  useComunidad,
+  useComunidadEventos,
+  useComunidadMiembros,
+} from '../../lib/gateway/hooks';
 import { useIsLargeScreen } from '../../hooks/useMediaQuery';
-import { useNow } from '../../hooks/useNow';
 
 /** Inicio de la comunidad: resumen para móvil (los sidebars ya cubren esto en desktop). */
 export function CommunityHomePage() {
   const { id } = useParams<{ id: string }>();
-  const comunidad = useCommunity(id);
+  const { data: comunidad } = useComunidad(id);
   const isLargeScreen = useIsLargeScreen();
-  const miembros = useCommunityMembers(id);
-  const eventos = useCommunityEvents(id);
-  const now = useNow();
+  const { data: miembros = [] } = useComunidadMiembros(id);
+  const { data: eventos = [] } = useComunidadEventos(id, 'proximos');
 
   if (!comunidad) return null;
 
   const lideres = miembros.filter((m) => comunidad.liderIds.includes(m.id));
-  const proximoEvento = eventos
-    .filter((e) => new Date(e.inicioEn).getTime() >= now)
-    .sort((a, b) => new Date(a.inicioEn).getTime() - new Date(b.inicioEn).getTime())[0];
+  const proximoEvento = eventos[0];
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,37 +64,23 @@ export function CommunityHomePage() {
         </Link>
       ) : null}
 
-      {!isLargeScreen ? (
+      {!isLargeScreen && lideres.length > 0 ? (
         <div className="fp-com-card">
-          <h2 className="font-sora font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+          <h2 className="font-sora font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
             Líderes
           </h2>
-          <div className="flex flex-col gap-2 mt-3">
-            {lideres.map((l) => (
-              <div key={l.id} className="flex items-center gap-2">
-                <Avatar src={l.avatarUrl} nombre={l.nombre} size={32} />
+          <div className="flex flex-wrap gap-3">
+            {lideres.map((lider) => (
+              <div key={lider.id} className="flex items-center gap-2">
+                <Avatar src={lider.avatarUrl} nombre={lider.nombre} size={32} />
                 <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {l.nombre}
+                  {lider.nombre}
                 </span>
               </div>
             ))}
           </div>
         </div>
       ) : null}
-
-      <div className="fp-com-card">
-        <div className="flex items-center justify-between">
-          <h2 className="font-sora font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-            Publicaciones recientes
-          </h2>
-          <Link to={ROUTES.communities.posts(comunidad.id)} className="text-xs font-semibold" style={{ color: 'var(--accent-pink)' }}>
-            Ver feed →
-          </Link>
-        </div>
-        <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-          Entra al feed para ver, reaccionar y comentar las publicaciones de la comunidad.
-        </p>
-      </div>
     </div>
   );
 }

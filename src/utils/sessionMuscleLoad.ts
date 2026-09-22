@@ -1,27 +1,29 @@
-import type { Ejercicio, Rutina, SesionEntrenamiento } from '../types';
+import type { Ejercicio, SesionEntrenamiento } from '../types';
 import { aggregateRoutineMuscles } from './routineMuscles';
 
-/**
- * Estima músculos trabajados a partir de las rutinas asociadas a sesiones completadas.
- * Prueba/demo: el historial mock no guarda ejercicios ejecutados por sesión.
- */
+/** Agrega músculos desde ejercicios ejecutados (mock local). */
 export function aggregateSessionMuscleLoad(
   sesiones: readonly SesionEntrenamiento[],
-  rutinas: readonly Rutina[],
+  _rutinas: readonly unknown[],
   ejerciciosLib: readonly Ejercicio[],
 ): Record<string, number> {
   const totals: Record<string, number> = {};
 
   for (const sesion of sesiones) {
-    const rutina = rutinas.find((r) => r.id === sesion.rutina_id);
-    if (!rutina) continue;
+    if (!sesion.ejercicios?.length) continue;
 
-    const hits = aggregateRoutineMuscles(rutina.ejercicios, ejerciciosLib);
-    const plannedSeries = rutina.ejercicios.reduce((acc, e) => acc + e.series, 0);
-    const weight = plannedSeries > 0 ? sesion.series_completadas / plannedSeries : 1;
+    for (const ejecutado of sesion.ejercicios) {
+      const seriesCount = ejecutado.series.length;
+      if (seriesCount === 0) continue;
 
-    for (const [muscle, count] of Object.entries(hits)) {
-      totals[muscle] = (totals[muscle] ?? 0) + count * weight;
+      const hits = aggregateRoutineMuscles(
+        [{ ejercicio_id: ejecutado.ejercicio_id, nombre: ejecutado.nombre }],
+        ejerciciosLib,
+      );
+
+      for (const [muscle, count] of Object.entries(hits)) {
+        totals[muscle] = (totals[muscle] ?? 0) + count * seriesCount;
+      }
     }
   }
 

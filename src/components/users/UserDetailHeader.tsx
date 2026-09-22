@@ -1,5 +1,5 @@
-import { ChevronLeft } from 'lucide-react';
 import type { Usuario } from '../../types';
+import { PageBackButton } from '../common/PageBackButton';
 import { getUltimaSesion } from '../../store/useSesionesStore';
 import {
   formatUltimoEntrenamiento,
@@ -8,15 +8,15 @@ import {
   recencyToneFromSesion,
 } from '../../utils/userSummary';
 import { UserDetailTabSwitcher, type UserDetailTab } from './UserDetailTabSwitcher';
+import { ROUTES } from '../../routes/paths';
 
 interface Props {
   user: Usuario;
   tab: UserDetailTab;
   onTabChange: (tab: UserDetailTab) => void;
-  onBack: () => void;
 }
 
-export function UserDetailHeader({ user, tab, onTabChange, onBack }: Props) {
+export function UserDetailHeader({ user, tab, onTabChange }: Props) {
   const sesion = getUltimaSesion(user.id);
   const ultima = formatUltimoEntrenamiento(sesion);
   const tone = recencyToneFromSesion(sesion);
@@ -26,14 +26,7 @@ export function UserDetailHeader({ user, tab, onTabChange, onBack }: Props) {
       <span className={`fp-user-file-rail fp-user-card-rail--${tone}`} aria-hidden />
 
       <div className="fp-user-file-head">
-        <button
-          type="button"
-          onClick={onBack}
-          className="fp-btn fp-btn-ghost shrink-0 p-2"
-          aria-label="Volver a usuarios"
-        >
-          <ChevronLeft size={20} />
-        </button>
+        <PageBackButton to={ROUTES.usuarios} label="Volver a usuarios" />
         <span className="fp-user-id fp-user-id--file">{initialsOf(user.nombre)}</span>
         <div className="fp-user-file-copy">
           <h1 className="font-sora fp-user-file-name truncate">{user.nombre}</h1>

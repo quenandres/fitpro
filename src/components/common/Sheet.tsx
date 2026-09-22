@@ -1,5 +1,9 @@
+import { createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import type { CSSProperties, ReactNode } from 'react';
+
+/** Below the first sheet (60). Nested sheets resolve to parent + 10. */
+const SheetZContext = createContext(50);
 
 interface SheetProps {
   open: boolean;
@@ -15,17 +19,24 @@ interface SheetProps {
   ariaLabel?: string;
 }
 
+export function SheetLayer({ base, children }: { base: number; children: ReactNode }) {
+  return <SheetZContext.Provider value={base}>{children}</SheetZContext.Provider>;
+}
+
 export function Sheet({
   open,
   onClose,
   children,
-  zIndex = 60,
+  zIndex,
   flexColumn = false,
   immersive = false,
   panelClassName = '',
   panelStyle,
   ariaLabel,
 }: SheetProps) {
+  const parentZ = useContext(SheetZContext);
+  const resolvedZ = zIndex ?? parentZ + 10;
+
   if (!open) return null;
 
   const panelBase = immersive
@@ -39,7 +50,7 @@ export function Sheet({
   return createPortal(
     <div
       className="animate-fade-in fixed inset-0 flex items-end md:items-center justify-center p-0 md:p-6 bg-[rgba(0,0,0,.75)] backdrop-blur-sm"
-      style={{ zIndex }}
+      style={{ zIndex: resolvedZ }}
       onClick={onClose}
       role="presentation"
     >
@@ -51,7 +62,7 @@ export function Sheet({
         aria-modal="true"
         aria-label={ariaLabel}
       >
-        {children}
+        <SheetZContext.Provider value={resolvedZ}>{children}</SheetZContext.Provider>
       </div>
     </div>,
     document.body,

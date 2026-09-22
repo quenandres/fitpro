@@ -1,7 +1,9 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { ParticipantList } from '../../components/communities/events/ParticipantList';
+import { PageBackRow } from '../../components/common/PageBackButton';
 import { useCommunitiesStore } from '../../store/useCommunitiesStore';
 import { ROUTES } from '../../routes/paths';
+import { getCommunityEventBack } from '../../utils/communityBackUtils';
 
 export function CommunityEventParticipantsPage() {
   const { id, eventId } = useParams<{ id: string; eventId: string }>();
@@ -9,8 +11,11 @@ export function CommunityEventParticipantsPage() {
 
   if (!evento) return <Navigate to={ROUTES.communities.events(id ?? '')} replace />;
 
+  const back = getCommunityEventBack(id ?? '', eventId ?? '');
+
   return (
     <div className="fp-com-card">
+      <PageBackRow to={back.to} label={back.label} />
       <h1 className="font-sora text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
         Participantes — {evento.titulo}
       </h1>

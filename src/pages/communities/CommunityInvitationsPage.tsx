@@ -1,7 +1,9 @@
 import { Check, Mail, X } from 'lucide-react';
 import { EmptyState } from '../../components/common/EmptyState';
+import { PageBackRow } from '../../components/common/PageBackButton';
 import { useCommunitiesStore, useMemberById } from '../../store/useCommunitiesStore';
 import { useToastHook } from '../../components/common/Toast';
+import { getCommunityExploreBack } from '../../utils/communityBackUtils';
 
 export function CommunityInvitationsPage() {
   const invitaciones = useCommunitiesStore((s) => s.invitaciones);
@@ -10,9 +12,11 @@ export function CommunityInvitationsPage() {
   const toast = useToastHook();
 
   const pendientes = invitaciones.filter((i) => i.estado === 'pendiente');
+  const back = getCommunityExploreBack();
 
   return (
     <div className="animate-slide-up">
+      <PageBackRow to={back.to} label={back.label} />
       <h1 className="font-sora text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
         Invitaciones
       </h1>

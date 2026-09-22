@@ -26,12 +26,12 @@ import { useCommunitiesStore } from '../../store/useCommunitiesStore';
 import { SHELL_WIDTH_CLASS } from './shellWidth';
 
 const NAV_ITEMS = [
-  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: '#22c55e' },
-  { path: ROUTES.usuarios,           Icon: UserRound,     label: 'Usuarios',    accent: '#58a6ff' },
-  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: '#a371f7' },
-  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: '#f0883e' },
-  { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: '#f778ba' },
-  { path: ROUTES.perfil,             Icon: User,          label: 'Perfil',      accent: '#2dd4bf' },
+  { path: ROUTES.home,               Icon: Home,          label: 'Inicio',      accent: 'var(--brand)' },
+  { path: ROUTES.usuarios,           Icon: UserRound,     label: 'Usuarios',    accent: 'var(--accent-blue)' },
+  { path: ROUTES.library.rutinas,    Icon: ClipboardList, label: 'Rutinas',     accent: 'var(--accent-purple)' },
+  { path: ROUTES.calendar,           Icon: CalendarDays,  label: 'Calendario',  accent: 'var(--accent-orange)' },
+  { path: ROUTES.communities.root,   Icon: Users,         label: 'Comunidades', accent: 'var(--accent-pink)' },
+  { path: ROUTES.perfil,             Icon: User,          label: 'Perfil',      accent: 'var(--accent-teal)' },
 ] as const;
 
 const isNavActive = (pathname: string, path: string) =>

@@ -1,9 +1,9 @@
-import type { DiaSemana, Rutina, SemanaPlan, Usuario } from '../types';
+import type { Rutina, SemanaPlan, SesionPlan, Usuario } from '../types';
 import { toEjercicioPersonalizado } from './distributeExercises';
 
-export interface DiaRef {
+export interface SesionRef {
   semana: number;
-  diaIndex: number;
+  sesionIndex: number;
 }
 
 export const mapSemana = (
@@ -20,19 +20,21 @@ export const mapSemana = (
   },
 });
 
-export const mapDia = (
+export const mapSesion = (
   user: Usuario,
-  ref: DiaRef,
-  transform: (d: DiaSemana) => DiaSemana,
+  ref: SesionRef,
+  transform: (s: SesionPlan) => SesionPlan,
 ): Usuario =>
   mapSemana(user, ref.semana, (semana) => ({
     ...semana,
-    dias: semana.dias.map((dia, idx) => (idx === ref.diaIndex ? transform(dia) : dia)),
+    sesiones: semana.sesiones.map((sesion, idx) =>
+      idx === ref.sesionIndex ? transform(sesion) : sesion,
+    ),
   }));
 
-export function applyRutinaToUser(user: Usuario, ref: DiaRef, rutina: Rutina): Usuario {
-  return mapDia(user, ref, (d) => ({
-    ...d,
+export function applyRutinaToUser(user: Usuario, ref: SesionRef, rutina: Rutina): Usuario {
+  return mapSesion(user, ref, (s) => ({
+    ...s,
     rutina_id: rutina.id,
     rutina_nombre: rutina.nombre,
     ejercicios_personalizados: rutina.ejercicios.map(toEjercicioPersonalizado),

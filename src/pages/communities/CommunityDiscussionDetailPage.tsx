@@ -5,9 +5,11 @@ import { Avatar } from '../../components/common/Avatar';
 import { ActionMenu } from '../../components/common/ActionMenu';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { CommentComposer } from '../../components/communities/feed/CommentComposer';
+import { PageBackRow } from '../../components/common/PageBackButton';
 import { useCommunitiesStore, useMemberById } from '../../store/useCommunitiesStore';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
 import { ROUTES } from '../../routes/paths';
+import { getCommunityDiscussionsBack } from '../../utils/communityBackUtils';
 
 export function CommunityDiscussionDetailPage() {
   const { id, discussionId } = useParams<{ id: string; discussionId: string }>();
@@ -23,8 +25,11 @@ export function CommunityDiscussionDetailPage() {
 
   if (!discusion) return <Navigate to={ROUTES.communities.discussions(id ?? '')} replace />;
 
+  const back = getCommunityDiscussionsBack(id ?? '');
+
   return (
     <div className="flex flex-col gap-4">
+      <PageBackRow to={back.to} label={back.label} />
       <div className="fp-com-card">
         <div className="flex items-start gap-3">
           <Avatar src={autor?.avatarUrl} nombre={autor?.nombre ?? '?'} size={38} />

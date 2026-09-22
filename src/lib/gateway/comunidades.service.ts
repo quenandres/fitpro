@@ -1,0 +1,180 @@
+import { gatewayFetch } from './client';
+import type {
+  Comunidad,
+  EventoComunidad,
+  MiembroComunidad,
+  Post,
+  RolComunidad,
+  TipoPost,
+  TipoReaccion,
+} from '../../types/community';
+
+export type TabExplorar = 'para-ti' | 'mis-comunidades' | 'descubrir';
+
+export async function listComunidades(params: {
+  tab?: TabExplorar;
+  q?: string;
+}): Promise<Comunidad[]> {
+  const search = new URLSearchParams();
+  if (params.tab) search.set('tab', params.tab);
+  if (params.q?.trim()) search.set('q', params.q.trim());
+  const qs = search.toString();
+  return gatewayFetch<Comunidad[]>(`/api/comunidades${qs ? `?${qs}` : ''}`);
+}
+
+export async function getComunidad(id: string): Promise<Comunidad & {
+  esMiembro: boolean;
+  miRol: RolComunidad | null;
+  suspendido?: boolean;
+}> {
+  return gatewayFetch(`/api/comunidades/${id}`);
+}
+
+export async function createComunidad(body: {
+  nombre: string;
+  descripcion: string;
+  categoria: string;
+  visibilidad: string;
+  reglas?: string[];
+  portadaUrl?: string;
+  avatarUrl?: string;
+}): Promise<Comunidad> {
+  return gatewayFetch('/api/comunidades', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function joinComunidad(id: string): Promise<Comunidad> {
+  return gatewayFetch(`/api/comunidades/${id}/unirse`, { method: 'POST' });
+}
+
+export async function leaveComunidad(id: string): Promise<void> {
+  await gatewayFetch<void>(`/api/comunidades/${id}/salir`, { method: 'DELETE' });
+}
+
+export async function listMiembros(comunidadId: string): Promise<MiembroComunidad[]> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/miembros`);
+}
+
+export async function updateMiembro(
+  comunidadId: string,
+  userId: string,
+  body: { rol?: RolComunidad; suspendido?: boolean },
+): Promise<MiembroComunidad> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/miembros/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function removeMiembro(comunidadId: string, userId: string): Promise<void> {
+  await gatewayFetch<void>(`/api/comunidades/${comunidadId}/miembros/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listPublicaciones(comunidadId: string): Promise<Post[]> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/publicaciones`);
+}
+
+export async function createPublicacion(
+  comunidadId: string,
+  body: { texto: string; tipo: TipoPost },
+): Promise<Post> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/publicaciones`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function toggleReaccion(
+  comunidadId: string,
+  postId: string,
+  tipo: TipoReaccion = 'like',
+): Promise<Post> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/publicaciones/${postId}/reaccion`, {
+    method: 'POST',
+    body: JSON.stringify({ tipo }),
+  });
+}
+
+export async function addComentario(
+  comunidadId: string,
+  postId: string,
+  texto: string,
+): Promise<Post> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/publicaciones/${postId}/comentarios`, {
+    method: 'POST',
+    body: JSON.stringify({ texto }),
+  });
+}
+
+export async function updatePublicacion(
+  comunidadId: string,
+  postId: string,
+  body: { fijado?: boolean },
+): Promise<Post> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/publicaciones/${postId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deletePublicacion(comunidadId: string, postId: string): Promise<void> {
+  await gatewayFetch<void>(`/api/comunidades/${comunidadId}/publicaciones/${postId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listEventos(
+  comunidadId: string,
+  estado: 'proximos' | 'pasados' = 'proximos',
+): Promise<EventoComunidad[]> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/eventos?estado=${estado}`);
+}
+
+export async function getEvento(comunidadId: string, eventoId: string): Promise<EventoComunidad> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/eventos/${eventoId}`);
+}
+
+export async function createEvento(
+  comunidadId: string,
+  body: {
+    titulo: string;
+    descripcion?: string;
+    lugar?: string;
+    inicioEn: string;
+    finEn: string;
+    cupoMax?: number | null;
+  },
+): Promise<EventoComunidad> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/eventos`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function confirmarEvento(
+  comunidadId: string,
+  eventoId: string,
+): Promise<EventoComunidad> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/eventos/${eventoId}/confirmar`, {
+    method: 'POST',
+  });
+}
+
+export async function cancelarEvento(
+  comunidadId: string,
+  eventoId: string,
+): Promise<EventoComunidad> {
+  return gatewayFetch(`/api/comunidades/${comunidadId}/eventos/${eventoId}/confirmar`, {
+    method: 'DELETE',
+  });
+}
+
+export async function deleteEvento(comunidadId: string, eventoId: string): Promise<void> {
+  await gatewayFetch<void>(`/api/comunidades/${comunidadId}/eventos/${eventoId}`, {
+    method: 'DELETE',
+  });
+}

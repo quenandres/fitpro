@@ -7,7 +7,7 @@ import type { CalendarEvent } from './calendarUtils';
 interface FitProCalendarProps {
   selected: Date | undefined;
   onSelect: (date: Date | undefined) => void;
-  entrenoWeekdays: number[];
+  loggedSessionDates: Date[];
   citaDates: Date[];
   variant?: 'default' | 'mini' | 'mobile';
   density?: 'default' | 'rich';
@@ -19,7 +19,7 @@ interface FitProCalendarProps {
 export function FitProCalendar({
   selected,
   onSelect,
-  entrenoWeekdays,
+  loggedSessionDates,
   citaDates,
   variant = 'default',
   density = 'default',
@@ -29,10 +29,10 @@ export function FitProCalendar({
 }: FitProCalendarProps) {
   const modifiers = useMemo(
     () => ({
-      entreno: entrenoWeekdays.length > 0 ? { dayOfWeek: entrenoWeekdays } : [],
+      entreno: loggedSessionDates,
       cita: citaDates,
     }),
-    [entrenoWeekdays, citaDates],
+    [loggedSessionDates, citaDates],
   );
 
   if (density === 'rich' && month) {

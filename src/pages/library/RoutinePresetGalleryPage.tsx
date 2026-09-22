@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, LayoutTemplate, Loader2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronRight, LayoutTemplate, Loader2 } from 'lucide-react';
+import { PageBackRow } from '../../components/common/PageBackButton';
 import {
   PRESET_CATEGORY_LABELS,
   ROUTINE_PRESETS,
@@ -113,6 +114,8 @@ const PresetCard = ({
 
 export const RoutinePresetGalleryPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const paraMi = searchParams.get('para') === 'mi';
   const [category, setCategory] = useState<PresetCategory | 'all'>('all');
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +127,9 @@ export const RoutinePresetGalleryPage = () => {
     setError(null);
     try {
       const { form, matchedCount, totalCount } = await applyRoutinePreset(preset);
-      navigate(LEVEL_ROUTES[preset.level], {
+      navigate(
+        paraMi ? `${LEVEL_ROUTES[preset.level]}?para=mi` : LEVEL_ROUTES[preset.level],
+        {
         state: {
           presetForm: form,
           presetName: preset.nombre,
@@ -142,13 +147,11 @@ export const RoutinePresetGalleryPage = () => {
 
   return (
     <div>
-      <Link
+      <PageBackRow
         to={ROUTES.library.rutinasNueva}
-        className="fp-btn fp-btn-ghost animate-slide-up"
-        style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
-      >
-        <ChevronLeft size={14} /> Volver a crear rutina
-      </Link>
+        label="Volver a elegir nivel"
+        className="animate-slide-up"
+      />
 
       <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
         <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>

@@ -1,18 +1,18 @@
 import { useParams, Link } from 'react-router-dom';
 import { AlertTriangle, Calendar, MessageSquare, ShieldAlert, Users } from 'lucide-react';
+import { useCommunityReports } from '../../store/useCommunitiesStore';
 import {
-  useCommunity,
-  useCommunityMembers,
-  useCommunityPosts,
-  useCommunityReports,
-} from '../../store/useCommunitiesStore';
+  useComunidad,
+  useComunidadMiembros,
+  useComunidadPosts,
+} from '../../lib/gateway/hooks';
 import { ROUTES } from '../../routes/paths';
 
 export function CommunityAdminPage() {
   const { id } = useParams<{ id: string }>();
-  const comunidad = useCommunity(id);
-  const miembros = useCommunityMembers(id);
-  const posts = useCommunityPosts(id);
+  const { data: comunidad } = useComunidad(id);
+  const { data: miembros = [] } = useComunidadMiembros(id);
+  const { data: posts = [] } = useComunidadPosts(id);
   const reportes = useCommunityReports(id);
 
   if (!comunidad) return null;

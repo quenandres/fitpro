@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { createPlan, linkClient } from '../lib/gateway/training.service';
+import { planUsuarioToCreatePlanBody } from '../utils/planGatewayAdapter';
 import type {
   EjercicioPersonalizado,
   PlanModo,
@@ -344,6 +346,13 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
         dias_entrenar: normalized.dias_entrenar_semana,
         plan: normalized,
       });
+
+      if (selectedUser.client_uuid) {
+        void (async () => {
+          await linkClient(selectedUser.client_uuid!);
+          await createPlan(planUsuarioToCreatePlanBody(selectedUser.client_uuid!, normalized));
+        })().catch(() => undefined);
+      }
     },
     [selectedUser, onUpdate],
   );

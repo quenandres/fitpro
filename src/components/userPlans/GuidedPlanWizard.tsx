@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import type { Ejercicio, Rutina, Usuario } from '../../types';
 import { DemoBadge } from '../common/DemoBadge';
-import { Sheet } from '../common/Sheet';
+import { Sheet, SheetLayer } from '../common/Sheet';
 import { FrecuenciaSelector } from './FrecuenciaSelector';
 import { PlanModoSelector } from './PlanModoSelector';
 import { PlanProgresionSelector } from './PlanProgresionSelector';
@@ -287,10 +287,12 @@ export function GuidedPlanWizard({
     </div>
   );
 
+  const childSheetOpen = editorIndex != null || pickerIndex != null;
+
   return (
-    <>
+    <SheetLayer base={100}>
       <Sheet
-        open
+        open={!childSheetOpen}
         onClose={onClose}
         flexColumn
         immersive
@@ -804,7 +806,7 @@ export function GuidedPlanWizard({
         onClose={() => setPickerIndex(null)}
         onSelect={(rutina) => handleSelectRutina(rutina)}
       />
-    </>
+    </SheetLayer>
   );
 }
 

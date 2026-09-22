@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { PageBackRow } from '../../common/PageBackButton';
 import type { RoutineFormLevel } from '../../../types';
 import type { ValidationError } from '../../../utils/validators';
 import { getFieldError } from '../../../utils/routineFormValidators';
@@ -54,18 +53,12 @@ export const RoutineFormShell = ({
   footer,
 }: Props) => {
   const meta = LEVEL_META[level];
-  const backLabel = 'Elegir otro nivel';
+  const backLabel = 'Volver a elegir nivel';
   const nombreError = getFieldError(errors, 'nombre');
 
   return (
     <div>
-      <Link
-        to={meta.backTo}
-        className="fp-btn fp-btn-ghost animate-slide-up"
-        style={{ gap: 4, padding: '4px 0', marginBottom: 12, fontSize: 12 }}
-      >
-        <ChevronLeft size={14} /> {backLabel}
-      </Link>
+      <PageBackRow to={meta.backTo} label={backLabel} className="animate-slide-up" />
 
       <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
         <span

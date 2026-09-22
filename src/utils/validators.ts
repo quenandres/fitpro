@@ -33,6 +33,16 @@ export interface ExerciseInRoutine {
 
 export interface GenerateRoutineInput {
   objetivo: string;
+  cliente?: {
+    usuario_id?: string | number;
+    edad?: number;
+    peso_kg?: number;
+    nivel?: string;
+    objetivo?: string;
+    dias_entrenar?: number;
+    equipamiento?: string;
+    limitaciones?: string;
+  };
   nivel?: string;
   duracion_min?: number;
   equipamiento?: string;
@@ -129,6 +139,14 @@ export const validateGenerateRoutineInput = (input: GenerateRoutineInput): Valid
 
   if (input.limitaciones && input.limitaciones.length > 300) {
     errors.push({ field: 'limitaciones', message: 'Reduce el detalle de limitaciones (max 300 caracteres)' });
+  }
+
+  if (input.cliente?.edad !== undefined && (input.cliente.edad < 10 || input.cliente.edad > 100)) {
+    errors.push({ field: 'cliente.edad', message: 'La edad debe estar entre 10 y 100 años' });
+  }
+
+  if (input.cliente?.peso_kg !== undefined && (input.cliente.peso_kg < 20 || input.cliente.peso_kg > 300)) {
+    errors.push({ field: 'cliente.peso_kg', message: 'El peso debe estar entre 20 y 300 kg' });
   }
 
   return errors;

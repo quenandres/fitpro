@@ -19,10 +19,11 @@ import {
   buildCalendarEvents,
   fechaLocalISO,
   getDaysInMonth,
+  getCuotaSemanalClientes,
   getDefaultTimeRange,
   getDayWindow,
-  getEntrenoWeekdays,
   getSchedulerRange,
+  getSesionLogDates,
   getWeekDays,
   navigateDate,
   parseFechaLocal,
@@ -61,9 +62,14 @@ export function CalendarPage() {
 
   const monthDays = useMemo(() => getDaysInMonth(selected), [selected]);
 
-  const entrenoWeekdays = useMemo(
-    () => getEntrenoWeekdays(usuarios, visibleClientIds),
+  const loggedSessionDates = useMemo(
+    () => getSesionLogDates(usuarios, visibleClientIds),
     [usuarios, visibleClientIds],
+  );
+
+  const cuotasSemanales = useMemo(
+    () => getCuotaSemanalClientes(usuarios, selected, visibleClientIds),
+    [usuarios, selected, visibleClientIds],
   );
 
   const citaDates = useMemo(() => {
@@ -149,8 +155,9 @@ export function CalendarPage() {
   const sidebarProps = {
     selected,
     onSelectDate: setSelected,
-    entrenoWeekdays,
+    loggedSessionDates,
     citaDates,
+    cuotasSemanales,
     usuarios,
     visibleClientIds,
     onToggleClient: toggleClient,
@@ -193,7 +200,7 @@ export function CalendarPage() {
                   <FitProCalendar
                     selected={selected}
                     onSelect={(date) => date && handleMonthDaySelect(date)}
-                    entrenoWeekdays={entrenoWeekdays}
+                    loggedSessionDates={loggedSessionDates}
                     citaDates={citaDates}
                     month={selected}
                     onMonthChange={setSelected}
@@ -239,7 +246,7 @@ export function CalendarPage() {
                     <FitProCalendar
                       selected={selected}
                       onSelect={(date) => date && setSelected(date)}
-                      entrenoWeekdays={entrenoWeekdays}
+                      loggedSessionDates={loggedSessionDates}
                       citaDates={citaDates}
                       month={selected}
                       onMonthChange={setSelected}

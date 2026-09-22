@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import type { SesionEntrenamiento } from '../../types';
 import {
   TRACKING_MODALIDAD_LABELS,
   formatSessionDate,
 } from '../../utils/trackingUtils';
+import { ROUTES } from '../../routes/paths';
 
 interface RecentSessionsListProps {
   sesiones: SesionEntrenamiento[];
@@ -23,16 +25,23 @@ export function RecentSessionsList({ sesiones, limit = 10 }: RecentSessionsListP
   return (
     <ul className="fp-tracking-session-list">
       {recent.map((s) => (
-        <li key={s.id} className="fp-tracking-session-row">
-          <div className="fp-tracking-session-main">
-            <p className="fp-tracking-session-title">{s.rutina_nombre}</p>
-            <p className="fp-tracking-session-meta">
-              {formatSessionDate(s.fecha)} · {s.duracion_min} min · {s.series_completadas} series
-            </p>
-          </div>
-          <span className={`fp-tracking-badge fp-tracking-badge--${s.modalidad}`}>
-            {TRACKING_MODALIDAD_LABELS[s.modalidad]}
-          </span>
+        <li key={s.id}>
+          <Link
+            to={ROUTES.trackingSesion(s.id)}
+            className="fp-tracking-session-row block no-underline"
+            style={{ color: 'inherit' }}
+          >
+            <div className="fp-tracking-session-main">
+              <p className="fp-tracking-session-title">{s.rutina_nombre}</p>
+              <p className="fp-tracking-session-meta">
+                {formatSessionDate(s.fecha)} · {s.duracion_min} min · {s.series_completadas} series
+                {s.ejercicios?.length ? ` · ${s.ejercicios.length} ejercicios` : ''}
+              </p>
+            </div>
+            <span className={`fp-tracking-badge fp-tracking-badge--${s.modalidad}`}>
+              {TRACKING_MODALIDAD_LABELS[s.modalidad]}
+            </span>
+          </Link>
         </li>
       ))}
     </ul>

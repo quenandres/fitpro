@@ -1,12 +1,23 @@
-import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, Dumbbell, Check, Sparkles } from 'lucide-react';
-import type { Rutina, Usuario, SemanaPlan, DiaSemana } from '../../types';
-import { DIAS_SEMANA } from './diasSemana';
-import { distribuirEjercicios } from '../../utils/distributeExercises';
+import { useState } from 'react';
+import { Check, ChevronLeft, ChevronRight, ClipboardList, Plus, Sparkles, X } from 'lucide-react';
+import type { SemanaPlan, Usuario } from '../../types';
+import { FRECUENCIA_IDEAL, createEmptySemanaPlan } from '../../utils/planScheduleUtils';
+import { fechaLocalISO } from '../../utils/trackingUtils';
+import { gatewayErrorMessage } from '../../lib/gateway/errors';
+import { inviteClient } from '../../lib/gateway/training.service';
+import {
+  composeClienteObjetivo,
+  generateClientPlanFromObjetivo,
+  programacionToInviteSemanas,
+} from '../../utils/generateClientRoutine';
+import { persistRoutineToGateway } from '../../utils/persistRoutineToGateway';
+import { useDataStore } from '../../store/useDataStore';
+import { FrecuenciaSelector } from './FrecuenciaSelector';
 import { Sheet } from '../common/Sheet';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 interface Props {
-  rutinas: Rutina[];
   nextUserId: number;
   onClose: () => void;
   onCreate: (user: Usuario) => void;
@@ -27,9 +38,10 @@ interface PlanDraft {
 }
 
 const ACCENT = 'var(--accent-purple)';
+const MODO_INICIAL = 'sesiones_variables';
 
-export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Props) => {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+export const CreatePlanWizard = ({ nextUserId, onClose, onCreate }: Props) => {
+  const [step, setStep] = useState<1 | 2>(1);
   const [usuario, setUsuario] = useState<UsuarioDraft>({
     nombre: '',
     email: '',
@@ -38,104 +50,127 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
     peso_kg: '',
   });
   const [plan, setPlan] = useState<PlanDraft>({ nombre: '', descripcion: '', semanas: 4 });
-  const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([1, 3, 5]);
-  const [rutinaBaseId, setRutinaBaseId] = useState<number | null>(null);
-  const [aplicarATodas, setAplicarATodas] = useState(true);
+  const [frecuencia, setFrecuencia] = useState(FRECUENCIA_IDEAL);
+  const [generateAi, setGenerateAi] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [phase, setPhase] = useState<'idle' | 'generating' | 'inviting'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const addRutina = useDataStore((s) => s.addRutina);
 
-  const rutinaBase = useMemo(
-    () => rutinas.find((r) => r.id === rutinaBaseId),
-    [rutinas, rutinaBaseId]
-  );
+  const emailOk = EMAIL_RE.test(usuario.email.trim());
+  const objetivoMcp = composeClienteObjetivo(usuario.objetivo, plan.descripcion);
+  const step1Valid = usuario.nombre.trim().length > 0 && emailOk;
+  const aiReady = !generateAi || (objetivoMcp.length >= 10 && objetivoMcp.length <= 500);
+  const step2Valid = plan.nombre.trim().length > 0 && aiReady;
 
-  const distribucionPreview = useMemo(() => {
-    if (!rutinaBase) return null;
-    const ordenados = [...diasSeleccionados].sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b));
-    return distribuirEjercicios(rutinaBase.ejercicios, ordenados);
-  }, [rutinaBase, diasSeleccionados]);
-
-  const step1Valid = usuario.nombre.trim().length > 0;
-  const step2Valid = plan.nombre.trim().length > 0 && diasSeleccionados.length > 0;
-
-  const toggleDia = (dia: number) => {
-    setDiasSeleccionados((prev) =>
-      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]
-    );
+  const goToStep2 = () => {
+    setPlan((p) => ({
+      ...p,
+      nombre: p.nombre.trim() ? p.nombre : `Plan de ${usuario.nombre.trim()}`,
+    }));
+    setStep(2);
   };
 
-  const handleCrear = () => {
-    const ordenados = [...diasSeleccionados].sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b));
-    const distribucion = rutinaBase
-      ? distribuirEjercicios(rutinaBase.ejercicios, ordenados)
-      : null;
+  const handleCrear = async () => {
+    if (!step1Valid || !step2Valid || saving) return;
+    const nombre = usuario.nombre.trim();
+    const email = usuario.email.trim().toLowerCase();
+    const planNombre = plan.nombre.trim();
+    const pesoParsed = usuario.peso_kg.trim() ? Number(usuario.peso_kg) : undefined;
+    const pesoKg =
+      pesoParsed != null && Number.isFinite(pesoParsed) && pesoParsed >= 20 && pesoParsed <= 300
+        ? pesoParsed
+        : undefined;
 
-    const buildSemana = (semanaNum: number): SemanaPlan => {
-      const dias: DiaSemana[] = DIAS_SEMANA.map((d) => {
-        const seleccionado = diasSeleccionados.includes(d.dia);
-        if (!seleccionado) {
-          return {
-            dia: d.dia,
-            nombre: d.nombre,
-            rutina_id: null,
-            rutina_nombre: '',
-            ejercicios_personalizados: [],
-          };
-        }
-        if (distribucion && rutinaBase && (aplicarATodas || semanaNum === 1)) {
-          const ejercicios = distribucion.get(d.dia) || [];
-          return {
-            dia: d.dia,
-            nombre: d.nombre,
-            rutina_id: rutinaBase.id,
-            rutina_nombre: rutinaBase.nombre,
-            ejercicios_personalizados: ejercicios,
-          };
-        }
-        return {
-          dia: d.dia,
-          nombre: d.nombre,
-          rutina_id: 0,
-          rutina_nombre: 'Entrenamiento',
-          ejercicios_personalizados: [],
-        };
+    setSaving(true);
+    setError(null);
+    let currentPhase: 'generating' | 'inviting' = 'inviting';
+    try {
+      let programacion: SemanaPlan[] = Array.from({ length: plan.semanas }, (_, i) =>
+        createEmptySemanaPlan(i + 1, frecuencia, MODO_INICIAL),
+      );
+      let generatedDraft: Awaited<ReturnType<typeof generateClientPlanFromObjetivo>>['draft'] | null =
+        null;
+
+      if (generateAi) {
+        currentPhase = 'generating';
+        setPhase('generating');
+        const generated = await generateClientPlanFromObjetivo({
+          objetivo: objetivoMcp,
+          nivel: usuario.nivel,
+          pesoKg,
+          diasEntrenar: frecuencia,
+          semanas: plan.semanas,
+        });
+        programacion = generated.programacion;
+        generatedDraft = generated.draft;
+      }
+
+      currentPhase = 'inviting';
+      setPhase('inviting');
+      const created = await inviteClient({
+        email,
+        full_name: nombre,
+        plan_nombre: planNombre,
+        semanas: programacionToInviteSemanas(programacion),
       });
-      return { semana: semanaNum, dias, notas: '' };
-    };
 
-    const newUser: Usuario = {
-      id: nextUserId,
-      nombre: usuario.nombre,
-      email: usuario.email,
-      objetivo: usuario.objetivo,
-      nivel: usuario.nivel,
-      peso_kg: usuario.peso_kg.trim() ? Number(usuario.peso_kg) : undefined,
-      dias_entrenar: diasSeleccionados.length,
-      plan: {
+      if (generatedDraft) {
+        try {
+          await persistRoutineToGateway({
+            ...generatedDraft.rutina,
+            descripcion: generatedDraft.rutina.descripcion || objetivoMcp,
+          });
+          addRutina(generatedDraft.rutina);
+        } catch {
+          // La plantilla en biblioteca es opcional; el plan ya viajó en el invite.
+        }
+      }
+
+      const newUser: Usuario = {
         id: nextUserId,
-        nombre: plan.nombre,
-        descripcion: plan.descripcion,
-        semanas: plan.semanas,
-        dias_entrenar_semana: diasSeleccionados.length,
-        rutinas_asignadas: rutinaBase
-          ? [
-              {
-                rutina_id: rutinaBase.id,
-                nombre_rutina: rutinaBase.nombre,
-                frecuencia: `${diasSeleccionados.length} días/semana`,
-              },
-            ]
-          : [],
-        ejercicios_personalizados: [],
-        programacion_semanal: Array.from({ length: plan.semanas }, (_, i) => buildSemana(i + 1)),
-      },
-    };
-
-    onCreate(newUser);
+        client_uuid: created.client_id,
+        nombre,
+        email: created.email,
+        objetivo: usuario.objetivo,
+        nivel: usuario.nivel,
+        peso_kg: pesoKg,
+        dias_entrenar: frecuencia,
+        plan: {
+          id: nextUserId,
+          nombre: planNombre,
+          descripcion: plan.descripcion,
+          semanas: plan.semanas,
+          dias_entrenar_semana: frecuencia,
+          modo: MODO_INICIAL,
+          progresion: 'fijo',
+          fecha_inicio: fechaLocalISO(new Date()),
+          rutinas_asignadas: [],
+          ejercicios_personalizados: [],
+          programacion_semanal: programacion,
+        },
+      };
+      onCreate(newUser);
+    } catch (err) {
+      if (currentPhase === 'generating') {
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : 'No se pudo generar la rutina. Desactiva la IA para crear el plan vacío.';
+        setError(message);
+      } else {
+        setError(gatewayErrorMessage(err, 'No se pudo crear el cliente'));
+      }
+    } finally {
+      setSaving(false);
+      setPhase('idle');
+    }
   };
 
   const renderStepDots = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-      {[1, 2, 3].map((s) => (
-        <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: s === 3 ? 'initial' : 1 }}>
+      {[1, 2].map((s) => (
+        <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: s === 2 ? 'initial' : 1 }}>
           <div
             style={{
               width: 28,
@@ -154,7 +189,7 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
           >
             {step > s ? <Check size={14} /> : s}
           </div>
-          {s < 3 && (
+          {s < 2 && (
             <div
               style={{
                 flex: 1,
@@ -176,13 +211,13 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
       flexColumn
       immersive
       zIndex={100}
-      ariaLabel="Crear nuevo plan"
+      ariaLabel="Nuevo cliente"
       panelClassName="md:max-w-lg"
     >
       <div className="flex flex-col min-h-0 flex-1 max-w-[520px] mx-auto w-full">
         <div className="shrink-0 flex items-center justify-between px-5 pt-5 pb-3">
           <h2 className="font-sora text-xl font-bold text-primary tracking-tight">
-            Crear nuevo plan
+            Nuevo cliente
           </h2>
           <button type="button" onClick={onClose} className="fp-btn fp-btn-ghost p-2" aria-label="Cerrar">
             <X size={18} />
@@ -192,341 +227,235 @@ export const CreatePlanWizard = ({ rutinas, nextUserId, onClose, onCreate }: Pro
         <div className="shrink-0 px-5">{renderStepDots()}</div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
-        {step === 1 && (
-          <div className="animate-slide-up">
-            <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
-              PASO 1 · USUARIO
-            </p>
-            <div className="mb-3.5">
-              <label className="fp-cal-label">Nombre</label>
-              <input
-                className="fp-input"
-                placeholder="Juan Pérez"
-                value={usuario.nombre}
-                onChange={(e) => setUsuario({ ...usuario, nombre: e.target.value })}
-              />
-            </div>
-            <div className="mb-3.5">
-              <label className="fp-cal-label">Email</label>
-              <input
-                className="fp-input"
-                placeholder="juan@email.com"
-                value={usuario.email}
-                onChange={(e) => setUsuario({ ...usuario, email: e.target.value })}
-              />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-              <div>
-                <label className="fp-cal-label">Objetivo</label>
+          {step === 1 && (
+            <div className="animate-slide-up">
+              <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
+                PASO 1 · CLIENTE
+              </p>
+              <div className="mb-3.5">
+                <label className="fp-cal-label">Nombre</label>
                 <input
                   className="fp-input"
-                  placeholder="Ganar músculo"
-                  value={usuario.objetivo}
-                  onChange={(e) => setUsuario({ ...usuario, objetivo: e.target.value })}
+                  placeholder="Juan Pérez"
+                  value={usuario.nombre}
+                  onChange={(e) => setUsuario({ ...usuario, nombre: e.target.value })}
                 />
               </div>
-              <div>
-                <label className="fp-cal-label">Nivel</label>
-                <select
+              <div className="mb-3.5">
+                <label className="fp-cal-label" htmlFor="nuevo-cliente-email">Email</label>
+                <input
+                  id="nuevo-cliente-email"
                   className="fp-input"
-                  value={usuario.nivel}
-                  onChange={(e) => setUsuario({ ...usuario, nivel: e.target.value })}
-                >
-                  <option value="Principiante">Principiante</option>
-                  <option value="Intermedio">Intermedio</option>
-                  <option value="Avanzado">Avanzado</option>
-                </select>
+                  type="email"
+                  autoComplete="email"
+                  placeholder="juan@email.com"
+                  value={usuario.email}
+                  onChange={(e) => setUsuario({ ...usuario, email: e.target.value })}
+                />
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                  Le enviaremos un enlace para entrar a la app.
+                </p>
+                {usuario.email.trim() && !emailOk ? (
+                  <p style={{ fontSize: 12, color: 'var(--accent-red)', marginTop: 6 }}>
+                    Escribe un email válido para poder enviar el acceso.
+                  </p>
+                ) : null}
               </div>
-            </div>
-            <div className="mb-3.5">
-              <label className="fp-cal-label">Peso (kg)</label>
-              <input
-                className="fp-input"
-                type="number"
-                min={30}
-                max={250}
-                placeholder="75"
-                value={usuario.peso_kg}
-                onChange={(e) => setUsuario({ ...usuario, peso_kg: e.target.value })}
-              />
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="animate-slide-up">
-            <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
-              PASO 2 · PLAN Y CALENDARIO
-            </p>
-            <div className="mb-3.5">
-              <label className="fp-cal-label">Nombre del plan</label>
-              <input
-                className="fp-input"
-                placeholder="Plan Fuerza 12 semanas"
-                value={plan.nombre}
-                onChange={(e) => setPlan({ ...plan, nombre: e.target.value })}
-              />
-            </div>
-            <div className="mb-3.5">
-              <label className="fp-cal-label">Descripción</label>
-              <input
-                className="fp-input"
-                placeholder="Descripción breve"
-                value={plan.descripcion}
-                onChange={(e) => setPlan({ ...plan, descripcion: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="fp-cal-label">Duración (semanas)</label>
-              <input
-                type="number"
-                min={1}
-                max={52}
-                className="fp-input"
-                value={plan.semanas}
-                onChange={(e) => setPlan({ ...plan, semanas: Math.max(1, parseInt(e.target.value) || 1) })}
-              />
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                {Math.ceil(plan.semanas / 4)} {Math.ceil(plan.semanas / 4) === 1 ? 'mes' : 'meses'} aproximados
-              </p>
-            </div>
-
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 12,
-                background: 'var(--bg-overlay)',
-                border: '1px solid var(--border)',
-                marginBottom: 16,
-              }}
-            >
-              <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 10 }}>
-                Días de entrenamiento
-              </p>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {DIAS_SEMANA.map((d) => {
-                  const activo = diasSeleccionados.includes(d.dia);
-                  return (
-                    <button
-                      key={d.dia}
-                      onClick={() => toggleDia(d.dia)}
-                      type="button"
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: 10,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        border: activo ? `2px solid ${ACCENT}` : '1px solid var(--border)',
-                        background: activo ? `${ACCENT}20` : 'var(--bg-card)',
-                        color: activo ? ACCENT : 'var(--text-secondary)',
-                        cursor: 'pointer',
-                        transition: 'all .15s',
-                      }}
-                    >
-                      {d.nombreCorto}
-                    </button>
-                  );
-                })}
-              </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
-                {diasSeleccionados.length} {diasSeleccionados.length === 1 ? 'día' : 'días'} por semana ·{' '}
-                {7 - diasSeleccionados.length} descanso
-              </p>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="animate-slide-up">
-            <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
-              PASO 3 · RUTINA BASE (OPCIONAL)
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
-              Los ejercicios se repartirán equitativamente entre los {diasSeleccionados.length} días
-              seleccionados.
-            </p>
-
-            <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
-              <button
-                onClick={() => setRutinaBaseId(null)}
-                style={{
-                  padding: 12,
-                  borderRadius: 10,
-                  border:
-                    rutinaBaseId === null
-                      ? `2px solid ${ACCENT}`
-                      : '1px solid var(--border)',
-                  background: rutinaBaseId === null ? `${ACCENT}15` : 'var(--bg-card)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 9,
-                    background: 'var(--bg-overlay)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <X size={16} color="var(--text-muted)" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <div>
+                  <label className="fp-cal-label">Objetivo</label>
+                  <input
+                    className="fp-input"
+                    placeholder="Ganar músculo"
+                    value={usuario.objetivo}
+                    onChange={(e) => setUsuario({ ...usuario, objetivo: e.target.value })}
+                  />
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Sin rutina base
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Crear días vacíos</p>
+                  <label className="fp-cal-label">Nivel</label>
+                  <select
+                    className="fp-input"
+                    value={usuario.nivel}
+                    onChange={(e) => setUsuario({ ...usuario, nivel: e.target.value })}
+                  >
+                    <option value="Principiante">Principiante</option>
+                    <option value="Intermedio">Intermedio</option>
+                    <option value="Avanzado">Avanzado</option>
+                  </select>
                 </div>
-              </button>
+              </div>
+              <div className="mb-3.5">
+                <label className="fp-cal-label">Peso (kg)</label>
+                <input
+                  className="fp-input"
+                  type="number"
+                  min={30}
+                  max={250}
+                  placeholder="75"
+                  value={usuario.peso_kg}
+                  onChange={(e) => setUsuario({ ...usuario, peso_kg: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
 
-              {rutinas.map((r) => {
-                const activa = rutinaBaseId === r.id;
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => setRutinaBaseId(r.id)}
+          {step === 2 && (
+            <div className="animate-slide-up">
+              <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', marginBottom: 14 }}>
+                PASO 2 · PLAN
+              </p>
+              <div className="mb-3.5">
+                <label className="fp-cal-label">Nombre del plan</label>
+                <input
+                  className="fp-input"
+                  placeholder="Plan Fuerza 12 semanas"
+                  value={plan.nombre}
+                  onChange={(e) => setPlan({ ...plan, nombre: e.target.value })}
+                />
+              </div>
+              <div className="mb-3.5">
+                <label className="fp-cal-label" htmlFor="nuevo-cliente-descripcion">
+                  Qué quiere entrenar
+                </label>
+                <textarea
+                  id="nuevo-cliente-descripcion"
+                  className="fp-input resize-none"
+                  rows={4}
+                  maxLength={500}
+                  placeholder="Hipertrofia de tren superior, 4 días, sin lesiones. Prefiere mancuernas y polea."
+                  value={plan.descripcion}
+                  onChange={(e) => setPlan({ ...plan, descripcion: e.target.value })}
+                />
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                  Se combina con el objetivo del paso 1
+                  {generateAi ? ' para que la IA arme la rutina.' : '.'}{' '}
+                  {objetivoMcp.length}/500
+                </p>
+                {generateAi && !aiReady ? (
+                  <p style={{ fontSize: 12, color: 'var(--accent-red)', marginTop: 6 }}>
+                    Escribe al menos 10 caracteres entre el objetivo y esta descripción.
+                  </p>
+                ) : null}
+              </div>
+
+              <label
+                className="mb-4 flex items-start gap-3 cursor-pointer"
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  background: generateAi ? `${ACCENT}10` : 'var(--bg-overlay)',
+                  border: `1px solid ${generateAi ? `${ACCENT}40` : 'var(--border)'}`,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  id="nuevo-cliente-ia"
+                  checked={generateAi}
+                  onChange={(e) => setGenerateAi(e.target.checked)}
+                  disabled={saving}
+                  aria-label="Crear rutina automáticamente con IA"
+                  style={{ marginTop: 3 }}
+                />
+                <span>
+                  <span
                     style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      border: activa ? `2px solid ${ACCENT}` : '1px solid var(--border)',
-                      background: activa ? `${ACCENT}15` : 'var(--bg-card)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 10,
+                      gap: 6,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: generateAi ? ACCENT : 'var(--text-primary)',
                     }}
                   >
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 9,
-                        background: 'linear-gradient(135deg,#22c55e,#15803d)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Dumbbell size={16} color="#fff" />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {r.nombre}
-                      </p>
-                      <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {r.dificultad} · {r.ejercicios.length} ejercicios · {r.duracion_min} min
-                      </p>
-                    </div>
-                    {activa && <Check size={16} color={ACCENT} />}
-                  </button>
-                );
-              })}
-            </div>
+                    <Sparkles size={14} /> Crear rutina automáticamente con IA
+                  </span>
+                  <span style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.45 }}>
+                    La IA del gateway genera los ejercicios y los asignamos al plan al crear el cliente.
+                  </span>
+                </span>
+              </label>
+              <div className="mb-4">
+                <label className="fp-cal-label">Duración (semanas)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={52}
+                  className="fp-input"
+                  value={plan.semanas}
+                  onChange={(e) => setPlan({ ...plan, semanas: Math.max(1, parseInt(e.target.value) || 1) })}
+                />
+              </div>
 
-            {rutinaBase && distribucionPreview && (
+              <div className="mb-4">
+                <FrecuenciaSelector value={frecuencia} onChange={setFrecuencia} accent={ACCENT} />
+              </div>
+
               <div
                 style={{
                   padding: 14,
                   borderRadius: 12,
                   background: `${ACCENT}10`,
                   border: `1px solid ${ACCENT}40`,
-                  marginBottom: 12,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <Sparkles size={14} color={ACCENT} />
-                  <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>
-                    Auto-distribución
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <ClipboardList size={14} color={ACCENT} />
+                  <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>Siguiente paso</p>
                 </div>
-                <div style={{ display: 'grid', gap: 4 }}>
-                  {DIAS_SEMANA.filter((d) => diasSeleccionados.includes(d.dia)).map((d) => {
-                    const cantidad = distribucionPreview.get(d.dia)?.length ?? 0;
-                    return (
-                      <div
-                        key={d.dia}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '4px 0',
-                        }}
-                      >
-                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{d.nombre}</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: ACCENT }}>
-                          {cantidad} {cantidad === 1 ? 'ejercicio' : 'ejercicios'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: 12,
-                borderRadius: 10,
-                background: 'var(--bg-overlay)',
-                border: '1px solid var(--border)',
-                cursor: 'pointer',
-                marginBottom: 12,
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={aplicarATodas}
-                onChange={(e) => setAplicarATodas(e.target.checked)}
-                style={{ cursor: 'pointer' }}
-              />
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Aplicar a todas las semanas
-                </p>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                  Replicar la distribución a las {plan.semanas} semanas del plan
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  {generateAi
+                    ? `La IA arma ${frecuencia} ${frecuencia === 1 ? 'entrenamiento' : 'entrenamientos'} por semana a partir de lo que quiere el cliente. Si falla, desactiva la IA para crear el plan vacío.`
+                    : `Al crear el cliente guardamos su plan con ${frecuencia} ${frecuencia === 1 ? 'entrenamiento' : 'entrenamientos'} por semana y le enviamos el enlace de acceso. Después asignas las plantillas en Entrenamientos.`}
                 </p>
               </div>
-            </label>
-          </div>
-        )}
-
+            </div>
+          )}
         </div>
 
-        <div className="shrink-0 flex gap-2.5 px-5 py-4 border-t border-line bg-elevated">
+        <div className="shrink-0 flex flex-col gap-2.5 px-5 py-4 border-t border-line bg-elevated">
+          {error ? (
+            <p style={{ fontSize: 13, color: 'var(--accent-red)', margin: 0 }} role="alert">
+              {error}
+            </p>
+          ) : null}
+          <div className="flex gap-2.5">
           {step > 1 && (
             <button
               type="button"
-              onClick={() => setStep((step - 1) as 1 | 2 | 3)}
+              onClick={() => setStep(1)}
               className="fp-btn fp-btn-secondary flex-1 gap-1.5"
+              disabled={saving}
             >
               <ChevronLeft size={14} /> Atrás
             </button>
           )}
-          {step < 3 ? (
+          {step === 1 ? (
             <button
               type="button"
-              onClick={() => setStep((step + 1) as 1 | 2 | 3)}
+              onClick={goToStep2}
               className="fp-btn fp-btn-primary flex-1 gap-1.5"
-              disabled={(step === 1 && !step1Valid) || (step === 2 && !step2Valid)}
+              disabled={!step1Valid || saving}
             >
               Siguiente <ChevronRight size={14} />
             </button>
           ) : (
-            <button type="button" onClick={handleCrear} className="fp-btn fp-btn-primary flex-1 gap-1.5">
-              <Plus size={14} /> Crear plan
+            <button
+              type="button"
+              onClick={() => void handleCrear()}
+              className="fp-btn fp-btn-primary flex-1 gap-1.5"
+              disabled={!step2Valid || saving}
+            >
+              {generateAi ? <Sparkles size={14} /> : <Plus size={14} />}{' '}
+              {phase === 'generating'
+                ? 'Generando rutina…'
+                : phase === 'inviting'
+                  ? 'Enviando acceso…'
+                  : generateAi
+                    ? 'Crear con rutina IA'
+                    : 'Crear y enviar acceso'}
             </button>
           )}
+          </div>
         </div>
       </div>
     </Sheet>

@@ -2,6 +2,7 @@ import type { RoutinePreset } from '../data/routinePresets';
 import type { RoutineFormData, RoutineFormExercise } from '../types';
 import { createProgramacionSemanas } from './routineScheduleUtils';
 import { resolveOneExercise } from './resolveExercisesAgainstApi';
+import { ensureLocalExerciseInStore } from './ensureLocalExercise';
 
 const uid = (): string =>
   `ex_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -30,8 +31,16 @@ export const applyRoutinePreset = async (
   const ejercicios: RoutineFormExercise[] = resolved.map((ex, i) => {
     const slot = preset.exercises[i];
     const supersetGroup = slot.supersetGroup;
+    const ejercicio_id = ensureLocalExerciseInStore({
+      nombre: ex.nombre,
+      unidad_id_default: ex.unidad_id,
+      exerciseDbId: ex.exerciseDbId,
+      imageUrl: ex.imageUrl,
+      musculos_anatomia: ex.musculos_anatomia,
+    });
     return {
       _key: uid(),
+      ejercicio_id,
       nombre: ex.nombre,
       series: ex.series,
       valor: ex.valor,

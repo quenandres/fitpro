@@ -25,10 +25,14 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
     [editingId, rutinas],
   );
 
-  const initialForm = state.presetForm ?? (editingRutina ? rutinaToFormData(editingRutina) : undefined);
-  const initialCreateMode = editingRutina
-    ? inferInitialCreateMode(editingRutina)
-    : 'semana_tipo';
+  const initialForm = useMemo(
+    () => state.presetForm ?? (editingRutina ? rutinaToFormData(editingRutina) : undefined),
+    [state.presetForm, editingRutina],
+  );
+  const initialCreateMode = useMemo(
+    () => (editingRutina ? inferInitialCreateMode(editingRutina) : 'semana_tipo'),
+    [editingRutina],
+  );
 
   return {
     ...useRoutineForm(level, initialForm, editingId, initialCreateMode),

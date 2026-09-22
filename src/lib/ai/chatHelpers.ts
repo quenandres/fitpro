@@ -1,8 +1,10 @@
 import type {
   GenerateRoutineApiResponse,
+  GenerateRoutineCliente,
   GenerateRoutineRequest,
   ResolvedRoutineDraft,
-} from '../types';
+  Usuario,
+} from '../../types';
 
 export type ChatRole = 'user' | 'assistant' | 'system';
 
@@ -16,6 +18,8 @@ export interface ChatMessage {
 }
 
 export interface ChatPrefs {
+  clienteId: number | null;
+  edad: number | '';
   nivel: string;
   duracion_min: number;
   equipamiento: string;
@@ -35,7 +39,7 @@ export const createUserMessage = (content: string): ChatMessage => ({
 export const createAssistantPending = (): ChatMessage => ({
   id: uid(),
   role: 'assistant',
-  content: 'Buscando ejercicios en ExerciseDB y armando tu rutina…',
+  content: 'Generando rutina con IA y validando ejercicios en el catálogo…',
   createdAt: Date.now(),
   status: 'pending',
 });
@@ -59,11 +63,33 @@ export const createAssistantDraft = (
   draft,
 });
 
-/** Construye el payload para el backend, incluyendo historial como contexto. */
+const buildClientePayload = (
+  prefs: ChatPrefs,
+  usuario: Usuario | undefined,
+): GenerateRoutineCliente | undefined => {
+  if (!usuario && prefs.clienteId == null) return undefined;
+
+  const edad =
+    prefs.edad !== '' ? prefs.edad : usuario?.edad;
+
+  return {
+    usuario_id: usuario?.client_uuid ?? usuario?.id,
+    edad,
+    peso_kg: usuario?.peso_kg,
+    nivel: prefs.nivel || usuario?.nivel,
+    objetivo: usuario?.objetivo,
+    dias_entrenar: usuario?.dias_entrenar,
+    equipamiento: prefs.equipamiento || undefined,
+    limitaciones: prefs.limitaciones || undefined,
+  };
+};
+
+/** Construye el payload para gym-gateway /api/ai/routine, incluyendo historial como contexto. */
 export const buildGenerateRequest = (
   latestUserText: string,
   prefs: ChatPrefs,
   history: ChatMessage[],
+  usuario?: Usuario,
 ): GenerateRoutineRequest => {
   const prior = history
     .filter((m) => m.role === 'user' || (m.role === 'assistant' && m.draft))
@@ -81,6 +107,7 @@ export const buildGenerateRequest = (
 
   return {
     objetivo: objetivo.slice(0, 500),
+    cliente: buildClientePayload(prefs, usuario),
     nivel: prefs.nivel || undefined,
     duracion_min: prefs.duracion_min,
     equipamiento: prefs.equipamiento || undefined,
@@ -97,14 +124,14 @@ export const summarizeDraft = (
   const days = draft.dias_entrenamiento.join(', ');
   const reason = apiMeta?.razonamiento?.trim();
 
-  const base = `Propongo «${draft.rutina.nombre}» (${draft.rutina.dificultad}, ${draft.rutina.duracion_min} min). ${matched}/${total} ejercicios enlazados con ExerciseDB. Días: ${days || 'a definir'}.`;
-  return reason ? `${base}\n\n${reason}` : `${base}\n\nPuedes pedir cambios (más cardio, menos peso, otro enfoque) o guardar la rutina.`;
+  const base = `Propongo «${draft.rutina.nombre}» (${draft.rutina.dificultad}, ${draft.rutina.duracion_min} min). ${matched}/${total} ejercicios validados en catálogo. Días: ${days || 'a definir'}.`;
+  return reason ? `${base}\n\n${reason}` : `${base}\n\nPuedes pedir cambios o guardar la rutina.`;
 };
 
 export const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Cuéntame tu objetivo (nivel, días, equipo, lesiones). Generaré una rutina y enlazaré cada ejercicio con ExerciseDB para que puedas guardarla o refinarla en el chat.',
+    'Selecciona un cliente, describe el objetivo del entrenamiento y generaré una rutina validada contra el catálogo del gimnasio. Puedes refinar en el chat o guardar cuando esté lista.',
   createdAt: Date.now(),
 };

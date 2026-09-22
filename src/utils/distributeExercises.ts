@@ -1,17 +1,21 @@
 import type { EjercicioPersonalizado, EjercicioRutina } from '../types';
+import { normalizeEjercicioPersonalizado } from './planScheduleUtils';
 
-export const toEjercicioPersonalizado = (e: EjercicioRutina): EjercicioPersonalizado => ({
-  nombre: e.nombre,
-  series: e.series,
-  reps: e.valor,
-  notas: '',
-  rpe: e.rpe,
-  musculos_anatomia: e.musculos_anatomia,
-});
+export const toEjercicioPersonalizado = (e: EjercicioRutina): EjercicioPersonalizado =>
+  normalizeEjercicioPersonalizado({
+    ejercicio_id: e.ejercicio_id,
+    nombre: e.nombre,
+    series: e.series,
+    valor: e.valor,
+    unidad_id: e.unidad_id,
+    notas: '',
+    rpe: e.rpe,
+    musculos_anatomia: e.musculos_anatomia,
+  });
 
 export const distribuirEjercicios = (
   ejercicios: EjercicioRutina[],
-  diasSeleccionados: number[]
+  diasSeleccionados: number[],
 ): Map<number, EjercicioPersonalizado[]> => {
   const result = new Map<number, EjercicioPersonalizado[]>();
   const dias = [...diasSeleccionados];

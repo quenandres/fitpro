@@ -34,6 +34,19 @@ const extractDetail = (payload: unknown): string | undefined => {
   return undefined;
 };
 
+export function gatewayErrorMessage(err: unknown, fallback: string): string {
+  if (!(err instanceof GatewayError)) {
+    return err instanceof Error && err.message ? err.message : fallback;
+  }
+  const raw = err.message.trim();
+  if (!raw) return fallback;
+  try {
+    return extractDetail(JSON.parse(raw) as unknown) ?? raw;
+  } catch {
+    return raw;
+  }
+}
+
 export const mapGatewayAuthError = (payload: unknown, status: number): string => {
   const raw = extractDetail(payload)?.toLowerCase() ?? '';
   const asText = typeof payload === 'string' ? payload.toLowerCase() : JSON.stringify(payload).toLowerCase();

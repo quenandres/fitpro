@@ -1,24 +1,40 @@
 import { create } from 'zustand';
-import { DIAS_SEMANA } from '../components/userPlans/diasSemana';
-import type { Rutina, Usuario } from '../types';
-import { applyRutinaToUser, type DiaRef } from '../utils/planMutations';
+import type { ClientLink } from '../lib/gateway/training.service';
+import type { Ejercicio, Rutina, Usuario } from '../types';
+import { applyRutinaToUser, type SesionRef } from '../utils/planMutations';
+import { mapClientLinksToUsuarios } from '../lib/gateway/hooks';
+import { normalizePlanUsuario } from '../utils/planScheduleUtils';
+import { migratePlanUsuarioEjercicios } from '../utils/migrateExerciseIds';
 import usuariosData from '../data/usuarios.json';
+import ejerciciosData from '../data/ejercicios.json';
+import { useDataStore } from './useDataStore';
 
 interface UsuariosStore {
   usuarios: Usuario[];
+  gatewaySynced: boolean;
   updateUsuario: (id: number, updater: (user: Usuario) => Usuario) => void;
   addUsuario: (user: Usuario) => void;
-  assignRutinaToUsers: (userIds: number[], ref: DiaRef, rutina: Rutina) => void;
+  assignRutinaToUsers: (userIds: number[], ref: SesionRef, rutina: Rutina) => void;
+  syncFromGateway: (clients: ClientLink[]) => void;
 }
 
-export function dateToPlanRef(date: Date, semana = 1): DiaRef {
-  const jsDay = date.getDay();
-  const diaIndex = DIAS_SEMANA.findIndex((d) => d.dia === jsDay);
-  return { semana, diaIndex: diaIndex >= 0 ? diaIndex : 0 };
+function normalizeUsuario(raw: Usuario, ejerciciosSeed: Ejercicio[] = ejerciciosData as Ejercicio[]): Usuario {
+  const planNormalized = normalizePlanUsuario(raw.plan as Parameters<typeof normalizePlanUsuario>[0]);
+  const migrated = migratePlanUsuarioEjercicios(planNormalized, ejerciciosSeed);
+  const catalog = useDataStore.getState().ejercicios;
+  if (migrated.ejercicios.length > catalog.length) {
+    useDataStore.setState({ ejercicios: migrated.ejercicios });
+  }
+  return {
+    ...raw,
+    dias_entrenar: migrated.plan.dias_entrenar_semana,
+    plan: migrated.plan,
+  };
 }
 
-export const useUsuariosStore = create<UsuariosStore>((set) => ({
-  usuarios: usuariosData as Usuario[],
+export const useUsuariosStore = create<UsuariosStore>((set, get) => ({
+  usuarios: (usuariosData as unknown as Usuario[]).map((raw) => normalizeUsuario(raw)),
+  gatewaySynced: false,
 
   updateUsuario: (id, updater) => {
     set((state) => ({
@@ -27,7 +43,7 @@ export const useUsuariosStore = create<UsuariosStore>((set) => ({
   },
 
   addUsuario: (user) => {
-    set((state) => ({ usuarios: [...state.usuarios, user] }));
+    set((state) => ({ usuarios: [...state.usuarios, normalizeUsuario(user)] }));
   },
 
   assignRutinaToUsers: (userIds, ref, rutina) => {
@@ -36,5 +52,16 @@ export const useUsuariosStore = create<UsuariosStore>((set) => ({
         userIds.includes(u.id) ? applyRutinaToUser(u, ref, rutina) : u,
       ),
     }));
+  },
+
+  syncFromGateway: (clients) => {
+    if (clients.length === 0) return;
+    const mapped = mapClientLinksToUsuarios(clients);
+    const previous = get().usuarios;
+    const merged = mapped.map((client) => {
+      const existing = previous.find((u) => u.client_uuid === client.client_uuid);
+      return existing ? { ...existing, nombre: client.nombre, client_uuid: client.client_uuid } : client;
+    });
+    set({ usuarios: merged, gatewaySynced: true });
   },
 }));

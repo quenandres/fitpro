@@ -5,7 +5,8 @@ import { PostCard } from '../../components/communities/cards/PostCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Fab } from '../../components/common/Fab';
 import { ROUTES } from '../../routes/paths';
-import { useCommunityPosts } from '../../store/useCommunitiesStore';
+import { Skeleton } from '../../components/common/Skeleton';
+import { useComunidadPosts } from '../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
 import type { TipoPost } from '../../types/community';
 
@@ -22,7 +23,7 @@ const FILTROS: Array<{ key: TipoPost | 'todos'; label: string }> = [
 export function CommunityPostsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const posts = useCommunityPosts(id);
+  const { data: posts = [], isLoading } = useComunidadPosts(id);
   const { puedeParticipar } = useCommunityPermissions(id ?? '');
   const [filtro, setFiltro] = useState<TipoPost | 'todos'>('todos');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -57,6 +58,10 @@ export function CommunityPostsPage() {
   }, [filtered.length]);
 
   const visible = filtered.slice(0, visibleCount);
+
+  if (isLoading) {
+    return <Skeleton height={240} className="rounded-2xl" />;
+  }
 
   return (
     <div className="flex flex-col gap-4">

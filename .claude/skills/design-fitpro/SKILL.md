@@ -20,10 +20,13 @@ description: Aplica la guía visual y de UI de FitPro (tokens CSS, componentes f
 
 ## Identidad visual
 
-- **Marca:** verde (`--brand`, gradientes `#22c55e` → `#15803d` o `#4ade80`). No sustituir por otros verdes “neón” arbitrarios salvo acento puntual ya usado en la pantalla.
+Canvas casi negro + **un voltaje de marca**: verde `--brand` (`#22c55e`). Ese verde carga CTA, progreso y acción primaria. Los acentos de módulo (azul, púrpura, naranja, rosa, teal de perfil) son wayfinding de nav/chrome, no botones de guardar.
+
+- **Marca:** `--brand` / `--brand-bright`. Sobre marca: blanco. Gradientes `#22c55e` → `#15803d` o `#4ade80`. No verdes neón ni paletas paralelas (`neon-*`).
 - **Superficies:** `--bg-app`, `--bg-base`, `--bg-elevated`, `--bg-card`, `--bg-overlay`; texto `--text-primary` / `--text-secondary` / `--text-muted`.
-- **Acentos por área (referencia):** inicio/brand `#22c55e`, biblioteca `#58a6ff`, admin `#a371f7` — mismos tonos que bottom nav / stats del dashboard.
-- **Tipografía:** cuerpo **DM Sans** (por defecto en `:root`); títulos y cifras destacadas: **`font-sora`** + peso 700–800 y `letter-spacing` ligeramente negativo en hero.
+- **Acentos por área (tokens):** inicio `--brand`, usuarios/biblio `--accent-blue`, rutinas `--accent-purple`, calendario `--accent-orange`, comunidades `--accent-pink`, perfil `--accent-teal`.
+- **Tipografía:** cuerpo **DM Sans** 13–14px; display **`font-sora` 22–28px / 600–700**. Sora 800 solo en `display-hero` (saludo de dashboard / tesis de pantalla) y wordmark de auth. Escala en `DESIGN.md` §4.
+- **Forma:** cards 15px, inputs 11px, botones 10px, pills `full`. Sin esquina dura excepto la grilla.
 - **Iconos:** `lucide-react`, tamaños típicos 14–18px en listas/cards, 16px en nav.
 
 ## Layout
@@ -57,15 +60,17 @@ Auth y admin tienen bloques `.auth-*` y `.fp-admin-*` en `index.css`: reutilizar
 - **Labels:** `fp-cal-label` (11px semibold, `--text-secondary`).
 - **Búsqueda con icono:** `fp-input-group` envolviendo icono Lucide + `<input>`.
 - **No inventar** campos con `px-3.5 py-2.5 rounded-xl` + `background: var(--bg-overlay)`.
-- **Sheet con formulario:** usar `flexColumn`; cuerpo `overflow-y-auto min-h-0 flex-1`; CTA `shrink-0` fijo abajo. Referencia: [`CitaForm.tsx`](../../src/components/calendar/CitaForm.tsx) + sheet en [`CalendarPage.tsx`](../../src/pages/CalendarPage.tsx).
+- **Sheet con formulario:** usar `flexColumn`; cuerpo `overflow-y-auto min-h-0 flex-1`; CTA `shrink-0` fijo abajo. Referencia: [`CitaCreateSheet.tsx`](../../src/components/calendar/CitaCreateSheet.tsx).
 - **Z-index:** Sheet default 60 (navbar/bottom nav = 50).
 
 ## Forma y ritmo
 
-- **Radios:** cards ~14–15px; inputs ~11–12px; “chips” y iconos contenedor ~9–11px; botones ~10px (`fp-btn`).
-- **Sombras:** `var(--shadow-sm)` / `var(--shadow-md)`; CTA primario puede usar sombra con tinte marca (`fp-btn-primary`).
-- **Bordes:** `1px solid var(--border)`; hover sutil con tinte verde `rgba(34,197,94,.15–.25)` donde ya se hace en cards/botones.
+- **Radios:** cards 15px (`fp-card`); inputs 11px; botones 10px (`fp-btn`); badges/FAB/search pill `full`. Escala en `DESIGN.md` §5.
+- **Espacio:** gap de elementos 12px; padding de card 16/24px; sección 24px móvil / 32px desktop. Compacto en `< md`, cómodo en desktop.
+- **Sombras:** `var(--shadow-sm)` / `var(--shadow-md)`; CTA primario usa `--shadow-brand`.
+- **Bordes:** `1px solid var(--border)`; hover sutil con tinte verde `rgba(34,197,94,.15–.25)`.
 - **Focus:** inputs ya usan `var(--border-focus)` y anillo `var(--brand-dim)` en `.fp-input:focus` — no eliminar foco visible.
+- **Estados:** no aplanar hover/active/disabled de `fp-btn` / `fp-card-hover`.
 
 ## Tema claro / oscuro
 
@@ -80,7 +85,8 @@ Auth y admin tienen bloques `.auth-*` y `.fp-admin-*` en `index.css`: reutilizar
 ## Checklist rápida (nueva UI)
 
 - [ ] Colores y fondos vía variables o clases existentes en `index.css`.
-- [ ] Tipografía: DM Sans por defecto; Sora en títulos/ KPIs que marquen el patrón dashboard.
+- [ ] Tipografía: DM Sans cuerpo 13–14px; Sora 600–700 / 22–28px en título/KPIs (escala `DESIGN.md` §4).
+- [ ] CTA en `--brand`; acento de módulo solo en icono/barra/badge.
 - [ ] Espaciado y `max-w-md` alineados con el shell principal.
 - [ ] Iconos Lucide, tamaño y color acordes al estado (activo = acento, inactivo = `--text-muted`).
 - [ ] Formularios: `fp-input` / `fp-btn`; modales con CTA visible en móvil.
@@ -90,5 +96,7 @@ Auth y admin tienen bloques `.auth-*` y `.fp-admin-*` en `index.css`: reutilizar
 ## Anti-patrones en este repo
 
 - Introducir paleta distinta (p. ej. `tailwind.config` `neon-*`) para pantallas core sin motivo; el producto se ancla a los tokens de `index.css`.
+- Pintar el CTA con el acento del módulo (azul, naranja…) en vez de `--brand`.
+- Sora 800 fuera de `display-hero` / `.auth-title`, o display > 28px en el app shell.
 - Nuevos “design systems” paralelos (otro prefijo de botones/cards) en la misma app shell.
 - Quitar accesibilidad de foco o contrastes solo por estética.

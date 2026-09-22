@@ -3,11 +3,7 @@ import { Calendar, MapPin } from 'lucide-react';
 import { Avatar } from '../../common/Avatar';
 import { ROUTES } from '../../../routes/paths';
 import type { Comunidad } from '../../../types/community';
-import {
-  useCommunityEvents,
-  useCommunityMembers,
-} from '../../../store/useCommunitiesStore';
-import { useNow } from '../../../hooks/useNow';
+import { useComunidadEventos, useComunidadMiembros } from '../../../lib/gateway/hooks';
 
 interface CommunitySidebarRightProps {
   comunidad: Comunidad;
@@ -15,13 +11,10 @@ interface CommunitySidebarRightProps {
 
 /** Sidebar derecho (desktop): reglas, líderes y próximo evento. */
 export function CommunitySidebarRight({ comunidad }: CommunitySidebarRightProps) {
-  const miembros = useCommunityMembers(comunidad.id);
-  const eventos = useCommunityEvents(comunidad.id);
-  const now = useNow();
+  const { data: miembros = [] } = useComunidadMiembros(comunidad.id);
+  const { data: eventos = [] } = useComunidadEventos(comunidad.id, 'proximos');
   const lideres = miembros.filter((m) => comunidad.liderIds.includes(m.id));
-  const proximoEvento = eventos
-    .filter((e) => new Date(e.inicioEn).getTime() >= now)
-    .sort((a, b) => new Date(a.inicioEn).getTime() - new Date(b.inicioEn).getTime())[0];
+  const proximoEvento = eventos[0];
 
   return (
     <aside className="fp-com-sidebar">

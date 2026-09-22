@@ -17,6 +17,9 @@ export const IntermediateRoutineForm = () => {
     form,
     errors,
     savedId,
+    isSaving,
+    saveError,
+    assignToSelf,
     presetName,
     matchInfo,
     isEdit,
@@ -29,7 +32,7 @@ export const IntermediateRoutineForm = () => {
     mergeResolvedMuscles,
     save,
     validateStep1,
-    selectedNames,
+    selectedExerciseIds,
     durationBreakdown,
   } = formHook;
 
@@ -52,6 +55,9 @@ export const IntermediateRoutineForm = () => {
         isEdit={isEdit}
         errors={errors}
         savedId={savedId}
+        isSaving={isSaving}
+        saveError={saveError}
+        assignToSelf={assignToSelf}
         accent={accent}
         onSave={save}
         onValidateStep1={validateStep1}
@@ -143,7 +149,7 @@ export const IntermediateRoutineForm = () => {
             level="intermedia"
             ejercicios={form.ejercicios}
             errors={errors}
-            selectedNames={selectedNames}
+            selectedExerciseIds={selectedExerciseIds}
             restBetweenSetsSec={form.rest_between_sets}
             onAdd={addExercise}
             onUpdate={updateExercise}

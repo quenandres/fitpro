@@ -1,14 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCommunitiesStore, CURRENT_MEMBER_ID } from '../../store/useCommunitiesStore';
+import { PageBackRow } from '../../components/common/PageBackButton';
+import { useCreateEvento } from '../../lib/gateway/hooks';
 import { ROUTES } from '../../routes/paths';
+import { getCommunityEventsBack } from '../../utils/communityBackUtils';
 
 const labelClass = 'fp-cal-label';
 
 export function CommunityEventCreatePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const addEvent = useCommunitiesStore((s) => s.addEvent);
+  const createEvent = useCreateEvento(id ?? '');
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [lugar, setLugar] = useState('');
@@ -23,21 +25,26 @@ export function CommunityEventCreatePage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    addEvent({
-      comunidadId: id,
-      titulo: titulo.trim(),
-      descripcion: descripcion.trim(),
-      lugar: lugar.trim(),
-      inicioEn: new Date(inicio).toISOString(),
-      finEn: new Date(fin).toISOString(),
-      cupoMax: cupoMax ? Number(cupoMax) : null,
-      creadoPorId: CURRENT_MEMBER_ID,
-    });
-    navigate(ROUTES.communities.events(id));
+    createEvent.mutate(
+      {
+        titulo: titulo.trim(),
+        descripcion: descripcion.trim(),
+        lugar: lugar.trim(),
+        inicioEn: new Date(inicio).toISOString(),
+        finEn: new Date(fin).toISOString(),
+        cupoMax: cupoMax ? Number(cupoMax) : null,
+      },
+      {
+        onSuccess: () => navigate(ROUTES.communities.events(id)),
+      },
+    );
   };
+
+  const eventsBack = getCommunityEventsBack(id);
 
   return (
     <div className="fp-com-card">
+      <PageBackRow to={eventsBack.to} label={eventsBack.label} />
       <h1 className="font-sora text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
         Crear evento
       </h1>
@@ -54,19 +61,17 @@ export function CommunityEventCreatePage() {
             className="fp-input w-full"
           />
         </div>
-
         <div>
-          <label className={labelClass} htmlFor="evento-descripcion">Descripción</label>
+          <label className={labelClass} htmlFor="evento-desc">Descripción</label>
           <textarea
-            id="evento-descripcion"
+            id="evento-desc"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
-            rows={3}
             required
-            className="fp-input w-full resize-none"
+            rows={3}
+            className="fp-input w-full"
           />
         </div>
-
         <div>
           <label className={labelClass} htmlFor="evento-lugar">Lugar</label>
           <input
@@ -78,8 +83,7 @@ export function CommunityEventCreatePage() {
             className="fp-input w-full"
           />
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className={labelClass} htmlFor="evento-inicio">Inicio</label>
             <input
@@ -103,7 +107,6 @@ export function CommunityEventCreatePage() {
             />
           </div>
         </div>
-
         <div>
           <label className={labelClass} htmlFor="evento-cupo">Cupo máximo (opcional)</label>
           <input
@@ -112,23 +115,16 @@ export function CommunityEventCreatePage() {
             min={1}
             value={cupoMax}
             onChange={(e) => setCupoMax(e.target.value)}
-            placeholder="Sin límite"
             className="fp-input w-full"
           />
         </div>
-
-        <div className="flex gap-3 justify-end">
-          <button type="button" className="fp-btn fp-btn-secondary text-sm" onClick={() => navigate(ROUTES.communities.events(id))}>
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="fp-btn fp-btn-primary text-sm"
-            disabled={!canSubmit}
-          >
-            Crear evento
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="fp-btn fp-btn-primary"
+          disabled={!canSubmit || createEvent.isPending}
+        >
+          Crear evento
+        </button>
       </form>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { ClipboardList, Sparkles } from 'lucide-react';
 import type { Ejercicio, Rutina, Usuario } from '../../types';
 import { GuidedPlanWizard } from '../userPlans/GuidedPlanWizard';
 import { planHasConfiguredSessions } from '../../utils/guidedPlanUtils';
@@ -61,6 +61,9 @@ export function UserPlanWorkspace({
     [semanaPlan, user.plan.modo],
   );
 
+  const primerPendienteIndex = displaySesiones.findIndex((s) => !isSesionConfigured(s));
+  const sesionesPendientes = displaySesiones.filter((s) => !isSesionConfigured(s)).length;
+
   const editorRef: SesionRef | null =
     sesionEditorIndex != null ? { semana, sesionIndex: sesionEditorIndex } : null;
 
@@ -120,24 +123,83 @@ export function UserPlanWorkspace({
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className="fp-btn fp-btn-primary inline-flex items-center gap-2"
-          onClick={() => setGuidedOpen(true)}
+      {hasConfiguredPlan ? (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="fp-btn fp-btn-primary inline-flex items-center gap-2"
+            onClick={() => setGuidedOpen(true)}
+          >
+            <Sparkles size={16} aria-hidden />
+            Reconfigurar plan guiado
+          </button>
+          <p className="text-xs text-muted">
+            Asistente paso a paso — frecuencia, descanso, sesiones y progresión.
+          </p>
+        </div>
+      ) : (
+        <div
+          className="fp-card mb-4"
+          style={{
+            padding: 16,
+            borderRadius: 14,
+            border: '1px dashed rgba(34,197,94,.4)',
+            background: 'rgba(34,197,94,.06)',
+          }}
         >
-          <Sparkles size={16} aria-hidden />
-          {hasConfiguredPlan ? 'Reconfigurar plan guiado' : 'Crear plan guiado'}
-        </button>
-        <p className="text-xs text-muted">
-          Asistente paso a paso — frecuencia, descanso, sesiones y progresión.
-        </p>
-      </div>
+          <div className="flex items-start gap-2.5 mb-3">
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'rgba(34,197,94,.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <ClipboardList size={18} color="var(--brand)" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-sora text-sm font-bold text-primary">
+                {user.plan.nombre || 'Plan sin nombre'} · sin plantillas
+              </h3>
+              <p className="text-[12px] text-muted leading-relaxed mt-1">
+                Hay {sesionesPendientes}{' '}
+                {sesionesPendientes === 1 ? 'entrenamiento' : 'entrenamientos'} por definir esta
+                semana. Asigna una plantilla de tu biblioteca a cada uno, o créala a medida, y
+                replícala al resto de las {user.plan.semanas} semanas.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              className="fp-btn fp-btn-primary gap-1.5 justify-center"
+              onClick={() => openPicker(Math.max(0, primerPendienteIndex))}
+              disabled={displaySesiones.length === 0}
+            >
+              <ClipboardList size={14} aria-hidden />
+              Asignar plantilla
+            </button>
+            <button
+              type="button"
+              className="fp-btn fp-btn-secondary gap-1.5 justify-center"
+              onClick={() => setGuidedOpen(true)}
+            >
+              <Sparkles size={14} aria-hidden />
+              Crear plan guiado
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="fp-user-spec">
         <div className="fp-user-spec-item">
           <p className="fp-user-spec-k">Objetivo</p>
-          <p className="fp-user-spec-v">{user.objetivo}</p>
+          <p className="fp-user-spec-v">{user.objetivo.trim() || '—'}</p>
         </div>
         <div className="fp-user-spec-item">
           <p className="fp-user-spec-k">Nivel</p>

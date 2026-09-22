@@ -8,10 +8,7 @@ import { ActionMenu } from '../../components/common/ActionMenu';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useToastHook } from '../../components/common/Toast';
-import {
-  useCommunitiesStore,
-  useCommunityMembers,
-} from '../../store/useCommunitiesStore';
+import { useComunidadMiembros, useRemoveMiembro, useUpdateMiembro } from '../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
 import type { MiembroComunidad, RolComunidad } from '../../types/community';
 
@@ -19,10 +16,10 @@ type RoleFilter = 'all' | RolComunidad;
 
 export function CommunityMembersPage() {
   const { id } = useParams<{ id: string }>();
-  const miembros = useCommunityMembers(id);
+  const { data: miembros = [] } = useComunidadMiembros(id);
   const { puedeModerar, puedeParticipar } = useCommunityPermissions(id ?? '');
-  const toggleMemberSuspend = useCommunitiesStore((s) => s.toggleMemberSuspend);
-  const removeMember = useCommunitiesStore((s) => s.removeMember);
+  const updateMember = useUpdateMiembro(id ?? '');
+  const removeMember = useRemoveMiembro(id ?? '');
   const toast = useToastHook();
 
   const [search, setSearch] = useState('');
@@ -112,7 +109,11 @@ export function CommunityMembersPage() {
                         key: 'suspend',
                         label: miembro.suspendido ? 'Reactivar miembro' : 'Suspender miembro',
                         icon: miembro.suspendido ? ShieldCheck : ShieldOff,
-                        onSelect: () => toggleMemberSuspend(miembro.id),
+                        onSelect: () =>
+                          updateMember.mutate({
+                            userId: miembro.id,
+                            suspendido: !miembro.suspendido,
+                          }),
                       },
                       {
                         key: 'remove',
@@ -146,7 +147,7 @@ export function CommunityMembersPage() {
         confirmLabel="Eliminar"
         danger
         onConfirm={() => {
-          if (removeTarget) removeMember(removeTarget.id);
+          if (removeTarget) removeMember.mutate(removeTarget.id);
         }}
         onClose={() => setRemoveTarget(null)}
       />

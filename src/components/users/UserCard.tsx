@@ -33,12 +33,12 @@ export function UserCard({ user, onClick }: Props) {
       </div>
 
       <div className="fp-user-card-meta">
-        <span className="badge badge-brand">{user.objetivo}</span>
+        {user.objetivo.trim() ? <span className="badge badge-brand">{user.objetivo}</span> : null}
         <span className="badge" style={{ background: 'var(--bg-overlay)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
           {avanzado ? 'Avanzado' : user.nivel}
         </span>
         <span className="badge" style={{ background: 'var(--bg-overlay)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
-          {user.dias_entrenar} d/sem
+          {user.plan.dias_entrenar_semana} ent/sem
         </span>
         {user.peso_kg != null ? (
           <span className="badge" style={{ background: 'var(--bg-overlay)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>

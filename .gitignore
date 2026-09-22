@@ -26,3 +26,5 @@ dist/*
 *.mp4
 *.py
 *.mjs
+
+.env

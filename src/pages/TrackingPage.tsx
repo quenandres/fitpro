@@ -1,15 +1,21 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Activity, ChevronLeft, Users } from 'lucide-react';
+import { Activity, Plus, Users } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
+import { DemoBadge } from '../components/common/DemoBadge';
+import { PageBackRow } from '../components/common/PageBackButton';
 import { AppShell } from '../components/layout/AppShell';
 import { ClienteSelector } from '../components/tracking/ClienteSelector';
+import { RegistrarSesionSheet } from '../components/tracking/RegistrarSesionSheet';
 import { TrackingStats } from '../components/tracking/TrackingStats';
 import { ActivityHeatmap } from '../components/tracking/ActivityHeatmap';
 import { RecentSessionsList } from '../components/tracking/RecentSessionsList';
 import { TrackingPeriodNav } from '../components/tracking/TrackingPeriodNav';
+import { useClientHistorial } from '../lib/gateway/hooks';
+import { useClientesSync } from '../hooks/useClientesSync';
 import { useUsuariosStore } from '../store/useUsuariosStore';
-import { getSesionesByUsuario, getSesionesEnRango } from '../store/useSesionesStore';
+import { useSesionesStore } from '../store/useSesionesStore';
+import { mapGatewayHistorial } from '../utils/historialGatewayAdapter';
 import {
   TRACKING_PERIOD_LABELS,
   fechaLocalISO,
@@ -24,7 +30,10 @@ import { ROUTES } from '../routes/paths';
 export function TrackingPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  useClientesSync();
   const usuarios = useUsuariosStore((s) => s.usuarios);
+  const allSesiones = useSesionesStore((s) => s.sesiones);
+  const [showRegistrar, setShowRegistrar] = useState(false);
 
   const period: TrackingPeriod = parsePeriodParam(params.get('period')) ?? 'semana';
   const anchorDate = useMemo(() => {
@@ -54,15 +63,32 @@ export function TrackingPage() {
     [usuarios, usuarioId],
   );
 
+  const historialQuery = useClientHistorial(usuario?.client_uuid);
+  const gatewaySesiones = useMemo(() => {
+    if (!usuario?.client_uuid || !historialQuery.data) return [];
+    return mapGatewayHistorial(historialQuery.data as Parameters<typeof mapGatewayHistorial>[0], usuario.id);
+  }, [historialQuery.data, usuario]);
+
+  const sesionesFuente = usuario?.client_uuid ? gatewaySesiones : allSesiones;
+
   const sesionesPeriodo = useMemo(() => {
     if (usuarioId == null) return [];
-    return getSesionesEnRango(usuarioId, periodRange.desde, periodRange.hasta);
-  }, [usuarioId, periodRange.desde, periodRange.hasta]);
+    return sesionesFuente
+      .filter(
+        (s) =>
+          s.usuario_id === usuarioId &&
+          s.fecha >= periodRange.desde &&
+          s.fecha <= periodRange.hasta,
+      )
+      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }, [sesionesFuente, usuarioId, periodRange.desde, periodRange.hasta]);
 
   const sesionesAll = useMemo(() => {
     if (usuarioId == null) return [];
-    return getSesionesByUsuario(usuarioId);
-  }, [usuarioId]);
+    return sesionesFuente
+      .filter((s) => s.usuario_id === usuarioId)
+      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }, [sesionesFuente, usuarioId]);
 
   const updateParams = useCallback(
     (next: { usuario?: number; period?: TrackingPeriod; fecha?: Date }) => {
@@ -114,20 +140,20 @@ export function TrackingPage() {
     <AppShell width="wide">
       <div className="fp-tracking-page animate-slide-up min-w-0">
         <section style={{ paddingTop: 12, paddingBottom: 16 }}>
-          <button
-            type="button"
-            className="fp-btn fp-btn-ghost fp-btn-sm mb-3 -ml-1"
-            onClick={() => navigate(ROUTES.usuarios)}
-          >
-            <ChevronLeft size={18} />
-            Usuarios
-          </button>
+          <PageBackRow to={ROUTES.usuarios} label="Volver a usuarios" />
 
           <div className="flex flex-wrap items-center gap-1.5 mb-2">
             <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
               <Activity size={10} style={{ marginRight: 3 }} />
               Seguimiento
             </span>
+            {usuario?.client_uuid ? (
+              <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
+                Gateway
+              </span>
+            ) : (
+              <DemoBadge label="Demo · mock" />
+            )}
           </div>
 
           <h1
@@ -137,8 +163,18 @@ export function TrackingPage() {
             Seguimiento de entrenamientos
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Historial de actividad del cliente — datos de ejemplo (Fase 4 pendiente).
+            {usuario?.client_uuid
+              ? 'Historial con series reales desde el servidor (PWA + fallback entrenador).'
+              : 'Historial mock local — vincula un cliente real para leer el gateway.'}
           </p>
+          <button
+            type="button"
+            className="fp-btn fp-btn-primary mt-3"
+            onClick={() => setShowRegistrar(true)}
+          >
+            <Plus size={16} />
+            Registrar sesión
+          </button>
         </section>
 
         <div className="fp-card mb-4" style={{ padding: 16, borderRadius: 16 }}>
@@ -193,6 +229,14 @@ export function TrackingPage() {
           </div>
         </div>
       </div>
+
+      <RegistrarSesionSheet
+        open={showRegistrar}
+        onClose={() => setShowRegistrar(false)}
+        usuarios={usuarios}
+        defaultUsuarioId={usuarioId}
+        onSaved={(id) => navigate(ROUTES.trackingSesion(id))}
+      />
     </AppShell>
   );
 }

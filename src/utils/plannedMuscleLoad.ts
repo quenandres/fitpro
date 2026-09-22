@@ -42,18 +42,20 @@ export function aggregatePlannedWeekLoad(
 
   const totals: Record<string, number> = {};
 
-  for (const dia of semana.dias) {
+  for (const sesion of semana.sesiones) {
     const ejercicios =
-      dia.ejercicios_personalizados.length > 0
-        ? dia.ejercicios_personalizados
+      sesion.ejercicios_personalizados.length > 0
+        ? sesion.ejercicios_personalizados
         : (() => {
-            if (dia.rutina_id == null || dia.rutina_id <= 0) return [];
-            const rutina = rutinas.find((r) => r.id === dia.rutina_id);
+            if (sesion.rutina_id == null || sesion.rutina_id <= 0) return [];
+            const rutina = rutinas.find((r) => r.id === sesion.rutina_id);
             if (!rutina) return [];
             return rutina.ejercicios.map((e) => ({
+              ejercicio_id: e.ejercicio_id,
               nombre: e.nombre,
               series: e.series,
-              reps: e.valor,
+              valor: e.valor,
+              unidad_id: e.unidad_id,
               rpe: e.rpe,
               musculos_anatomia: e.musculos_anatomia,
             } satisfies EjercicioPersonalizado));
@@ -85,11 +87,11 @@ export function totalPlannedSeries(user: Usuario, semanaNum: number, rutinas: re
   if (!semana) return 0;
 
   let total = 0;
-  for (const dia of semana.dias) {
-    if (dia.ejercicios_personalizados.length > 0) {
-      total += dia.ejercicios_personalizados.reduce((acc, e) => acc + e.series, 0);
-    } else if (dia.rutina_id != null && dia.rutina_id > 0) {
-      const rutina = rutinas.find((r) => r.id === dia.rutina_id);
+  for (const sesion of semana.sesiones) {
+    if (sesion.ejercicios_personalizados.length > 0) {
+      total += sesion.ejercicios_personalizados.reduce((acc, e) => acc + e.series, 0);
+    } else if (sesion.rutina_id != null && sesion.rutina_id > 0) {
+      const rutina = rutinas.find((r) => r.id === sesion.rutina_id);
       if (rutina) {
         total += rutina.ejercicios.reduce((acc, e) => acc + e.series, 0);
       }

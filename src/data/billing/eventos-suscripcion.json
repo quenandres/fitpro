@@ -1,0 +1,112 @@
+[
+  {
+    "id": "evt-001",
+    "suscripcionId": "sub-carlos-premium",
+    "tipo": "creada",
+    "fecha": "2026-06-07T10:00:00.000Z",
+    "descripcion": "Suscripción Premium creada para Carlos Martínez"
+  },
+  {
+    "id": "evt-002",
+    "suscripcionId": "sub-carlos-premium",
+    "tipo": "pago_recibido",
+    "fecha": "2026-06-07T10:05:12.000Z",
+    "descripcion": "Pago aprobado vía tarjeta (Wompi)",
+    "monto": 59900,
+    "transaccionId": "wompi-tx-001"
+  },
+  {
+    "id": "evt-003",
+    "suscripcionId": "sub-carlos-premium",
+    "tipo": "renovacion",
+    "fecha": "2026-07-07T10:05:08.000Z",
+    "descripcion": "Renovación automática exitosa",
+    "monto": 59900,
+    "transaccionId": "wompi-tx-002"
+  },
+  {
+    "id": "evt-004",
+    "suscripcionId": "sub-ana-basico",
+    "tipo": "creada",
+    "fecha": "2026-07-10T14:30:00.000Z",
+    "descripcion": "Suscripción Básico creada para Ana López"
+  },
+  {
+    "id": "evt-005",
+    "suscripcionId": "sub-ana-basico",
+    "tipo": "pago_recibido",
+    "fecha": "2026-07-10T14:42:00.000Z",
+    "descripcion": "Pago aprobado vía PSE (PayU)",
+    "monto": 30000,
+    "transaccionId": "payu-tx-003"
+  },
+  {
+    "id": "evt-006",
+    "suscripcionId": "sub-miguel-anual",
+    "tipo": "creada",
+    "fecha": "2026-01-15T08:00:00.000Z",
+    "descripcion": "Suscripción Anual Pro creada para Miguel Sánchez"
+  },
+  {
+    "id": "evt-007",
+    "suscripcionId": "sub-miguel-anual",
+    "tipo": "pago_recibido",
+    "fecha": "2026-01-15T08:10:22.000Z",
+    "descripcion": "Pago anual aprobado vía tarjeta",
+    "monto": 600000,
+    "transaccionId": "wompi-tx-004"
+  },
+  {
+    "id": "evt-008",
+    "suscripcionId": "sub-miguel-basico-cancel",
+    "tipo": "cancelacion",
+    "fecha": "2026-05-20T18:00:00.000Z",
+    "descripcion": "Cancelación solicitada: Cambio a plan corporativo del gimnasio"
+  },
+  {
+    "id": "evt-009",
+    "suscripcionId": "sub-carlos-premium-susp",
+    "tipo": "pago_fallido",
+    "fecha": "2026-07-07T12:05:00.000Z",
+    "descripcion": "Pago rechazado: Tarjeta vencida",
+    "monto": 59900,
+    "transaccionId": "wompi-tx-008"
+  },
+  {
+    "id": "evt-010",
+    "suscripcionId": "sub-carlos-premium-susp",
+    "tipo": "suspension",
+    "fecha": "2026-08-08T09:00:00.000Z",
+    "descripcion": "Suscripción suspendida por falta de pago"
+  },
+  {
+    "id": "evt-011",
+    "suscripcionId": "sub-ana-premium-venc",
+    "tipo": "pago_fallido",
+    "fecha": "2026-08-01T09:05:00.000Z",
+    "descripcion": "Pago rechazado: Fondos insuficientes",
+    "monto": 59900,
+    "transaccionId": "wompi-tx-006"
+  },
+  {
+    "id": "evt-012",
+    "suscripcionId": "sub-ana-anual",
+    "tipo": "cambio_plan",
+    "fecha": "2026-02-01T09:50:00.000Z",
+    "descripcion": "Cambio de Premium a Anual Pro"
+  },
+  {
+    "id": "evt-013",
+    "suscripcionId": "sub-carlos-basico-pend",
+    "tipo": "creada",
+    "fecha": "2026-09-05T16:00:00.000Z",
+    "descripcion": "Suscripción Básico pendiente de pago para Carlos Martínez"
+  },
+  {
+    "id": "evt-014",
+    "suscripcionId": "sub-miguel-premium-pend",
+    "tipo": "creada",
+    "fecha": "2026-09-06T09:30:00.000Z",
+    "descripcion": "Suscripción Premium pendiente de confirmación para Miguel Sánchez"
+  }
+]

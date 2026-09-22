@@ -2,12 +2,12 @@ import { useParams } from 'react-router-dom';
 import { Calendar, Globe, Lock } from 'lucide-react';
 import { Avatar } from '../../components/common/Avatar';
 import { CATEGORY_META } from '../../components/communities/shared/categoryMeta';
-import { useCommunity, useCommunityMembers } from '../../store/useCommunitiesStore';
+import { useComunidad, useComunidadMiembros } from '../../lib/gateway/hooks';
 
 export function CommunityAboutPage() {
   const { id } = useParams<{ id: string }>();
-  const comunidad = useCommunity(id);
-  const miembros = useCommunityMembers(id);
+  const { data: comunidad } = useComunidad(id);
+  const { data: miembros = [] } = useComunidadMiembros(id);
 
   if (!comunidad) return null;
 

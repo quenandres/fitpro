@@ -1,0 +1,118 @@
+[
+  {
+    "id": "sub-carlos-premium",
+    "usuarioId": "1",
+    "usuarioNombre": "Carlos Martínez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-carlos/80/80",
+    "planId": "plan-premium",
+    "estado": "activa",
+    "inicio": "2026-06-07T10:00:00.000Z",
+    "proximaRenovacion": "2026-10-07T10:00:00.000Z",
+    "autoRenovacion": true
+  },
+  {
+    "id": "sub-ana-basico",
+    "usuarioId": "2",
+    "usuarioNombre": "Ana López",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-ana/80/80",
+    "planId": "plan-basico",
+    "estado": "por_vencer",
+    "inicio": "2026-07-10T14:30:00.000Z",
+    "proximaRenovacion": "2026-09-10T14:30:00.000Z",
+    "autoRenovacion": true
+  },
+  {
+    "id": "sub-miguel-anual",
+    "usuarioId": "3",
+    "usuarioNombre": "Miguel Sánchez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-miguel/80/80",
+    "planId": "plan-anual",
+    "estado": "activa",
+    "inicio": "2026-01-15T08:00:00.000Z",
+    "proximaRenovacion": "2027-01-15T08:00:00.000Z",
+    "autoRenovacion": true
+  },
+  {
+    "id": "sub-carlos-basico-pend",
+    "usuarioId": "1",
+    "usuarioNombre": "Carlos Martínez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-carlos/80/80",
+    "planId": "plan-basico",
+    "estado": "pendiente",
+    "inicio": "2026-09-05T16:00:00.000Z",
+    "proximaRenovacion": "2026-10-05T16:00:00.000Z",
+    "autoRenovacion": false
+  },
+  {
+    "id": "sub-ana-premium-venc",
+    "usuarioId": "2",
+    "usuarioNombre": "Ana López",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-ana/80/80",
+    "planId": "plan-premium",
+    "estado": "vencida",
+    "inicio": "2026-05-01T09:00:00.000Z",
+    "proximaRenovacion": "2026-08-01T09:00:00.000Z",
+    "autoRenovacion": false
+  },
+  {
+    "id": "sub-miguel-basico-cancel",
+    "usuarioId": "3",
+    "usuarioNombre": "Miguel Sánchez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-miguel/80/80",
+    "planId": "plan-basico",
+    "estado": "cancelada",
+    "inicio": "2026-03-01T11:00:00.000Z",
+    "proximaRenovacion": "2026-06-01T11:00:00.000Z",
+    "autoRenovacion": false,
+    "cancelacion": {
+      "solicitadaEn": "2026-05-20T18:00:00.000Z",
+      "efectivaEn": "2026-06-01T11:00:00.000Z",
+      "motivo": "Cambio a plan corporativo del gimnasio",
+      "solicitadaPor": "usuario"
+    }
+  },
+  {
+    "id": "sub-carlos-premium-susp",
+    "usuarioId": "1",
+    "usuarioNombre": "Carlos Martínez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-carlos/80/80",
+    "planId": "plan-premium",
+    "estado": "suspendida",
+    "inicio": "2026-04-07T12:00:00.000Z",
+    "proximaRenovacion": "2026-08-07T12:00:00.000Z",
+    "autoRenovacion": false
+  },
+  {
+    "id": "sub-ana-anual",
+    "usuarioId": "2",
+    "usuarioNombre": "Ana López",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-ana/80/80",
+    "planId": "plan-anual",
+    "estado": "activa",
+    "inicio": "2026-02-01T10:00:00.000Z",
+    "proximaRenovacion": "2027-02-01T10:00:00.000Z",
+    "autoRenovacion": true
+  },
+  {
+    "id": "sub-miguel-premium-pend",
+    "usuarioId": "3",
+    "usuarioNombre": "Miguel Sánchez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-miguel/80/80",
+    "planId": "plan-premium",
+    "estado": "pendiente",
+    "inicio": "2026-09-06T09:30:00.000Z",
+    "proximaRenovacion": "2026-10-06T09:30:00.000Z",
+    "autoRenovacion": true
+  },
+  {
+    "id": "sub-carlos-basico-porv",
+    "usuarioId": "1",
+    "usuarioNombre": "Carlos Martínez",
+    "usuarioAvatarUrl": "https://picsum.photos/seed/usr-carlos/80/80",
+    "planId": "plan-basico",
+    "estado": "por_vencer",
+    "inicio": "2026-06-09T08:00:00.000Z",
+    "proximaRenovacion": "2026-09-09T08:00:00.000Z",
+    "autoRenovacion": true
+  }
+]

@@ -1,13 +1,16 @@
-import { Outlet, useParams, Navigate } from 'react-router-dom';
+import { Outlet, useParams, Navigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../layout/AppShell';
 import { CommunityHeader } from './CommunityHeader';
 import { CommunityTabs } from './CommunityTabs';
 import { CommunitySidebarLeft } from './CommunitySidebarLeft';
 import { CommunitySidebarRight } from './CommunitySidebarRight';
 import { EmptyState } from '../../common/EmptyState';
+import { PageBackButton } from '../../common/PageBackButton';
 import { useIsLargeScreen } from '../../../hooks/useMediaQuery';
-import { useCommunity } from '../../../store/useCommunitiesStore';
+import { Skeleton } from '../../common/Skeleton';
+import { useComunidad } from '../../../lib/gateway/hooks';
 import { ROUTES } from '../../../routes/paths';
+import { resolveCommunityLayoutBack } from '../../../utils/communityBackUtils';
 import { Users } from 'lucide-react';
 
 /**
@@ -16,10 +19,22 @@ import { Users } from 'lucide-react';
  */
 export function CommunityLayout() {
   const { id } = useParams<{ id: string }>();
+  const { pathname } = useLocation();
   const isLargeScreen = useIsLargeScreen();
-  const comunidad = useCommunity(id);
+  const { data: comunidad, isLoading, isError } = useComunidad(id);
 
-  if (!comunidad) {
+  const layoutBack =
+    id != null && comunidad != null ? resolveCommunityLayoutBack(pathname, id) : null;
+
+  if (isLoading) {
+    return (
+      <AppShell width="wide">
+        <Skeleton height={200} className="rounded-2xl" />
+      </AppShell>
+    );
+  }
+
+  if (isError || !comunidad) {
     return (
       <AppShell width="wide">
         <EmptyState icon={Users} title="Comunidad no encontrada" description="Puede que ya no exista o el enlace sea incorrecto." />
@@ -31,6 +46,9 @@ export function CommunityLayout() {
     return (
       <AppShell width="wide">
         <div className="fp-com-page animate-slide-up">
+          {layoutBack ? (
+            <PageBackButton to={layoutBack.to} label={layoutBack.label} className="mb-2" />
+          ) : null}
           <CommunityHeader comunidad={comunidad} />
           <CommunityTabs comunidadId={comunidad.id} />
           <div className="fp-com-main mt-4">
@@ -44,6 +62,9 @@ export function CommunityLayout() {
   return (
     <AppShell width="wide">
       <div className="fp-com-page animate-slide-up">
+        {layoutBack ? (
+          <PageBackButton to={layoutBack.to} label={layoutBack.label} className="mb-2" />
+        ) : null}
         <CommunityHeader comunidad={comunidad} />
         <div className="fp-com-layout mt-4">
           <CommunitySidebarLeft comunidadId={comunidad.id} />

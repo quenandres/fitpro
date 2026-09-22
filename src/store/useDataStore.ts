@@ -4,6 +4,7 @@ import type { Rutina, Ejercicio, Unidad } from '../types';
 import rutinasData from '../data/rutinas.json';
 import ejerciciosData from '../data/ejercicios.json';
 import unidadesData from '../data/unidades.json';
+import { migrateRutinasWithExerciseIds } from '../utils/migrateExerciseIds';
 
 interface DataStore {
   rutinas: Rutina[];
@@ -12,7 +13,7 @@ interface DataStore {
   addRutina: (rutina: Omit<Rutina, 'id'>) => number;
   updateRutina: (id: number, rutina: Partial<Rutina>) => void;
   deleteRutina: (id: number) => void;
-  addEjercicio: (ejercicio: Omit<Ejercicio, 'id'>) => void;
+  addEjercicio: (ejercicio: Omit<Ejercicio, 'id'>) => number;
   updateEjercicio: (id: number, ejercicio: Partial<Ejercicio>) => void;
   deleteEjercicio: (id: number) => void;
   addUnidad: (unidad: Omit<Unidad, 'id'>) => void;
@@ -26,11 +27,16 @@ interface DataStore {
 const getMaxId = <T extends { id: number }>(arr: T[]): number => 
   arr.length > 0 ? Math.max(...arr.map(item => item.id)) : 0;
 
+const seedMigration = migrateRutinasWithExerciseIds(
+  rutinasData as Rutina[],
+  ejerciciosData as Ejercicio[],
+);
+
 export const useDataStore = create<DataStore>()(
   persist(
     (set, get) => ({
-      rutinas: rutinasData as Rutina[],
-      ejercicios: ejerciciosData as Ejercicio[],
+      rutinas: seedMigration.rutinas,
+      ejercicios: seedMigration.ejercicios,
       unidades: unidadesData as Unidad[],
 
       addRutina: (rutina) => {
@@ -52,6 +58,7 @@ export const useDataStore = create<DataStore>()(
       addEjercicio: (ejercicio) => {
         const id = getMaxId(get().ejercicios) + 1;
         set((state) => ({ ejercicios: [...state.ejercicios, { ...ejercicio, id }] }));
+        return id;
       },
 
       updateEjercicio: (id, ejercicio) => {
@@ -88,10 +95,14 @@ export const useDataStore = create<DataStore>()(
         try {
           const data = JSON.parse(json);
           if (data.rutinas && data.ejercicios && data.unidades) {
+            const migrated = migrateRutinasWithExerciseIds(
+              data.rutinas as Rutina[],
+              data.ejercicios as Ejercicio[],
+            );
             set({
-              rutinas: data.rutinas,
-              ejercicios: data.ejercicios,
-              unidades: data.unidades
+              rutinas: migrated.rutinas,
+              ejercicios: migrated.ejercicios,
+              unidades: data.unidades,
             });
             return true;
           }
@@ -102,13 +113,31 @@ export const useDataStore = create<DataStore>()(
       },
 
       resetToDefault: () => {
+        const migrated = migrateRutinasWithExerciseIds(
+          rutinasData as Rutina[],
+          ejerciciosData as Ejercicio[],
+        );
         set({
-          rutinas: rutinasData as Rutina[],
-          ejercicios: ejerciciosData as Ejercicio[],
-          unidades: unidadesData as Unidad[]
+          rutinas: migrated.rutinas,
+          ejercicios: migrated.ejercicios,
+          unidades: unidadesData as Unidad[],
         });
-      }
+      },
     }),
-    { name: 'fitpro-data' }
-  )
+    {
+      name: 'fitpro-data',
+      merge: (persisted, current) => {
+        const p = persisted as Partial<DataStore> | undefined;
+        if (!p?.rutinas || !p?.ejercicios) return current;
+        const migrated = migrateRutinasWithExerciseIds(p.rutinas, p.ejercicios);
+        return {
+          ...current,
+          ...p,
+          rutinas: migrated.rutinas,
+          ejercicios: migrated.ejercicios,
+          unidades: p.unidades ?? current.unidades,
+        };
+      },
+    },
+  ),
 );

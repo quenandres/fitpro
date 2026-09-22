@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, Target, Layers, Pencil, ClipboardList } from 'lucide-react';
+import { Play, Clock, Target, Layers, Pencil, ClipboardList } from 'lucide-react';
 import { useDataStore } from '../store/useDataStore';
 import { useUnits } from '../hooks/useUnits';
 import { EmptyState } from '../components/common/EmptyState';
+import { PageBackRow } from '../components/common/PageBackButton';
 import { AppShell } from '../components/layout/AppShell';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { routineEditPath } from '../utils/inferRoutineFormLevel';
+import { ROUTES } from '../routes/paths';
 
 function getDiff(dif: string) {
   const d = dif.toLowerCase();
@@ -40,9 +42,11 @@ export const WorkoutDetail = () => {
           title="Rutina no encontrada"
           description="La rutina que buscas no existe o fue eliminada."
           action={
-            <button type="button" className="fp-btn fp-btn-secondary" onClick={() => navigate(-1)}>
-              Volver
-            </button>
+            <PageBackButton
+              to={ROUTES.library.rutinas}
+              label="Volver a rutinas"
+              className="mx-auto"
+            />
           }
         />
       </AppShell>
@@ -58,17 +62,11 @@ export const WorkoutDetail = () => {
 
   return (
     <AppShell>
-        {/* Back */}
-        <button
-          onClick={() => navigate(-1)}
-          className="fp-btn fp-btn-ghost animate-slide-up"
-          style={{ marginBottom: 16, padding: '6px 0', gap: 6 }}
-        >
-          <div style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ArrowLeft size={15} color="var(--text-secondary)" />
-          </div>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Volver</span>
-        </button>
+        <PageBackRow
+          to={ROUTES.library.rutinas}
+          label="Volver a rutinas"
+          className="animate-slide-up"
+        />
 
         {/* Header card */}
         <div
