@@ -37,12 +37,12 @@ ve el log. Detalle en `CONTEXT.md §1`.
 | UI entrenador | React 19 + Vite 8 + TypeScript 5.9 (estricto) — **este repo** | — |
 | UI cliente | **no existe** | PWA React + Vite + TS, repo hermano, mismo gateway (D11) |
 | Routing | `react-router-dom` v7 | — |
-| Estado UI efímero | Zustand 5 (`useWorkoutStore`, `useCitasStore`, `useCommunitiesStore`, `useBillingStore`) | Zustand (solo UI) |
+| Estado UI efímero | Zustand 5 (`useWorkoutStore`, `useCitasStore`, `useBillingStore`) | Zustand (solo UI) |
 | Estado local con `persist` | `useDataStore` (rutinas/ejercicios/unidades en localStorage) — hoy sigue así, sin cambios de código | **Migrar a Supabase vía `gym-gateway`, dentro de la Fase 2** (cambio de objetivo 2026-08-27, ver `CONTEXT.md §7`) |
 | Estado servidor | TanStack Query **declarado y cableado en código** (`src/main.tsx`, `src/lib/exercisedb/hooks.ts`) pero **no instalado** en `node_modules` — el build falla hoy por esto | TanStack Query funcionando |
 | Validación runtime | Zod ya instalado y en uso real (`src/lib/gateway/schemas/*`, `src/lib/exercisedb/schemas.ts`) | Extender a `importData` y formularios |
 | Backend auth/datos | **`gym-gateway`** (FastAPI, repo hermano) — proxy real hacia **Supabase Auth + PostgREST**, JWT ES256 vía JWKS, RBAC server-side (`require_role`/`require_admin`) | Mismo, con migraciones SQL versionadas |
-| Backend IA | **gym-gateway** — OpenRouter en `POST /api/ai/routine` (antes `fitpro_api` / `gym-mcp`) | — |
+| Backend IA | **gym-gateway** — OpenRouter en `POST /api/ai/routine` (`gym-mcp` / `fitpro_api` absorbidos; no hay sidecar) | — |
 | Supabase en el frontend | Cliente **comentado** en `src/lib/supabase.ts` — el frontend nunca habla con Supabase directo, todo pasa por `gym-gateway` | Mantener así (gateway como única puerta) |
 | Estilos | Tailwind 4 + tokens CSS (`@theme` en `index.css`) — **D8 resuelto** 2026-08-24 | Migración oportunista del inline restante |
 | Pagos | UI mock de billing en Biblioteca — **fuera de primera instancia** | Stripe, después del loop |
@@ -95,7 +95,7 @@ fitpro/
 │   ├── lib/
 │   │   ├── gateway/       # Cliente HTTP real hacia gym-gateway (auth, sesión, errores)
 │   │   ├── exercisedb/    # Cliente ExerciseDB + hooks TanStack Query + Zod schemas
-│   │   ├── ai/            # Helpers del chat IA (fitpro_api)
+│   │   ├── ai/            # Helpers del chat IA (gym-gateway /api/ai/routine)
 │   │   └── supabase.ts    # COMENTADO — no se usa (todo pasa por gateway)
 │   ├── pages/             # admin/AdminDashboardPage (inicio), CalendarPage, WorkoutPlayer, library/*, billing/*, communities/*
 │   ├── routes/paths.ts    # ROUTES tipado + redirects legacy
@@ -109,27 +109,29 @@ fitpro/
 ├── HISTORIAL.md           # Snapshots fechados de auditorías de código
 ├── CLAUDE.md              # Este archivo
 ├── create-admin.js        # Script legacy (candidato a borrar, sigue presente)
-├── docker-compose.yml     # db (Postgres) + app + api (fitpro_api)
+├── docker-compose.yml     # app local (el stack de producto es el compose de gymapp/)
 └── Dockerfile
 
-gym-gateway/                 # Hermano del repo — FastAPI, proxy hacia Supabase
+gym-gateway/                 # Único backend — FastAPI, proxy Supabase + IA
 ├── app/routes/auth.py       # signup/login/refresh/logout/user vía Supabase Auth
+├── app/routes/sesiones.py   # iniciar / series / completar (training.sessions)
+├── app/routes/ai.py         # POST /api/ai/routine (antes gym-mcp / fitpro_api)
 ├── app/routes/proxy.py      # Proxy genérico a PostgREST
 ├── app/core/auth.py         # Validación JWT ES256 contra JWKS de Supabase
 ├── app/core/deps.py         # require_role / require_admin (RBAC real, server-side)
-└── (sin tests; migraciones SQL documentadas en README pero no versionadas en /sql)
+└── sql/                     # migraciones 000–014
 
-fitpro_api/                  # Hermano del repo — FastAPI + DeepSeek
-├── app/main.py              # GET /health, POST /api/ai/routine
-├── app/services/deepseek.py
-└── requirements.txt
+fitpro-clients/              # PWA cliente (D11) — mismo gym-gateway
+└── player escribe training.sessions / session_sets
 
-(PWA cliente — repo hermano React, nombre TBD, aún no creado — D11)
+`gym-mcp` y `fitpro_api` **ya no existen como repos/servicios**. Su código de IA
+quedó en `gym-gateway/app/services/ai/` y `app/routes/ai.py`.
 ```
 
-**Módulo Comunidades** (`components/communities/`, `pages/communities/`,
-`store/useCommunitiesStore.ts`, `data/communities/`): UI mock completa.
-**Fuera de primera instancia — no ampliar.** Ver `CONTEXT.md §7` Fase 6.
+**Módulo Comunidades** (`components/communities/`, `pages/communities/`):
+núcleo cableado a `gym-gateway` (`/api/comunidades/*`, TanStack Query en
+`lib/gateway/hooks.ts`). Fuera de alcance hasta nueva fase: discusiones,
+invitaciones, notificaciones, reportes y media. Ver `CONTEXT.md §7` Fase 6.
 
 **Módulo Suscripciones y Pagos** (`components/billing/`, `pages/billing/`,
 `store/useBillingStore.ts`, `data/billing/`): UI mock en Biblioteca.
@@ -220,9 +222,10 @@ Supabase del frontend está comentado; Supabase real se habla solo desde
 10. **`importData` sigue sin validar con Zod** — solo comprueba que existan
     las claves `rutinas/ejercicios/unidades`, no la forma de sus items
     (vector de corrupción).
-11. **Comunidades y billing son UI mock y están congelados** para primera
-    instancia. No ampliar. El rol de `useCommunityPermissions` **no** es el
-    RBAC de `gym-gateway` ni el de la PWA cliente.
+11. **Comunidades: paridad con gateway (2026-09-22)** — explorar, posts,
+    eventos, miembros y moderación son reales. Billing sigue mock/congelado.
+    `useCommunityPermissions` lee `miRol` del gateway (rol de comunidad, no
+    confundir con `AuthUser.role` de plataforma).
 12. **Páginas god hoy:** `UsuariosPage.tsx` y `AIRoutineChatPage.tsx`. Al
     editarlas, extraer. `UserPlansPage.tsx` ya no es god (redirect).
 13. **Tres dependencias declaradas no están instaladas** (`@tanstack/react-query`,
@@ -347,8 +350,8 @@ actual:
 5. Fase 5 — Multi-tenant + **nacer la PWA cliente** → **~5-10%** (UI de
    planes por sesión avanzada; sin persist, sin `trainer_client_links`,
    sin repo cliente)
-6. **Fase 6 — Comunidades** → UI mock completa, **congelada** hasta que
-   el loop cierre. 0% backend.
+6. **Fase 6 — Comunidades** → paridad con gateway en FitPro + PWA; fuera de
+   alcance: discusiones, invitaciones, notificaciones, reportes, media.
 7. Fase 7 — Analytics + IA + offline-first / nativo → IA adelantada;
    la PWA **instalable online** no es esta fase (es primera instancia).
 

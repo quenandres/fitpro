@@ -2,7 +2,6 @@ import { useEffect, useState, type ComponentType } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Bell,
   CalendarDays,
   ClipboardList,
   Dumbbell,
@@ -22,7 +21,6 @@ import { Sheet } from '../common/Sheet';
 import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useCommunitiesStore } from '../../store/useCommunitiesStore';
 import { SHELL_WIDTH_CLASS } from './shellWidth';
 
 const NAV_ITEMS = [
@@ -44,7 +42,6 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
-  const noLeidas = useCommunitiesStore((s) => s.notificaciones.filter((n) => !n.leida).length);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -133,22 +130,6 @@ export const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Link
-            to={ROUTES.notifications}
-            className="fp-btn fp-btn-ghost relative"
-            style={{ padding: '6px 8px', borderRadius: 9 }}
-            aria-label={noLeidas > 0 ? `Notificaciones (${noLeidas} sin leer)` : 'Notificaciones'}
-          >
-            <Bell size={16} />
-            {noLeidas > 0 ? (
-              <span
-                className="absolute top-1 right-1 flex items-center justify-center rounded-full text-[9px] font-bold"
-                style={{ width: 14, height: 14, background: 'var(--accent-pink)', color: '#fff' }}
-              >
-                {noLeidas > 9 ? '9+' : noLeidas}
-              </span>
-            ) : null}
-          </Link>
           <div className="hidden md:flex items-center gap-1">
             <ThemeToggle />
             <button
@@ -168,7 +149,6 @@ export const Navbar = () => {
       <MobileNavMenu
         open={menuOpen}
         pathname={location.pathname}
-        unread={noLeidas}
         onClose={() => setMenuOpen(false)}
         onLogout={() => void handleLogout()}
       />
@@ -179,12 +159,11 @@ export const Navbar = () => {
 interface MobileNavMenuProps {
   open: boolean;
   pathname: string;
-  unread: number;
   onClose: () => void;
   onLogout: () => void;
 }
 
-const MobileNavMenu = ({ open, pathname, unread, onClose, onLogout }: MobileNavMenuProps) => {
+const MobileNavMenu = ({ open, pathname, onClose, onLogout }: MobileNavMenuProps) => {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
@@ -234,29 +213,6 @@ const MobileNavMenu = ({ open, pathname, unread, onClose, onLogout }: MobileNavM
         </nav>
 
         <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Link
-            to={ROUTES.notifications}
-            onClick={onClose}
-            className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 font-semibold text-sm"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            <span
-              className="flex items-center justify-center rounded-[10px] relative"
-              style={{ width: 36, height: 36, background: 'var(--bg-overlay)' }}
-            >
-              <Bell size={16} />
-              {unread > 0 ? (
-                <span
-                  className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full text-[9px] font-bold"
-                  style={{ width: 14, height: 14, background: 'var(--accent-pink)', color: '#fff' }}
-                >
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              ) : null}
-            </span>
-            Notificaciones
-          </Link>
-
           <button
             type="button"
             className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 font-semibold text-sm w-full text-left"

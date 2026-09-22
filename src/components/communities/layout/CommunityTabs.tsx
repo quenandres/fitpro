@@ -13,7 +13,6 @@ export function CommunityTabs({ comunidadId }: CommunityTabsProps) {
     { to: ROUTES.communities.home(comunidadId), label: 'Inicio' },
     { to: ROUTES.communities.posts(comunidadId), label: 'Publicaciones' },
     { to: ROUTES.communities.events(comunidadId), label: 'Eventos' },
-    { to: ROUTES.communities.discussions(comunidadId), label: 'Discusiones' },
     { to: ROUTES.communities.members(comunidadId), label: 'Miembros' },
     { to: ROUTES.communities.about(comunidadId), label: 'Información' },
     ...(puedeAdministrar ? [{ to: ROUTES.communities.admin(comunidadId), label: 'Administración' }] : []),

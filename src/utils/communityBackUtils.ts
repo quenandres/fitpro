@@ -14,7 +14,6 @@ export function isCommunityLeafRoute(pathname: string, communityId: string): boo
   if (new RegExp(`^${base}/posts/[^/]+$`).test(pathname)) return true;
   if (new RegExp(`^${base}/events/[^/]+/participants$`).test(pathname)) return true;
   if (new RegExp(`^${base}/events/[^/]+$`).test(pathname)) return true;
-  if (new RegExp(`^${base}/discussions/[^/]+$`).test(pathname)) return true;
 
   return false;
 }
@@ -67,13 +66,6 @@ export function getCommunityEventsBack(communityId: string): CommunityBackTarget
   };
 }
 
-export function getCommunityDiscussionsBack(communityId: string): CommunityBackTarget {
-  return {
-    to: ROUTES.communities.discussions(communityId),
-    label: 'Volver a discusiones',
-  };
-}
-
 export function getCommunityEventBack(communityId: string, eventId: string): CommunityBackTarget {
   return {
     to: ROUTES.communities.event(communityId, eventId),
@@ -84,9 +76,6 @@ export function getCommunityEventBack(communityId: string, eventId: string): Com
 /** Pantallas del módulo fuera de una comunidad concreta. */
 export function getCommunitiesModuleBack(pathname: string): CommunityBackTarget | null {
   if (pathname === ROUTES.communities.create) {
-    return getCommunityExploreBack();
-  }
-  if (pathname === ROUTES.communities.invitations) {
     return getCommunityExploreBack();
   }
   return null;

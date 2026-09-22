@@ -48,7 +48,7 @@ El producto existe cuando este ciclo cierra de punta a punta:
 4. El cliente abre **su PWA**, ve la siguiente sesión pendiente, la ejecuta y cada serie guarda peso y reps.
 5. El entrenador abre la ficha del cliente y ve última sesión, cumplimiento de la semana y el log.
 
-Hoy ese loop está cortado: los clientes son seed JSON, el player no persiste, y el tracking lee fixtures. Ver §2.
+El write path de sesión ya vive en `gym-gateway` + PWA (`training.sessions` / `session_sets`). En FitPro, clientes/planes locales y tracking mock siguen hasta hidratar por `client_uuid`. Ver §2.
 
 ### Dos apps, un backend
 
@@ -57,9 +57,9 @@ El cliente **no** es un rol más dentro de esta SPA. Son dos frontends que compa
 | App | Forma | Quién | Qué hace |
 |---|---|---|---|
 | **FitPro Entrenador** | SPA React — **este repo** (`fitpro`) | Entrenador (y roles de plataforma) | Biblioteca, clientes, planes, calendario, tracking |
-| **FitPro Cliente** | **PWA React aparte** (mismo stack: React + Vite + TypeScript). Repo hermano, **aún no creado** | Cliente | Entreno de hoy, ejecutar sesión, historial propio |
-| **gym-gateway** | FastAPI, repo hermano | ambas apps | Auth, RBAC, proxy a Supabase |
-| **fitpro_api** | FastAPI, repo hermano | entrenador | IA de generación de rutinas |
+| **FitPro Cliente** | **PWA React** (`fitpro-clients`) | Cliente | Entreno de hoy, ejecutar sesión, historial propio |
+| **gym-gateway** | FastAPI, repo hermano | ambas apps | Auth, RBAC, proxy a Supabase, **IA de rutinas** |
+| ~~fitpro_api / gym-mcp~~ | **Absorbidos en gym-gateway** (2026-09-21/22) | — | `POST /api/ai/routine` ya no tiene sidecar |
 
 Reglas:
 
@@ -102,7 +102,7 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
 | Estado servidor | TanStack Query (cableado en entrenador, pendiente `npm install` en este entorno) |
 | Validación runtime | Zod (ya en `gateway/schemas` y `exercisedb/schemas`; falta en `importData` y formularios) |
 | Backend datos/auth | Supabase (Postgres + Auth + Storage), **solo** vía **`gym-gateway`** — ver §2 y ADR 2026-08-24 |
-| Backend IA | `fitpro_api` + DeepSeek |
+| Backend IA | `gym-gateway` (`POST /api/ai/routine`, OpenRouter). `gym-mcp` / `fitpro_api` no se levantan |
 | Pagos | Stripe — **después** de primera instancia |
 | Estilos | Tailwind 4 (+ tokens CSS) — **D8 resuelto**, ver §9. Misma identidad en ambas apps |
 | Observabilidad | Sentry + PostHog (a introducir antes de prod) |
@@ -174,12 +174,12 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
 - **Calendario** y **planes** son cosas distintas: el plan es una **cuota de
   sesiones** (no un weekday fijo); el calendario son **citas con fecha**
   (entrenamiento / medidas).
-- **Módulo Comunidades / Fase 6** (`/communities/*`, implementado
-  2026-08-27): UI completa (22 pantallas, 20 modales aprox.) sobre
-  `useCommunitiesStore` y fixtures JSON — **100% mock, sin persist, sin
-  backend, sin relación con el auth/RBAC real**. Tiene su propio sistema de
-  roles simulado (`useCommunityPermissions`) que **no debe confundirse** con
-  el RBAC real de `gym-gateway`. **Fuera de primera instancia** — no ampliar UI. Ver §7.
+- **Módulo Comunidades / Fase 6** (`/communities/*`): núcleo cableado a
+  `gym-gateway` (`/api/comunidades/*`) — explorar, crear (admin), unirse/salir,
+  publicaciones, comentarios, reacciones, eventos con RSVP, miembros y
+  moderación. `useCommunityPermissions` lee `miRol` del gateway. **Fuera de
+  alcance hasta nueva fase:** discusiones, invitaciones, notificaciones,
+  reportes y subida de fotos (sin API). Ver §7.
 - **Módulo Suscripciones y Pagos** (`/library/suscripciones`, `/library/pagos`):
   UI mock sobre `useBillingStore` — **fuera de primera instancia**.
 - **No hay app cliente.** El player en este repo es un prototipo de ejecución
@@ -259,9 +259,9 @@ modelo `series: number` escalar **siguen sin resolverse** — ver §3/§4/§9.
   Fase 2), y gating por rol en frontend.
 - Fase 4 (tracking de sesiones): **~10%, sin cambios**
 - Fase 5 (multi-tenant): **~5-10%** (UI de planes avanzó, dato sigue sin persistir)
-- Fase 6 (Comunidades): **núcleo en Supabase + gateway (~40% backend)**; discusiones,
-  reportes, notificaciones e invitaciones siguen mock (nueva fase,
-  implementada el mismo día)
+- Fase 6 (Comunidades): **paridad con gateway en FitPro + PWA (2026-09-22)**;
+  discusiones, reportes, notificaciones, invitaciones y media quedan fuera
+  hasta exista API
 - Fase 7: sin cambios de fondo (IA de rutinas ya funciona, adelantada fuera de orden)
 
 **Los bloqueantes de primera instancia (2026-09-09) son cuatro, y el modelo
@@ -468,17 +468,15 @@ hablan **solo** con `gym-gateway`; ninguna instancia un cliente Supabase.
                       ↑↓
 ┌──────────────────────────────────────────────┐
 │  gym-gateway (FastAPI)                       │
-│  Auth + proxy PostgREST + RBAC               │
+│  Auth + PostgREST + RBAC + IA rutinas        │
 └──────────────────────────────────────────────┘
            ↑                         ↑
 ┌──────────┴──────────┐   ┌──────────┴──────────┐
 │ FitPro Entrenador   │   │ FitPro Cliente      │
-│ SPA — este repo     │   │ PWA React — aparte  │
+│ SPA — este repo     │   │ PWA (fitpro-clients)│
 │ TanStack Query      │   │ TanStack Query      │
 │ Zustand (solo UI)   │   │ Zustand (player)    │
 └─────────────────────┘   └─────────────────────┘
-           │
-           └── fitpro_api (IA de rutinas; solo entrenador)
 ```
 
 Reglas:
@@ -486,7 +484,7 @@ Reglas:
 - **Nada de datos de dominio en localStorage** una vez haya servidor.
 - **Zod valida** todo lo que entra del exterior (form, import, respuestas server).
 - **RLS es la primera barrera**, el gating en cada app es la segunda.
-- **Edge Functions de Supabase** para webhooks y jobs ligeros. FastAPI solo si duele (`gym-gateway` y `fitpro_api` ya justifican su existencia).
+- **Edge Functions de Supabase** para webhooks y jobs ligeros. FastAPI solo si duele (hoy: `gym-gateway`).
 - La PWA de primera instancia escribe `sessions` / `session_sets` y lee el plan asignado. No incluye Biblioteca, Comunidades ni billing.
 
 ---
@@ -712,7 +710,7 @@ miembros, moderación) para retención y engagement.
 
 | # | Decisión | Razón |
 |---|---|---|
-| D1 | Supabase puro al inicio; FastAPI solo cuando duela — **en la práctica ya hay dos FastAPI**: `fitpro_api` (IA/DeepSeek) y `gym-gateway` (proxy de auth/datos hacia Supabase). El frontend nunca habla Supabase directo, todo pasa por `gym-gateway` | Auth/roles reales sin exponer keys de Supabase al cliente; IA/jobs pesados justifican el extra en `fitpro_api` |
+| D1 | Supabase puro al inicio; FastAPI solo cuando duela — **un solo FastAPI**: `gym-gateway` (auth, dominio, IA). `gym-mcp` / `fitpro_api` están absorbidos. El frontend nunca habla Supabase directo | Auth/roles reales sin exponer keys; IA vive en la misma puerta |
 | D2 | TanStack Query para datos servidor | Cache, sync, optimistic updates sin `useEffect` manuales — **cableado en código, pendiente `npm install` en este entorno (ver §2/§3)** |
 | D3 | Zustand SOLO para UI efímera | Nada de datos de dominio persistidos |
 | D4 | Zod para validación runtime | Una fuente de verdad tipos + validación |
@@ -874,8 +872,8 @@ con IA» (activo por defecto), FitPro llama a gym-gateway (`VITE_GATEWAY_URL` �
 `POST /api/ai/routine`), resuelve el catálogo y envía los ejercicios en
 `POST /api/trainers/clients/invite`. Si la IA falla no se invita: se puede
 desactivar el toggle y crear el plan vacío. La plantilla se intenta guardar
-también en Biblioteca, pero eso no bloquea el alta. El sidecar `gym-mcp`
-queda congelado para HTTP de producto (solo tools MCP opcionales en Cursor).
+también en Biblioteca, pero eso no bloquea el alta. **`gym-mcp` ya no se
+levanta:** la IA quedó en gym-gateway.
 
 ### 2026-09-09 — Primera instancia + PWA cliente
 
@@ -1134,6 +1132,7 @@ se documenta como trade-off consciente.
 | 2026-09-09 | **D11 — App cliente = PWA React independiente** (repo hermano, aún no creado), mismo `gym-gateway` y misma identidad (`DESIGN.md`). Esta SPA no crece un “modo cliente”. Primera instancia de la PWA: instalable, online, escribe `sessions`/`session_sets`. Offline-first profundo = Fase 7 | El cliente necesita una superficie de ejecución en el teléfono; meterla en el cockpit del entrenador mezcla UX y retrasa las dos apps |
 | 2026-09-09 | **Modelo mínimo de entrenamiento en mock local:** `ejercicio_id` en plantillas de rutina/plan; sesiones ejecutadas con `SerieEjecutada` (peso/reps); `useSesionesStore` con persist; registro manual del entrenador. Sin Supabase — contrato alineado a `sessions`/`session_sets` para Fase 4 | Cerrar el loop del entrenador (prescribir → registrar → ver log) sin esperar PWA ni gateway; evitar rediseño al cablear backend |
 | 2026-09-21 | **IA de rutinas integrada en gym-gateway** (`POST /api/ai/routine`, OpenRouter + catálogo Supabase directo). FitPro deja `VITE_API_URL`/gym-mcp para producto; un solo origen (`VITE_GATEWAY_URL`). `gym-mcp` congelado como sidecar MCP opcional | CORS, un proceso menos, mismo JWT/RBAC; alinea D1 (FastAPI solo cuando duele — aquí el gateway ya es la puerta) |
+| 2026-09-22 | **`gym-mcp` absorbido del todo en gym-gateway.** No hay repo ni servicio sidecar. Stack de producto: gateway + FitPro + PWA. El loop de sesión (iniciar / series / completar) escribe `training.sessions` + `session_sets` | Evitar un cuarto proceso y un workspace fantasma; una sola puerta al backend |
 
 ---
 

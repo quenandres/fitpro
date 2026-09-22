@@ -70,7 +70,6 @@ const briefingForRole = (
       ]),
       actions: [
         { to: ROUTES.communities.root, label: 'Ver comunidad', primary: true },
-        { to: ROUTES.notifications, label: 'Avisos' },
       ],
     };
   }

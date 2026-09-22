@@ -28,7 +28,7 @@ export function CommunitiesExplorePage() {
   const [categorias, setCategorias] = useState<CategoriaComunidad[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const toast = useToastHook();
-  const { isSuperadmin } = usePlatformRole();
+  const { isAdmin } = usePlatformRole();
   const { data: comunidades = [], isLoading, isError, refetch } = useComunidadesList(tab, search);
   const joinMutation = useJoinComunidad();
 
@@ -58,7 +58,7 @@ export function CommunitiesExplorePage() {
         <h1 className="font-sora text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
           Comunidades
         </h1>
-        {isSuperadmin ? (
+        {isAdmin ? (
           <Link
             to={ROUTES.communities.create}
             className="fp-btn fp-btn-primary inline-flex items-center gap-1.5 shrink-0"

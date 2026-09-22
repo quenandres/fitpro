@@ -1,7 +1,7 @@
 import { NavLink, Link } from 'react-router-dom';
 import { Compass } from 'lucide-react';
 import { ROUTES } from '../../../routes/paths';
-import { useCommunitiesStore, CURRENT_MEMBER_ID } from '../../../store/useCommunitiesStore';
+import { useComunidadesList } from '../../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
 
 interface CommunitySidebarLeftProps {
@@ -10,18 +10,13 @@ interface CommunitySidebarLeftProps {
 
 /** Sidebar izquierdo (desktop): secciones de la comunidad actual + mis comunidades. */
 export function CommunitySidebarLeft({ comunidadId }: CommunitySidebarLeftProps) {
-  const comunidades = useCommunitiesStore((s) => s.comunidades);
-  const miembros = useCommunitiesStore((s) => s.miembros);
-  const misComunidades = comunidades.filter((c) =>
-    miembros.some((m) => m.comunidadId === c.id && m.id === CURRENT_MEMBER_ID),
-  );
+  const { data: misComunidades = [] } = useComunidadesList('mis-comunidades', '');
   const { puedeAdministrar } = useCommunityPermissions(comunidadId);
 
   const sections = [
     { to: ROUTES.communities.home(comunidadId), label: 'Inicio' },
     { to: ROUTES.communities.posts(comunidadId), label: 'Publicaciones' },
     { to: ROUTES.communities.events(comunidadId), label: 'Eventos' },
-    { to: ROUTES.communities.discussions(comunidadId), label: 'Discusiones' },
     { to: ROUTES.communities.members(comunidadId), label: 'Miembros' },
     { to: ROUTES.communities.about(comunidadId), label: 'Información' },
     ...(puedeAdministrar ? [{ to: ROUTES.communities.admin(comunidadId), label: 'Administración' }] : []),
@@ -66,7 +61,16 @@ export function CommunitySidebarLeft({ comunidadId }: CommunitySidebarLeftProps)
                   className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--bg-overlay)]"
                   style={{ color: c.id === comunidadId ? 'var(--accent-pink)' : 'var(--text-secondary)' }}
                 >
-                  <img src={c.avatarUrl} alt="" className="w-5 h-5 rounded-full" />
+                  {c.avatarUrl ? (
+                    <img src={c.avatarUrl} alt="" className="w-5 h-5 rounded-full" />
+                  ) : (
+                    <span
+                      className="flex w-5 h-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                      style={{ background: 'var(--accent-pink)' }}
+                    >
+                      {c.nombre.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
                   <span className="truncate">{c.nombre}</span>
                 </Link>
               </li>

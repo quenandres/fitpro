@@ -15,7 +15,7 @@ const labelClass = 'fp-cal-label';
 
 export function CommunityCreatePage() {
   const navigate = useNavigate();
-  const { isSuperadmin } = usePlatformRole();
+  const { isAdmin } = usePlatformRole();
   const createMutation = useCreateComunidad();
   const toast = useToastHook();
 
@@ -53,12 +53,12 @@ export function CommunityCreatePage() {
     );
   };
 
-  if (!isSuperadmin) {
+  if (!isAdmin) {
     return (
       <EmptyState
         icon={ShieldAlert}
         title="Acceso restringido"
-        description="Solo los superadministradores pueden crear comunidades."
+        description="Solo los administradores de plataforma pueden crear comunidades."
         action={(
           <button
             type="button"

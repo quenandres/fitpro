@@ -1,7 +1,4 @@
-/**
- * Modelo de dominio del módulo Comunidades — UI pura, datos mock.
- * Sin persistencia real: fixtures en `src/data/communities/` + `useCommunitiesStore`.
- */
+/** Modelo de dominio del módulo Comunidades — datos vía gym-gateway. */
 
 export type RolComunidad = 'member' | 'moderator' | 'leader';
 
@@ -59,6 +56,7 @@ export interface Comentario {
   autorId: string;
   texto: string;
   creadoEn: string;
+  autorNombre?: string;
 }
 
 export type TipoMedia = 'imagen' | 'video';

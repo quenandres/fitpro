@@ -57,14 +57,10 @@ export const ROUTES = {
     },
   },
 
-  /**
-   * Módulo Comunidades — UI pura sobre datos mock (`useCommunitiesStore`).
-   * Sin backend: ver CONTEXT.md / plan de implementación del módulo.
-   */
+  /** Módulo Comunidades — datos vía gym-gateway `/api/comunidades`. */
   communities: {
     root: '/communities',
     create: '/communities/create',
-    invitations: '/communities/invitations',
     detail: (id: string) => `/communities/${id}`,
     home: (id: string) => `/communities/${id}/home`,
     posts: (id: string) => `/communities/${id}/posts`,
@@ -75,17 +71,11 @@ export const ROUTES = {
     event: (id: string, eventId: string) => `/communities/${id}/events/${eventId}`,
     eventParticipants: (id: string, eventId: string) =>
       `/communities/${id}/events/${eventId}/participants`,
-    discussions: (id: string) => `/communities/${id}/discussions`,
-    discussion: (id: string, discussionId: string) =>
-      `/communities/${id}/discussions/${discussionId}`,
     members: (id: string) => `/communities/${id}/members`,
     about: (id: string) => `/communities/${id}/about`,
     admin: (id: string) => `/communities/${id}/admin`,
     adminMembers: (id: string) => `/communities/${id}/admin/members`,
-    adminModeration: (id: string) => `/communities/${id}/admin/moderation`,
   },
-
-  notifications: '/notifications',
 
   /**
    * Alias legacy del dashboard de métricas. La pantalla canónica es `home`

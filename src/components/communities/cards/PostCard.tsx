@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Pin, PinOff, Share2, Trash2, Flag } from 'lucide-react';
+import { MessageCircle, Pin, PinOff, Share2, Trash2 } from 'lucide-react';
 import { Avatar } from '../../common/Avatar';
 import { ActionMenu } from '../../common/ActionMenu';
 import { ConfirmDialog } from '../../common/ConfirmDialog';
-import { PostMedia } from '../feed/PostMedia';
 import { ReactionButton } from '../feed/ReactionButton';
-import { ReportModal } from '../modals/ReportModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { useAuth } from '../../../context/AuthContext';
 import {
@@ -15,7 +13,6 @@ import {
   useUpdatePublicacion,
 } from '../../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../../hooks/useCommunityPermissions';
-import { useToastHook } from '../../common/Toast';
 import { ROUTES } from '../../../routes/paths';
 import type { Post, TipoReaccion } from '../../../types/community';
 
@@ -38,11 +35,9 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
   const updatePostMut = useUpdatePublicacion(post.comunidadId);
   const deletePostMut = useDeletePublicacion(post.comunidadId);
   const { puedeModerar } = useCommunityPermissions(post.comunidadId);
-  const toast = useToastHook();
   const autorNombre = (post as Post & { autorNombre?: string }).autorNombre ?? 'Miembro';
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showReport, setShowReport] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
@@ -90,12 +85,6 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
                   },
                 ]
               : []),
-            {
-              key: 'report',
-              label: 'Reportar',
-              icon: Flag,
-              onSelect: () => setShowReport(true),
-            },
             ...(puedeModerar || post.autorId === user?.id
               ? [
                   {
@@ -114,8 +103,6 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
       <p className="text-sm mt-2.5 whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
         {post.texto}
       </p>
-
-      <PostMedia media={post.media} />
 
       <div className="fp-com-reaction-bar">
         <ReactionButton
@@ -157,13 +144,6 @@ export function PostCard({ post, linkToDetail = true }: PostCardProps) {
       {content}
 
       <ShareSheet open={showShare} onClose={() => setShowShare(false)} title="Publicación" path={detailPath} />
-      <ReportModal
-        open={showReport}
-        onClose={() => setShowReport(false)}
-        comunidadId={post.comunidadId}
-        postId={post.id}
-        onSubmitted={() => toast.success('Reporte enviado, gracias')}
-      />
       <ConfirmDialog
         open={showDelete}
         title="¿Eliminar esta publicación?"

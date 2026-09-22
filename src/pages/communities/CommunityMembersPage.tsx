@@ -1,13 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Search, ShieldCheck, ShieldOff, UserPlus, UserX, Users } from 'lucide-react';
+import { Search, ShieldCheck, ShieldOff, UserX, Users } from 'lucide-react';
 import { MemberCard } from '../../components/communities/cards/MemberCard';
 import { MemberProfileSheet } from '../../components/communities/modals/MemberProfileSheet';
-import { InviteMembersSheet } from '../../components/communities/modals/InviteMembersSheet';
 import { ActionMenu } from '../../components/common/ActionMenu';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useToastHook } from '../../components/common/Toast';
 import { useComunidadMiembros, useRemoveMiembro, useUpdateMiembro } from '../../lib/gateway/hooks';
 import { useCommunityPermissions } from '../../hooks/useCommunityPermissions';
 import type { MiembroComunidad, RolComunidad } from '../../types/community';
@@ -17,17 +15,15 @@ type RoleFilter = 'all' | RolComunidad;
 export function CommunityMembersPage() {
   const { id } = useParams<{ id: string }>();
   const { data: miembros = [] } = useComunidadMiembros(id);
-  const { puedeModerar, puedeParticipar } = useCommunityPermissions(id ?? '');
+  const { puedeModerar } = useCommunityPermissions(id ?? '');
   const updateMember = useUpdateMiembro(id ?? '');
   const removeMember = useRemoveMiembro(id ?? '');
-  const toast = useToastHook();
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [profileMember, setProfileMember] = useState<MiembroComunidad | null>(null);
   const [menuMemberId, setMenuMemberId] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<MiembroComunidad | null>(null);
-  const [showInvite, setShowInvite] = useState(false);
 
   const filtered = useMemo(() => {
     let list = miembros;
@@ -48,22 +44,9 @@ export function CommunityMembersPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-sora text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-          Miembros ({miembros.length})
-        </h1>
-        {puedeParticipar ? (
-          <button
-            type="button"
-            className="fp-btn text-sm flex items-center gap-2"
-            style={{ background: 'var(--accent-pink)', color: '#fff' }}
-            onClick={() => setShowInvite(true)}
-          >
-            <UserPlus size={15} />
-            Invitar
-          </button>
-        ) : null}
-      </div>
+      <h1 className="font-sora text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+        Miembros ({miembros.length})
+      </h1>
 
       <div className="fp-input-group">
         <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
@@ -132,13 +115,6 @@ export function CommunityMembersPage() {
       )}
 
       <MemberProfileSheet miembro={profileMember} onClose={() => setProfileMember(null)} />
-
-      <InviteMembersSheet
-        open={showInvite}
-        onClose={() => setShowInvite(false)}
-        onInvited={(count) => toast.success(`Invitación enviada a ${count} persona${count === 1 ? '' : 's'}`)}
-      />
-
 
       <ConfirmDialog
         open={removeTarget !== null}

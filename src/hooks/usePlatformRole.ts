@@ -5,6 +5,7 @@ import { resolveDashboardRole, type RolDashboard } from '../types/adminDashboard
 interface PlatformRole {
   /** Rol efectivo en toda la app: el override de `/perfil` si existe, si no el real. */
   rol: RolDashboard;
+  isAdmin: boolean;
   isSuperadmin: boolean;
   /** Rol que devuelve el gateway (`AuthUser.role`), sin override. */
   rolReal: RolDashboard;
@@ -19,6 +20,17 @@ export function usePlatformRole(): PlatformRole {
 
   const rolReal = resolveDashboardRole(user?.role);
   const rol = rolOverride ?? rolReal;
+  const gatewayRole = user?.role;
 
-  return { rol, isSuperadmin: rol === 'superadmin', rolReal, rolOverride, setRolOverride };
+  return {
+    rol,
+    isAdmin:
+      gatewayRole === 'admin' ||
+      gatewayRole === 'superadmin' ||
+      rol === 'superadmin',
+    isSuperadmin: gatewayRole === 'superadmin' || rol === 'superadmin',
+    rolReal,
+    rolOverride,
+    setRolOverride,
+  };
 }
