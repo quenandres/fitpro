@@ -24,6 +24,7 @@ import {
 } from '../lib/gateway';
 import { GatewayError } from '../lib/gateway/errors';
 import { clearRoleOverride } from '../store/useRoleOverrideStore';
+import { DEMO_TRAINER_USER, isMockMode } from '../lib/mock-mode';
 
 export interface AuthUser {
   id: string;
@@ -77,6 +78,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
 
     const bootstrap = async () => {
+      if (isMockMode()) {
+        if (!cancelled) {
+          setUser({
+            id: DEMO_TRAINER_USER.id,
+            email: DEMO_TRAINER_USER.email,
+            role: DEMO_TRAINER_USER.role,
+          });
+          setLoading(false);
+        }
+        return;
+      }
       const stored = loadSession();
       if (!stored) {
         clearSession();
@@ -124,6 +136,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(
     async (email: string, password: string) => {
+      if (isMockMode()) {
+        setUser({
+          id: DEMO_TRAINER_USER.id,
+          email: DEMO_TRAINER_USER.email,
+          role: DEMO_TRAINER_USER.role,
+        });
+        return;
+      }
       const tokens = await loginRequest(email, password);
       await applySession(sessionFromTokens(tokens), email);
     },
@@ -132,6 +152,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = useCallback(
     async (email: string, password: string) => {
+      if (isMockMode()) {
+        setUser({
+          id: DEMO_TRAINER_USER.id,
+          email: DEMO_TRAINER_USER.email,
+          role: DEMO_TRAINER_USER.role,
+        });
+        return { needsEmailConfirmation: false };
+      }
       const payload = await signupRequest(email, password);
       const tokens = extractSessionTokens(payload);
 
@@ -146,6 +174,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const logout = useCallback(async () => {
+    if (isMockMode()) {
+      clearSession();
+      setUser({
+        id: DEMO_TRAINER_USER.id,
+        email: DEMO_TRAINER_USER.email,
+        role: DEMO_TRAINER_USER.role,
+      });
+      return;
+    }
     const stored = loadSession();
     if (stored) {
       await logoutRequest(stored.accessToken);

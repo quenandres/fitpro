@@ -10,6 +10,7 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   register: '/register',
+  mockdata: '/mockdata',
   calendar: '/calendario',
   tracking: '/tracking',
   trackingUsuario: (id: string | number) => `/tracking?usuario=${id}`,

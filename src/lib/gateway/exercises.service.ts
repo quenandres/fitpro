@@ -1,3 +1,5 @@
+import { mockQueryGatewayExercises } from '../../demo/exercisedb-local';
+import { isMockMode } from '../mock-mode';
 import { gatewayFetch } from './client';
 
 export type GatewayExercise = {
@@ -28,6 +30,9 @@ export async function queryExercises(body: {
   page?: number;
   order?: string;
 }): Promise<ExerciseQueryResult> {
+  if (isMockMode()) {
+    return mockQueryGatewayExercises(body);
+  }
   return gatewayFetch<ExerciseQueryResult>('/api/exercises/exercise_details', {
     method: 'QUERY',
     body: JSON.stringify({

@@ -53,6 +53,24 @@ import { ProfilePage } from './pages/ProfilePage';
 import { LEGACY_LIBRARY_REDIRECTS, LEGACY_ROUTINE_FORM_LEVELS, ROUTES } from './routes/paths';
 import { LegacyRoutineFormRedirect } from './routes/LegacyRoutineFormRedirect';
 import type { ReactNode } from 'react';
+import { useSesionesHydrate } from './hooks/useSesionesHydrate';
+import { useMockTrainingHydrate } from './hooks/useMockTrainingHydrate';
+import { isMockMode } from './lib/mock-mode';
+import { MockDataPage } from './pages/MockDataPage';
+
+function LiveTrainingSync() {
+  useSesionesHydrate();
+  return null;
+}
+
+function MockTrainingSync() {
+  useMockTrainingHydrate();
+  return null;
+}
+
+function TrainerGatewaySync() {
+  return isMockMode() ? <MockTrainingSync /> : <LiveTrainingSync />;
+}
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -73,7 +91,14 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to={ROUTES.login} replace />;
+  return isAuthenticated ? (
+    <>
+      <TrainerGatewaySync />
+      {children}
+    </>
+  ) : (
+    <Navigate to={ROUTES.login} replace />
+  );
 };
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
@@ -90,6 +115,7 @@ function AppRoutes() {
       {/* Auth */}
       <Route path={ROUTES.login} element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path={ROUTES.register} element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      <Route path={ROUTES.mockdata} element={<MockDataPage />} />
 
       {/* App principal — Inicio = dashboard de métricas (por rol) */}
       <Route path={ROUTES.home} element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />

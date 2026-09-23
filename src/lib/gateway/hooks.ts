@@ -6,6 +6,7 @@ import type { PlanUsuario, Usuario } from '../../types';
 import { createEmptyPlanUsuario } from '../../utils/planGatewayAdapter';
 import { clampFrecuencia } from '../../utils/planScheduleUtils';
 import type { RolComunidad, TipoPost, TipoReaccion } from '../../types/community';
+import { isMockMode } from '../mock-mode';
 import {
   addComentario,
   cancelarEvento,
@@ -256,6 +257,7 @@ export function useTrainerClients() {
       const { clients } = await listTrainerClients();
       return clients;
     },
+    enabled: !isMockMode(),
     staleTime: 30_000,
   });
 }
@@ -274,8 +276,9 @@ export function useGatewayExerciseBrowse(
   filters: { bodyPart?: string; equipment?: string; muscle?: string },
 ) {
   const term = search.trim();
+  const mockMode = isMockMode();
   return useQuery({
-    queryKey: ['gateway-exercises-browse', term, filters],
+    queryKey: ['gateway-exercises-browse', term, filters, mockMode],
     queryFn: () => {
       const f: Record<string, string> = {};
       if (term.length >= 2) f.name = `ilike.*${term}*`;
@@ -284,7 +287,10 @@ export function useGatewayExerciseBrowse(
       if (filters.muscle) f.target = `eq.${filters.muscle}`;
       return queryExercises({ filters: f, limit: 30, page: 1 });
     },
-    enabled: term.length >= 2 || Boolean(filters.bodyPart || filters.equipment || filters.muscle),
+    enabled:
+      mockMode ||
+      term.length >= 2 ||
+      Boolean(filters.bodyPart || filters.equipment || filters.muscle),
   });
 }
 

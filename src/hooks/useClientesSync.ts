@@ -1,21 +1,24 @@
 import { useEffect } from 'react';
 import { useTrainerClients } from '../lib/gateway/hooks';
+import { isMockMode } from '../lib/mock-mode';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 
 export function useClientesSync() {
   const syncFromGateway = useUsuariosStore((s) => s.syncFromGateway);
   const gatewaySynced = useUsuariosStore((s) => s.gatewaySynced);
+  const mockMode = isMockMode();
   const query = useTrainerClients();
 
   useEffect(() => {
-    if (query.data?.length) {
+    if (mockMode) return;
+    if (query.isSuccess && query.data !== undefined) {
       syncFromGateway(query.data);
     }
-  }, [query.data, syncFromGateway]);
+  }, [mockMode, query.isSuccess, query.data, syncFromGateway]);
 
   return {
-    isLoading: query.isLoading,
-    gatewaySynced: gatewaySynced || Boolean(query.data?.length),
+    isLoading: mockMode ? false : query.isLoading,
+    gatewaySynced: mockMode ? gatewaySynced : gatewaySynced || Boolean(query.data?.length),
     refetch: query.refetch,
   };
 }

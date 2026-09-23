@@ -3,6 +3,7 @@ import type { ClientLink } from '../lib/gateway/training.service';
 import type { Ejercicio, Rutina, Usuario } from '../types';
 import { applyRutinaToUser, type SesionRef } from '../utils/planMutations';
 import { mapClientLinksToUsuarios } from '../lib/gateway/hooks';
+import { createEmptyPlanUsuario } from '../utils/planGatewayAdapter';
 import { normalizePlanUsuario } from '../utils/planScheduleUtils';
 import { migratePlanUsuarioEjercicios } from '../utils/migrateExerciseIds';
 import usuariosData from '../data/usuarios.json';
@@ -16,6 +17,20 @@ interface UsuariosStore {
   addUsuario: (user: Usuario) => void;
   assignRutinaToUsers: (userIds: number[], ref: SesionRef, rutina: Rutina) => void;
   syncFromGateway: (clients: ClientLink[]) => void;
+  loadDemoSeed: () => void;
+}
+
+function buildValentinaUsuario(): Usuario {
+  return {
+    id: 3,
+    nombre: 'Valentina Ruiz',
+    email: 'valentina.ruiz@demo.gymapp',
+    objetivo: 'Tonificar y ganar fuerza',
+    nivel: 'Intermedio',
+    peso_kg: 62,
+    dias_entrenar: 3,
+    plan: createEmptyPlanUsuario(3),
+  };
 }
 
 function normalizeUsuario(raw: Usuario, ejerciciosSeed: Ejercicio[] = ejerciciosData as Ejercicio[]): Usuario {
@@ -55,7 +70,10 @@ export const useUsuariosStore = create<UsuariosStore>((set, get) => ({
   },
 
   syncFromGateway: (clients) => {
-    if (clients.length === 0) return;
+    if (clients.length === 0) {
+      set({ usuarios: [], gatewaySynced: true });
+      return;
+    }
     const mapped = mapClientLinksToUsuarios(clients);
     const previous = get().usuarios;
     const merged = mapped.map((client) => {
@@ -63,5 +81,13 @@ export const useUsuariosStore = create<UsuariosStore>((set, get) => ({
       return existing ? { ...existing, nombre: client.nombre, client_uuid: client.client_uuid } : client;
     });
     set({ usuarios: merged, gatewaySynced: true });
+  },
+
+  loadDemoSeed: () => {
+    const base = (usuariosData as unknown as Usuario[]).map((raw) => normalizeUsuario(raw));
+    set({
+      usuarios: [...base, normalizeUsuario(buildValentinaUsuario())],
+      gatewaySynced: true,
+    });
   },
 }));

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { isMockMode } from '../lib/mock-mode';
 import { createPlan, linkClient } from '../lib/gateway/training.service';
 import { planUsuarioToCreatePlanBody } from '../utils/planGatewayAdapter';
 import type {
@@ -347,7 +348,7 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
         plan: normalized,
       });
 
-      if (selectedUser.client_uuid) {
+      if (selectedUser.client_uuid && !isMockMode()) {
         void (async () => {
           await linkClient(selectedUser.client_uuid!);
           await createPlan(planUsuarioToCreatePlanBody(selectedUser.client_uuid!, normalized));

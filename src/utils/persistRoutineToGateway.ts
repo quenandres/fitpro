@@ -1,10 +1,14 @@
 import type { Rutina } from '../types';
 import { createRoutine } from '../lib/gateway/routines.service';
+import { isMockMode } from '../lib/mock-mode';
 
 export async function persistRoutineToGateway(
   rutina: Omit<Rutina, 'id'>,
   options?: { assignToSelf?: boolean },
 ): Promise<string> {
+  if (isMockMode()) {
+    return `demo-routine-${Date.now()}`;
+  }
   const semanas = rutina.programacion_semanal?.length
     ? rutina.programacion_semanal
     : [{ semana: 1, dias: [{ dia: 1, nombre: rutina.nombre, ejercicios: rutina.ejercicios }] }];

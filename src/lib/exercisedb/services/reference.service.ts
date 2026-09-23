@@ -1,3 +1,5 @@
+import { mockReferenceItems } from '../../../demo/exercisedb-local';
+import { isMockMode } from '../../mock-mode';
 import { referenceListResponseSchema } from '../schemas';
 import type { ReferenceItem } from '../schemas';
 import { request } from '../http';
@@ -11,13 +13,13 @@ const fetchReferenceCatalog = async (path: string): Promise<ReferenceItem[]> => 
 };
 
 export const getMuscles = (): Promise<ReferenceItem[]> =>
-  fetchReferenceCatalog('/muscles');
+  isMockMode() ? Promise.resolve(mockReferenceItems('muscles')) : fetchReferenceCatalog('/muscles');
 
 export const getEquipments = (): Promise<ReferenceItem[]> =>
-  fetchReferenceCatalog('/equipments');
+  isMockMode() ? Promise.resolve(mockReferenceItems('equipments')) : fetchReferenceCatalog('/equipments');
 
 export const getExerciseTypes = (): Promise<ReferenceItem[]> =>
-  fetchReferenceCatalog('/exercisetypes');
+  isMockMode() ? Promise.resolve(mockReferenceItems('types')) : fetchReferenceCatalog('/exercisetypes');
 
 export const getBodyParts = (): Promise<ReferenceItem[]> =>
-  fetchReferenceCatalog('/bodyparts');
+  isMockMode() ? Promise.resolve(mockReferenceItems('bodyparts')) : fetchReferenceCatalog('/bodyparts');

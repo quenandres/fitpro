@@ -21,6 +21,7 @@ import { recencyToneFromSesion } from '../utils/userSummary';
 import { ROUTES } from '../routes/paths';
 import { useToastHook } from '../components/common/Toast';
 import { gatewayErrorMessage } from '../lib/gateway/errors';
+import { isMockMode } from '../lib/mock-mode';
 import { createPlan, type ClientLink } from '../lib/gateway/training.service';
 import { planUsuarioToCreatePlanBody } from '../utils/planGatewayAdapter';
 
@@ -169,6 +170,7 @@ export function UsuariosPage() {
       const clientId = updated.client_uuid;
       const plan = updated.plan;
       persistTimer.current = window.setTimeout(() => {
+        if (isMockMode()) return;
         void createPlan(planUsuarioToCreatePlanBody(clientId, plan)).catch((err: unknown) => {
           toast.error(
             'No se guardó el plan',

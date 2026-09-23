@@ -20,6 +20,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { Sheet } from '../common/Sheet';
 import { ROUTES } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
+import { isMockMode } from '../../lib/mock-mode';
 import { useTheme } from '../../context/ThemeContext';
 import { SHELL_WIDTH_CLASS } from './shellWidth';
 
@@ -63,8 +64,30 @@ export const Navbar = () => {
     return () => mq.removeEventListener('change', closeOnDesktop);
   }, []);
 
+  const mockActivo = isMockMode();
+
   return (
-    <header className="fp-glass fixed top-0 left-0 right-0 z-50 h-[58px]">
+    <>
+    {mockActivo && location.pathname !== ROUTES.mockdata && (
+      <div
+        className="fixed top-0 left-0 right-0 z-[60] text-center text-xs py-1"
+        style={{
+          background: 'rgba(34,197,94,.12)',
+          color: 'var(--text-secondary)',
+          borderBottom: '1px solid rgba(34,197,94,.2)',
+        }}
+      >
+        <Link to={ROUTES.mockdata} style={{ color: 'var(--brand)', fontWeight: 600 }}>
+          Modo demo
+        </Link>
+        {' · '}
+        Datos de demostración
+      </div>
+    )}
+    <header
+      className="fp-glass fixed left-0 right-0 z-50 h-[58px]"
+      style={{ top: mockActivo && location.pathname !== ROUTES.mockdata ? 28 : 0 }}
+    >
       <div
         className={`${SHELL_WIDTH_CLASS.wide} mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between gap-2`}
       >
@@ -153,6 +176,7 @@ export const Navbar = () => {
         onLogout={() => void handleLogout()}
       />
     </header>
+    </>
   );
 };
 
