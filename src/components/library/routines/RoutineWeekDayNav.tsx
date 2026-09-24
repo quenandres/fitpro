@@ -21,6 +21,7 @@ interface Props {
   /** Muestra aplicar semana 1 y copiar semana anterior (p. ej. plan de cliente). */
   showBothWeekActions?: boolean;
   variant?: 'card' | 'embedded';
+  hideDayPills?: boolean;
 }
 
 export const RoutineWeekDayNav = ({
@@ -39,6 +40,7 @@ export const RoutineWeekDayNav = ({
   durationLabel = 'Duración del programa',
   showBothWeekActions = false,
   variant = 'card',
+  hideDayPills = false,
 }: Props) => {
   const decSemanas = () => onSemanasChange(Math.max(MIN_RUTINA_SEMANAS, semanas - 1));
   const incSemanas = () => onSemanasChange(Math.min(MAX_RUTINA_SEMANAS, semanas + 1));
@@ -135,18 +137,21 @@ export const RoutineWeekDayNav = ({
         })}
       </div>
 
-      <p
-        className="font-sora"
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-          margin: '12px 0 8px',
-        }}
-      >
-        Semana {semanaActiva}
-      </p>
+      {!hideDayPills ? (
+        <p
+          className="font-sora"
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            margin: '12px 0 8px',
+          }}
+        >
+          Semana {semanaActiva}
+        </p>
+      ) : null}
 
+      {hideDayPills ? null : (
       <div className="fp-week-day-pills" role="tablist" aria-label="Días de la semana">
         {DIAS_SEMANA.map((def, index) => {
           const planDia = activeSemanaPlan?.dias[index];
@@ -179,6 +184,7 @@ export const RoutineWeekDayNav = ({
           );
         })}
       </div>
+      )}
 
       {(showApplyAll || showCopyWeek) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
@@ -198,7 +204,7 @@ export const RoutineWeekDayNav = ({
               type="button"
               className="fp-btn fp-btn-secondary"
               style={{ fontSize: 12, gap: 6, padding: '8px 12px' }}
-              onClick={() => onCopyWeekFrom(semanaActiva - 1)}
+              onClick={() => onCopyWeekFrom?.(semanaActiva - 1)}
             >
               <Copy size={14} />
               Copiar desde semana {semanaActiva - 1}

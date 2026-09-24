@@ -21,6 +21,16 @@ interface UsuariosStore {
 }
 
 function buildValentinaUsuario(): Usuario {
+  const seed = (usuariosData as unknown as Usuario[])[0];
+  const planTemplate = seed?.plan
+    ? (JSON.parse(JSON.stringify(seed.plan)) as Usuario['plan'])
+    : createEmptyPlanUsuario(3);
+  if (planTemplate) {
+    planTemplate.id = 3;
+    planTemplate.nombre = 'Plan Valentina — fuerza y tono';
+    planTemplate.descripcion =
+      'Prescrito por Laura Méndez. Alineado con la sesión que ejecuta en la PWA.';
+  }
   return {
     id: 3,
     nombre: 'Valentina Ruiz',
@@ -28,8 +38,8 @@ function buildValentinaUsuario(): Usuario {
     objetivo: 'Tonificar y ganar fuerza',
     nivel: 'Intermedio',
     peso_kg: 62,
-    dias_entrenar: 3,
-    plan: createEmptyPlanUsuario(3),
+    dias_entrenar: planTemplate?.dias_entrenar_semana ?? 3,
+    plan: planTemplate ?? createEmptyPlanUsuario(3),
   };
 }
 

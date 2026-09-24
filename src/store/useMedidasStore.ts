@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { buildDemoMedidasSnapshots } from '../demo/demoMedidasSeed';
+import { isMockMode } from '../lib/mock-mode';
 import type { SitioMedidaId, SnapshotMedidas, ValoresSitio } from '../types';
 
 interface MedidasStore {
@@ -102,6 +104,15 @@ export const useMedidasStore = create<MedidasStore>()(
         });
       },
     }),
-    { name: 'fitpro-medidas' },
+    {
+      name: 'fitpro-medidas',
+      merge: (persisted, current) => {
+        if (typeof window !== 'undefined' && isMockMode()) {
+          return { ...current, snapshots: buildDemoMedidasSnapshots() };
+        }
+        const p = persisted as Partial<MedidasStore> | undefined;
+        return { ...current, snapshots: p?.snapshots ?? current.snapshots };
+      },
+    },
   ),
 );

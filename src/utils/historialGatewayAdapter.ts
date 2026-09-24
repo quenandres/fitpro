@@ -1,20 +1,5 @@
+import type { GatewayHistorialRow } from '../lib/gateway/schemas/training';
 import type { EjercicioEjecutado, SesionEntrenamiento } from '../types';
-
-type GatewayHistorialRow = {
-  id: string;
-  nombre: string;
-  fecha: string;
-  volumen_kg?: number;
-  ejercicios_count?: number;
-  series?: Array<{
-    id: string;
-    ejercicio_id: string;
-    numero_serie: number;
-    peso_kg: number;
-    repeticiones: number;
-    confirmada?: boolean;
-  }>;
-};
 
 export function mapGatewayHistorial(
   rows: GatewayHistorialRow[],
@@ -29,7 +14,7 @@ export function mapGatewayHistorial(
       const existing = byExercise.get(ejercicioId);
       const entry: EjercicioEjecutado = existing ?? {
         ejercicio_id: ejercicioId,
-        nombre: `Ejercicio ${ejercicioId}`,
+        nombre: serie.nombre?.trim() || `Ejercicio ${ejercicioId}`,
         unidad_id: 1,
         series: [],
       };

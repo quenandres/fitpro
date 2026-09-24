@@ -112,6 +112,20 @@ export const validateRoutineByLevel = (
   }
 };
 
+const isExerciseField = (field: string): boolean =>
+  field === 'ejercicios' || field.startsWith('programacion.');
+
+/** Fase 1: metadatos y estructura semanal, sin exigir ejercicios aún. */
+export const validateBuilderPhase1 = (
+  level: RoutineFormLevel,
+  data: RoutineFormData,
+): ValidationError[] =>
+  validateRoutineByLevel(level, data).filter((e) => !isExerciseField(e.field));
+
+/** Fase 2: al menos un ejercicio válido en la programación. */
+export const validateBuilderPhase2 = (data: RoutineFormData): ValidationError[] =>
+  validateProgramacion(data);
+
 export const getFieldError = (
   errors: ValidationError[],
   field: string,

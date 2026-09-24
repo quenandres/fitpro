@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { CalendarCheck } from 'lucide-react';
 import type { Usuario } from '../../types';
-import { DemoBadge } from '../common/DemoBadge';
 import {
   complianceTone,
   getWeeklyCompliance,
@@ -33,8 +32,6 @@ export function CompliancePanel({ user }: Props) {
       style={{
         padding: 16,
         borderRadius: 16,
-        border: '1px dashed rgba(240,136,62,.35)',
-        background: 'rgba(240,136,62,.04)',
       }}
     >
       <div className="flex items-start gap-2.5 mb-3">
@@ -53,13 +50,10 @@ export function CompliancePanel({ user }: Props) {
           <CalendarCheck size={18} color={color} />
         </div>
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-            <h3 className="font-sora text-sm font-bold text-primary">Cumplimiento</h3>
-            <DemoBadge label="Demo · mock" />
-          </div>
+          <h3 className="font-sora text-sm font-bold text-primary mb-0.5">Cumplimiento</h3>
           <p className="text-[11px] text-muted leading-snug">
-            Vista previa con datos de ejemplo. La meta ({compliance.objetivo}/sem) sí viene del plan;
-            los días registrados vendrán de la app móvil cuando haya backend.
+            Días con sesión completada en la PWA esta semana. Meta: {compliance.objetivo} entrenamientos
+            según el plan.
           </p>
         </div>
       </div>
@@ -82,9 +76,6 @@ export function CompliancePanel({ user }: Props) {
             style={{ width: `${compliance.porcentaje}%`, background: color }}
           />
         </div>
-        <p className="text-[10px] text-muted mt-2 leading-snug">
-          Ilustrativo — no refleja el registro real del cliente todavía.
-        </p>
       </div>
 
       {compliance.fechas.length > 0 ? (
@@ -113,7 +104,7 @@ export function CompliancePanel({ user }: Props) {
             color: 'var(--text-muted)',
           }}
         >
-          Sin entrenamientos de ejemplo esta semana en el mock.
+          Sin sesiones completadas esta semana en la app.
         </p>
       )}
     </div>

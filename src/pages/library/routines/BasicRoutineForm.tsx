@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { SelfTrainingRedirect } from '../../../components/training/SelfTrainingRedirect';
 import { useRoutineFormWithPreset } from '../../../hooks/useRoutineFormWithPreset';
 import { CalculatedDurationField } from '../../../components/library/routines/CalculatedDurationField';
 import { ExerciseListEditor } from '../../../components/library/routines/ExerciseListEditor';
 import { RoutineBuilderShell } from '../../../components/library/routines/RoutineBuilderShell';
 import { RoutineScheduleSection } from '../../../components/library/routines/RoutineScheduleSection';
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
+import { RoutineFormPageLayout } from '../../../components/library/routines/RoutineFormPageLayout';
 import { getFieldError } from '../../../utils/routineFormValidators';
 import { ROUTES } from '../../../routes/paths';
 
 export const BasicRoutineForm = () => {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [searchParams] = useSearchParams();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const formHook = useRoutineFormWithPreset('basica');
   const {
     form,
@@ -18,7 +21,6 @@ export const BasicRoutineForm = () => {
     savedId,
     isSaving,
     saveError,
-    assignToSelf,
     presetName,
     matchInfo,
     isEdit,
@@ -30,12 +32,18 @@ export const BasicRoutineForm = () => {
     removeSuperset,
     mergeResolvedMuscles,
     save,
-    validateStep1,
+    validatePhase1,
+    validatePhase2,
     selectedExerciseIds,
     durationBreakdown,
+    semanaActiva,
   } = formHook;
 
   const accent = LEVEL_ACCENTS.basica;
+
+  if (searchParams.get('para') === 'mi') return <SelfTrainingRedirect />;
+
+  const scheduleProps = { accent, schedule: formHook };
 
   return (
     <RoutineFormShell
@@ -46,52 +54,72 @@ export const BasicRoutineForm = () => {
       isEdit={isEdit}
       hideActions
     >
-      <RoutineBuilderShell
+      <RoutineFormPageLayout
         level="basica"
-        step={step}
-        onStepChange={setStep}
         form={form}
-        isEdit={isEdit}
-        errors={errors}
         savedId={savedId}
+        presetName={presetName}
         isSaving={isSaving}
-        saveError={saveError}
-        assignToSelf={assignToSelf}
-        accent={accent}
-        onSave={save}
-        onValidateStep1={validateStep1}
-        onMusclesResolved={mergeResolvedMuscles}
-      >
-        <FormField label="Nombre de la rutina" required error={getFieldError(errors, 'nombre')}>
-          <input
-            className="fp-input"
-            placeholder="Ej: Full body principiante"
-            value={form.nombre}
-            onChange={(e) => setField('nombre', e.target.value)}
-          />
-        </FormField>
-
-        <RoutineScheduleSection accent={accent} schedule={formHook}>
-          <ExerciseListEditor
+        onSaveDraft={save}
+        builder={
+          <RoutineBuilderShell
             level="basica"
-            ejercicios={form.ejercicios}
+            step={step}
+            onStepChange={setStep}
+            form={form}
+            isEdit={isEdit}
             errors={errors}
-            selectedExerciseIds={selectedExerciseIds}
-            restBetweenSetsSec={form.rest_between_sets}
-            onAdd={addExercise}
-            onUpdate={updateExercise}
-            onRemove={removeExercise}
-            onCreateSuperset={createSuperset}
-            onRemoveSuperset={removeSuperset}
+            savedId={savedId}
+            isSaving={isSaving}
+            saveError={saveError}
+            accent={accent}
+            onSave={save}
+            onValidatePhase1={validatePhase1}
+            onValidatePhase2={validatePhase2}
+            onMusclesResolved={mergeResolvedMuscles}
+            semanaActiva={semanaActiva}
+            phase1={
+              <>
+                <FormField label="Nombre de la rutina" required error={getFieldError(errors, 'nombre')}>
+                  <input
+                    className="fp-input"
+                    placeholder="Ej: Full body principiante"
+                    value={form.nombre}
+                    onChange={(e) => setField('nombre', e.target.value)}
+                  />
+                </FormField>
+                <RoutineScheduleSection {...scheduleProps} studioLayout>
+                  {null}
+                </RoutineScheduleSection>
+              </>
+            }
+            phase2={
+              <RoutineScheduleSection {...scheduleProps} studioLayout>
+                <ExerciseListEditor
+                  level="basica"
+                  displayMode="studio"
+                  ejercicios={form.ejercicios}
+                  errors={errors}
+                  selectedExerciseIds={selectedExerciseIds}
+                  restBetweenSetsSec={form.rest_between_sets}
+                  onAdd={addExercise}
+                  onUpdate={updateExercise}
+                  onRemove={removeExercise}
+                  onCreateSuperset={createSuperset}
+                  onRemoveSuperset={removeSuperset}
+                />
+              </RoutineScheduleSection>
+            }
+            phase3={
+              <FormField label="Duración del día (min)">
+                <CalculatedDurationField breakdown={durationBreakdown} accent={accent} />
+              </FormField>
+            }
           />
-        </RoutineScheduleSection>
+        }
+      />
 
-        <FormField label="Duración del día (min)">
-          <CalculatedDurationField breakdown={durationBreakdown} accent={accent} />
-        </FormField>
-      </RoutineBuilderShell>
-
-      {savedId !== null && step === 2 && (
+      {savedId !== null && step === 3 && (
         <Link
           to={ROUTES.library.rutinas}
           className="fp-btn fp-btn-secondary"

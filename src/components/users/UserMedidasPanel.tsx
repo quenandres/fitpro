@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Calendar, Scale } from 'lucide-react';
 import { AnatomyViewport } from '../anatomy/AnatomyViewport';
 import { SegmentedControl } from '../anatomy/SegmentedControl';
@@ -59,6 +59,11 @@ export function UserMedidasPanel({ user }: Props) {
   const [pesoInput, setPesoInput] = useState(() =>
     pesoKg != null ? String(pesoKg) : '',
   );
+
+  useEffect(() => {
+    const p = snapshot?.peso_kg ?? user.peso_kg;
+    setPesoInput(p != null ? String(p) : '');
+  }, [snapshot?.peso_kg, snapshot?.fecha, user.peso_kg, user.id]);
 
   const muscles = useMemo(
     () => MUSCLE_MAP[view]?.[gender] ?? [],

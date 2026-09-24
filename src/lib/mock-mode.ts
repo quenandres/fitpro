@@ -1,3 +1,4 @@
+/** Clave localStorage: valor `"1"` = demo sin login ni gateway. Ver `/mockdata`. */
 export const MOCK_MODE_STORAGE_KEY = 'fitpro-mock-mode';
 
 export function isMockMode(): boolean {

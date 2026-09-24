@@ -29,6 +29,7 @@ export const ROUTES = {
     /** Recursos del entrenador (persistidos en backend) */
     rutinas: '/library/rutinas',
     rutinasNueva: '/library/rutinas/nueva',
+    /** Legacy: redirige al plan propio (`UserPlanWorkspace`) vía `?para=mi`. */
     miRutinaNueva: '/library/rutinas/nueva?para=mi',
     rutinasPlantillas: '/library/rutinas/plantillas',
     rutinaNueva: (level: RoutineFormLevel, id?: number) => {

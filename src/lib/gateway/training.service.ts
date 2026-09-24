@@ -1,4 +1,17 @@
+import { z } from 'zod';
+import {
+  demoCreatePlan,
+  demoFetchClientHistorial,
+  demoInviteClient,
+  demoLinkClient,
+  demoListTrainerClients,
+} from '../../demo/training-demo';
+import { isMockMode } from '../mock-mode';
 import { gatewayFetch } from './client';
+import {
+  gatewayHistorialRowSchema,
+  type GatewayHistorialRow,
+} from './schemas/training';
 
 export type GatewayPlanExercise = {
   ejercicio_id: string | number;
@@ -42,6 +55,7 @@ export type InviteClientResult = {
 };
 
 export async function listTrainerClients(): Promise<{ clients: ClientLink[] }> {
+  if (isMockMode()) return demoListTrainerClients();
   return gatewayFetch('/api/trainers/clients');
 }
 
@@ -64,6 +78,13 @@ export async function inviteClient(body: {
     }>;
   }>;
 }): Promise<InviteClientResult> {
+  if (isMockMode()) {
+    return demoInviteClient({
+      email: body.email,
+      full_name: body.full_name,
+      plan_nombre: body.plan_nombre,
+    });
+  }
   return gatewayFetch('/api/trainers/clients/invite', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -71,6 +92,7 @@ export async function inviteClient(body: {
 }
 
 export async function linkClient(clientId: string): Promise<ClientLink> {
+  if (isMockMode()) return demoLinkClient(clientId);
   return gatewayFetch(`/api/trainers/clients/link?client_id=${encodeURIComponent(clientId)}`, {
     method: 'POST',
   });
@@ -96,12 +118,20 @@ export async function createPlan(body: {
     }>;
   }>;
 }): Promise<unknown> {
+  if (isMockMode()) return demoCreatePlan(body);
   return gatewayFetch('/api/trainers/plans', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 }
 
-export async function fetchClientHistorial(clientId: string): Promise<unknown[]> {
-  return gatewayFetch<unknown[]>(`/api/trainers/clients/${clientId}/historial`);
+export async function fetchClientHistorial(
+  clientId: string,
+  limit = 200,
+): Promise<GatewayHistorialRow[]> {
+  if (isMockMode()) return demoFetchClientHistorial(clientId);
+  const data = await gatewayFetch<unknown>(
+    `/api/trainers/clients/${encodeURIComponent(clientId)}/historial?limit=${limit}`,
+  );
+  return z.array(gatewayHistorialRowSchema).parse(data);
 }

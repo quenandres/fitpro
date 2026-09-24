@@ -2,12 +2,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Dumbbell } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { PageBackRow } from '../components/common/PageBackButton';
-import { DemoBadge } from '../components/common/DemoBadge';
 import { EmptyState } from '../components/common/EmptyState';
-import { useClientHistorial } from '../lib/gateway/hooks';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 import { useSesionesStore } from '../store/useSesionesStore';
-import { mapGatewayHistorial } from '../utils/historialGatewayAdapter';
 import { useUnits } from '../hooks/useUnits';
 import {
   TRACKING_MODALIDAD_LABELS,
@@ -21,26 +18,27 @@ export function TrackingSessionDetailPage() {
   const navigate = useNavigate();
   const { formatearValor } = useUnits();
   const usuarios = useUsuariosStore((s) => s.usuarios);
-  const mockSesion = useSesionesStore((s) =>
+  const hydrated = useSesionesStore((s) => s.hydrated);
+  const sesion = useSesionesStore((s) =>
     sesionId ? s.sesiones.find((row) => row.id === sesionId) : undefined,
   );
 
-  const usuarioFromMock = mockSesion
-    ? usuarios.find((u) => u.id === mockSesion.usuario_id)
+  const usuario = sesion
+    ? usuarios.find((u) => u.id === sesion.usuario_id)
     : undefined;
 
-  const gatewayClient = usuarios.find((u) => u.client_uuid);
-  const historialQuery = useClientHistorial(gatewayClient?.client_uuid);
-  const gatewaySesion =
-    gatewayClient && sesionId && historialQuery.data
-      ? mapGatewayHistorial(
-          historialQuery.data as Parameters<typeof mapGatewayHistorial>[0],
-          gatewayClient.id,
-        ).find((row) => row.id === sesionId)
-      : undefined;
-
-  const sesion = mockSesion ?? gatewaySesion;
-  const usuario = usuarioFromMock ?? gatewayClient;
+  if (!hydrated) {
+    return (
+      <AppShell width="wide">
+        <div
+          className="flex min-h-[40vh] items-center justify-center"
+          style={{ color: 'var(--text-muted)', fontSize: 13 }}
+        >
+          <div className="auth-spinner-lg" aria-label="Cargando sesión" />
+        </div>
+      </AppShell>
+    );
+  }
 
   if (!sesion) {
     return (
@@ -68,7 +66,6 @@ export function TrackingSessionDetailPage() {
         />
 
         <div className="flex flex-wrap items-center gap-2 mb-2 mt-3">
-          <DemoBadge label="Demo · mock" />
           <span className={`fp-tracking-badge fp-tracking-badge--${sesion.modalidad}`}>
             {TRACKING_MODALIDAD_LABELS[sesion.modalidad]}
           </span>

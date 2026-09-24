@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useDataStore } from '../store/useDataStore';
 import type {
@@ -20,7 +20,11 @@ import {
   MIN_RUTINA_SEMANAS,
   programacionToPayload,
 } from '../utils/routineScheduleUtils';
-import { validateRoutineByLevel } from '../utils/routineFormValidators';
+import {
+  validateBuilderPhase1,
+  validateBuilderPhase2,
+  validateRoutineByLevel,
+} from '../utils/routineFormValidators';
 import { persistRoutineToGateway } from '../utils/persistRoutineToGateway';
 
 const uid = (): string =>
@@ -103,8 +107,6 @@ export const useRoutineForm = (
   initialCreateMode: RoutineCreateMode = 'semana_tipo',
 ) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const assignToSelf = searchParams.get('para') === 'mi';
   const addRutina = useDataStore((s) => s.addRutina);
   const updateRutina = useDataStore((s) => s.updateRutina);
   const [form, setForm] = useState<RoutineFormData>(
@@ -233,6 +235,23 @@ export const useRoutineForm = (
         ejercicios: getActiveEjercicios(prev, semanaActiva, index),
       }));
       setErrors([]);
+    },
+    [semanaActiva],
+  );
+
+  const setDiaNombre = useCallback(
+    (index: number, nombre: string) => {
+      setForm((prev) => ({
+        ...prev,
+        programacion_semanal: prev.programacion_semanal.map((s) =>
+          s.semana === semanaActiva
+            ? {
+                ...s,
+                dias: s.dias.map((d, i) => (i === index ? { ...d, nombre } : d)),
+              }
+            : s,
+        ),
+      }));
     },
     [semanaActiva],
   );
@@ -435,7 +454,7 @@ export const useRoutineForm = (
     setIsSaving(true);
     setSaveError(null);
     try {
-      await persistRoutineToGateway(payload, { assignToSelf });
+      await persistRoutineToGateway(payload, { assignToSelf: false });
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'No se pudo guardar la rutina en el servidor.');
       setIsSaving(false);
@@ -451,13 +470,25 @@ export const useRoutineForm = (
     setSavedId(id);
     setIsSaving(false);
     return id;
-  }, [addRutina, assignToSelf, editingId, form, level, toRutinaPayload, updateRutina]);
+  }, [addRutina, editingId, form, level, toRutinaPayload, updateRutina]);
 
   const validateStep1 = useCallback((): boolean => {
     const stepErrors = validateRoutineByLevel(level, form);
     setErrors(stepErrors);
     return stepErrors.length === 0;
   }, [form, level]);
+
+  const validatePhase1 = useCallback((): boolean => {
+    const stepErrors = validateBuilderPhase1(level, form);
+    setErrors(stepErrors);
+    return stepErrors.length === 0;
+  }, [form, level]);
+
+  const validatePhase2 = useCallback((): boolean => {
+    const stepErrors = validateBuilderPhase2(form);
+    setErrors(stepErrors);
+    return stepErrors.length === 0;
+  }, [form]);
 
   const selectedExerciseIds = useMemo(() => {
     const ids = new Set<number>();
@@ -479,7 +510,6 @@ export const useRoutineForm = (
     savedId,
     isSaving,
     saveError,
-    assignToSelf,
     editingId: editingId ?? null,
     isEdit: editingId != null,
     durationBreakdown,
@@ -489,6 +519,7 @@ export const useRoutineForm = (
     setSemanaActiva: setSemanaActivaSafe,
     diaIndex,
     setDiaActivo,
+    setDiaNombre,
     templateApplied,
     setTemplateApplied,
     modeSwitchNotice,
@@ -506,6 +537,8 @@ export const useRoutineForm = (
     mergeResolvedMuscles,
     save,
     validateStep1,
+    validatePhase1,
+    validatePhase2,
     loadForm,
     selectedExerciseIds,
     navigate,

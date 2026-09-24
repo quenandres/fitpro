@@ -115,9 +115,10 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
 >
 > - **Visión recortada** a primera instancia y **app cliente = PWA React aparte** — ver §1. Esta SPA es solo el cockpit del entrenador. La PWA **no existe aún**.
 > - **Planes por sesión, no por día de la semana.** `PlanUsuario` usa `SesionPlan[]` (cuota `dias_entrenar_semana`, modos `repetitiva` \| `sesiones_variables`, progresión `fijo` \| `incremental`, `descanso_min_dias`, `regla_progresion_global` opcional). Superficie: `/usuarios` y `/usuarios/:id` (`UsuariosPage`). **`GuidedPlanWizard`** (6 pasos) en ficha cliente → Entrenamientos: crear/reconfigurar plan con draft local y guardado atómico al final; **`CreatePlanWizard`** (2 pasos) da de alta al cliente y, si el entrenador lo pide, genera la rutina con gym-gateway (`POST /api/ai/routine`) a partir de «qué quiere entrenar» y la manda en el invite. Al terminar lleva a `/usuarios/:id?tab=entrenamientos` (2026-09-21). Store: `useUsuariosStore` (sigue **sin persist**, seed `usuarios.json`). Progresión prescrita es mock — adaptación por RPE/resultados reales pendiente de backend.
-> - **Tracking** (`/tracking`) lee `useSesionesStore` (mock con persist, series reales
->   peso/reps); el entrenador registra vía `RegistrarSesionSheet`. Cumplimiento
->   sigue contando días, no contenido de sesión. Player de biblioteca no escribe.
+> - **Tracking** (`/tracking`, ficha progreso, cumplimiento, calendario de entrenos):
+>   hidrata `useSesionesStore` desde `GET /api/trainers/clients/{id}/historial`
+>   (sesiones completadas en la PWA). Sin mock ni registro manual del entrenador
+>   (2026-09-23). Player de biblioteca no escribe.
 > - Medidas corporales en ficha de usuario (`useMedidasStore`, localStorage) — 2026-08-31.
 > - Módulo **Suscripciones y Pagos** (UI mock, 2026-09-07) — **fuera de primera instancia**; no ampliar.
 > - El player (`useWorkoutStore`) sigue sin persistir. No hay vista “entreno de hoy”.
@@ -1090,6 +1091,11 @@ listado de rutinas). `/` renderiza `AdminDashboardPage` (métricas mock por
 rol). `/admin/dashboard` redirige a `/`. El listado de rutinas sigue en
 `/library/rutinas`.
 
+### 2026-09-23 — Plan personal vs plantillas de biblioteca
+
+- **Biblioteca** (`/library/rutinas/nueva`, niveles básica/intermedia/avanzada, presets): solo **plantillas genéricas** (`Rutina` → `POST /api/routines` sin `assign_to_self`). Se asignan a clientes desde el tab **Entrenamientos** (`RutinaPickerSheet`).
+- **Plan propio del entrenador** (“Crearme una rutina” en `/perfil`, URLs legacy `?para=mi`): redirige a **`/usuarios/:id?tab=entrenamientos`** con el mismo **`UserPlanWorkspace`** que un cliente. Se resuelve `client_uuid === auth.sub` (gateway: `POST /api/trainers/clients/link` si falta el vínculo). En mock demo, fallback al cliente seed `id === 1`.
+
 ### 2026-08-30 — Rutinas multi-semana en el creador (Biblioteca)
 
 El creador de rutinas (`/library/rutinas/nueva/*`) pasa de sesión única a **programa
@@ -1133,6 +1139,7 @@ se documenta como trade-off consciente.
 | 2026-09-09 | **Modelo mínimo de entrenamiento en mock local:** `ejercicio_id` en plantillas de rutina/plan; sesiones ejecutadas con `SerieEjecutada` (peso/reps); `useSesionesStore` con persist; registro manual del entrenador. Sin Supabase — contrato alineado a `sessions`/`session_sets` para Fase 4 | Cerrar el loop del entrenador (prescribir → registrar → ver log) sin esperar PWA ni gateway; evitar rediseño al cablear backend |
 | 2026-09-21 | **IA de rutinas integrada en gym-gateway** (`POST /api/ai/routine`, OpenRouter + catálogo Supabase directo). FitPro deja `VITE_API_URL`/gym-mcp para producto; un solo origen (`VITE_GATEWAY_URL`). `gym-mcp` congelado como sidecar MCP opcional | CORS, un proceso menos, mismo JWT/RBAC; alinea D1 (FastAPI solo cuando duele — aquí el gateway ya es la puerta) |
 | 2026-09-22 | **`gym-mcp` absorbido del todo en gym-gateway.** No hay repo ni servicio sidecar. Stack de producto: gateway + FitPro + PWA. El loop de sesión (iniciar / series / completar) escribe `training.sessions` + `session_sets` | Evitar un cuarto proceso y un workspace fantasma; una sola puerta al backend |
+| 2026-09-23 | **Plan personal ≠ formulario de biblioteca.** `?para=mi` y “Configurar mi plan” abren el editor de plan por sesiones (`UserPlanWorkspace` + `createPlan`), no intermedia/básica/avanzada con `assign_to_self`. Las plantillas siguen en Biblioteca | Misma UX que prescribir a un cliente; evita dos modelos (días de plantilla vs sesiones de plan) para “entrenar yo” |
 
 ---
 

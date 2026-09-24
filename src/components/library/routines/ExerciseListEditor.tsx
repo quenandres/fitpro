@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Plus, Trash2, Link2, Unlink, Dumbbell } from 'lucide-react';
+import { Eye, Plus, Trash2, Link2, Unlink, Dumbbell, GripVertical, Clock } from 'lucide-react';
 import {
   ExercisePickerOverlay,
   type PickedExercise,
@@ -23,6 +23,7 @@ interface Props {
   onRemove: (key: string) => void;
   onCreateSuperset: (keys: string[]) => void;
   onRemoveSuperset: (groupId: string) => void;
+  displayMode?: 'default' | 'studio';
 }
 
 export const ExerciseListEditor = ({
@@ -38,7 +39,10 @@ export const ExerciseListEditor = ({
   onRemove,
   onCreateSuperset,
   onRemoveSuperset,
+  displayMode = 'default',
 }: Props) => {
+  const studio = displayMode === 'studio';
+  const restMin = Math.round(restBetweenSetsSec / 60) || 1;
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedForSuperset, setSelectedForSuperset] = useState<string[]>([]);
   const [previewKey, setPreviewKey] = useState<string | null>(null);
@@ -64,7 +68,9 @@ export const ExerciseListEditor = ({
   return (
     <div>
       <div className="flex justify-between items-center mb-2.5">
-        <label className="fp-cal-label mb-0">Ejercicios (ExerciseDB)</label>
+        <label className="fp-cal-label mb-0">
+          {studio ? 'Secuencia de ejercicios' : 'Ejercicios (ExerciseDB)'}
+        </label>
         <button
           type="button"
           className="fp-btn fp-btn-secondary"
@@ -126,17 +132,18 @@ export const ExerciseListEditor = ({
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {ejercicios.map((ej) => {
+        {ejercicios.map((ej, rowIndex) => {
           const key = exerciseKey(ej);
           const inSuperset = Boolean(ej.grupo_superset);
           const supersetSelected = selectedForSuperset.includes(key);
+          const muscleTags = ej.musculos_anatomia?.slice(0, 2) ?? [];
 
           return (
             <div
               key={key}
               className="fp-card relative"
               style={{
-                padding: 10,
+                padding: studio ? '12px 12px 12px 10px' : 10,
                 borderRadius: 12,
                 borderColor: inSuperset ? 'rgba(163,113,247,.35)' : undefined,
                 background: inSuperset ? 'rgba(163,113,247,.06)' : undefined,
@@ -144,6 +151,17 @@ export const ExerciseListEditor = ({
             >
               <div className="flex flex-col gap-2">
               <div className="flex gap-2.5 items-start">
+                {studio ? (
+                  <div className="flex flex-col items-center gap-1 shrink-0 pt-1" aria-hidden>
+                    <GripVertical size={14} color="var(--text-muted)" />
+                    <span
+                      className="font-sora"
+                      style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}
+                    >
+                      {rowIndex + 1}
+                    </span>
+                  </div>
+                ) : null}
                 {ej.imageUrl && (
                   <button
                     type="button"
@@ -166,6 +184,55 @@ export const ExerciseListEditor = ({
                   >
                     {ej.nombre}
                   </button>
+                  {studio ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                      {muscleTags.map((m) => (
+                        <span
+                          key={m}
+                          className="badge badge-blue"
+                          style={{ fontSize: 9, padding: '2px 6px', textTransform: 'capitalize' }}
+                        >
+                          {m}
+                        </span>
+                      ))}
+                      <span
+                        className="badge"
+                        style={{
+                          fontSize: 9,
+                          padding: '2px 6px',
+                          background: 'var(--bg-overlay)',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
+                        Vol: {ej.series} × {ej.valor}
+                      </span>
+                      {showRpe && ej.rpe != null ? (
+                        <span
+                          className="badge"
+                          style={{
+                            fontSize: 9,
+                            padding: '2px 6px',
+                            background: 'var(--text-primary)',
+                            color: 'var(--bg-app)',
+                          }}
+                        >
+                          RPE {ej.rpe}
+                        </span>
+                      ) : null}
+                      <span
+                        style={{
+                          fontSize: 10,
+                          color: 'var(--text-muted)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3,
+                        }}
+                      >
+                        <Clock size={10} />
+                        {restMin} min
+                      </span>
+                    </div>
+                  ) : null}
                   <div
                     className={`grid gap-2 ${showRpe ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}
                   >

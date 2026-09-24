@@ -1,197 +1,202 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronRight, ClipboardList, LayoutTemplate } from 'lucide-react';
+import { Check, ChevronRight, ClipboardList, LayoutTemplate, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { SelfTrainingRedirect } from '../../components/training/SelfTrainingRedirect';
 import { ROUTES } from '../../routes/paths';
+import { ROUTINE_PRESETS } from '../../data/routinePresets';
+import { RoutineCreationMethodTabs } from '../../components/library/routines/RoutineCreationMethodTabs';
+import { RoutineRecentDraftsTable } from '../../components/library/routines/RoutineRecentDraftsTable';
+import { RoutineCreationChrome } from '../../components/library/routines/RoutineCreationChrome';
 
 const { library: lib } = ROUTES;
 
-const PRESET_CARD = {
-  to: lib.rutinasPlantillas,
-  title: 'Desde plantilla',
-  desc: 'Hyrox, isométricos, pliometría, HIIT y más — ejercicios resueltos con ExerciseDB',
-  badge: '20+ presets',
-  accent: 'var(--accent-blue)',
-  bg: 'var(--accent-blue-dim)',
-} as const;
-
-const LEVELS = [
+const METHODS = [
   {
-    to: lib.rutinaNueva('basica'),
-    title: 'Básica',
-    desc: 'Nombre + ejercicios (ExerciseDB) + series/reps',
-    badgeClass: 'diff-beginner',
-    accent: 'var(--brand)',
-    bg: 'var(--brand-dim)',
+    to: lib.rutinasPlantillas,
+    title: 'Plantillas predefinidas',
+    desc: 'Comienza desde esquemas probados (PPL, torso/pierna, full body). Estandariza progresiones y edita volumen antes de guardar.',
+    badge: `${ROUTINE_PRESETS.length} arquitecturas`,
+    accent: 'var(--accent-blue)',
+    bg: 'var(--accent-blue-dim)',
+    Icon: LayoutTemplate,
+    cta: 'Explorar catálogo',
+    features: ['Curvas de descarga editables', 'Modular por semanas', 'Periodización base'],
+    previewLabel: '5 días / sem · plantilla',
   },
   {
     to: lib.rutinaNueva('intermedia'),
-    title: 'Intermedia',
-    desc: 'Categoría, duración, descanso, notas y filtros API',
-    badgeClass: 'diff-intermediate',
-    accent: 'var(--accent-blue)',
-    bg: 'var(--accent-blue-dim)',
+    title: 'Constructor paso a paso',
+    desc: 'Diseña la rutina con precisión: microciclo, selección por día y calibración de descansos en tres fases.',
+    badge: 'Control total',
+    accent: 'var(--brand)',
+    bg: 'var(--brand-dim)',
+    Icon: SlidersHorizontal,
+    cta: 'Iniciar constructor manual',
+    features: ['Volumen por día de la semana', 'ExerciseDB integrado', 'Descansos por nivel'],
+    previewLabel: 'Fases 01–03 guiadas',
   },
   {
-    to: lib.rutinaNueva('avanzada'),
-    title: 'Avanzada',
-    desc: 'Tipo EMOM/AMRAP/circuito, RPE y supersets',
-    badgeClass: 'diff-advanced',
+    to: lib.ia,
+    title: 'Generar con IA',
+    desc: 'Describe objetivo, nivel, equipo y restricciones. Revisa el borrador y guárdalo en biblioteca para afinarlo.',
+    badge: 'Asistente',
     accent: 'var(--accent-purple)',
     bg: 'color-mix(in srgb, var(--accent-purple) 12%, transparent)',
+    Icon: Sparkles,
+    cta: 'Crear mediante prompt',
+    primary: true,
+    features: ['Modificadores rápidos', 'Tres modos de síntesis', 'Catálogo validado al guardar'],
+    previewLabel: 'Prompt → borrador → biblioteca',
   },
 ] as const;
 
-function ChooserCard({
+function MethodCard({
   to,
   title,
   desc,
   badge,
-  badgeClass,
   accent,
   bg,
-  icon: Icon,
+  Icon,
+  cta,
+  features,
+  previewLabel,
+  primary,
   animationDelay,
-  borderAccent,
-}: {
-  to: string;
-  title: string;
-  desc: string;
-  badge?: string;
-  badgeClass?: string;
-  accent: string;
-  bg: string;
-  icon: typeof ClipboardList;
-  animationDelay?: string;
-  borderAccent?: boolean;
-}) {
+}: (typeof METHODS)[number] & { animationDelay?: string; primary?: boolean }) {
   return (
     <Link
       to={to}
-      className="fp-card fp-card-hover animate-slide-up relative overflow-hidden block"
+      className="fp-card fp-card-hover animate-slide-up relative overflow-hidden flex flex-col min-h-[320px]"
       style={{
         textDecoration: 'none',
         color: 'inherit',
         animationDelay,
-        ...(borderAccent
-          ? {
-              marginBottom: 12,
-              borderColor: 'color-mix(in srgb, var(--accent-blue) 35%, transparent)',
-            }
-          : {}),
       }}
     >
       <div className="fp-accent-bar" style={{ background: accent }} aria-hidden />
-      <div style={{ padding: '14px 14px 14px 17px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 11,
-            background: bg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon size={18} color={accent} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
-            <p
-              className="font-sora"
-              style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}
-            >
-              {title}
-            </p>
-            {badge ? (
+      <div style={{ padding: '18px 18px 16px 21px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: bg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Icon size={20} color={accent} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+              <p className="font-sora" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
+                {title}
+              </p>
               <span className="badge badge-blue" style={{ fontSize: 9, padding: '2px 6px' }}>
                 {badge}
               </span>
-            ) : null}
-            {badgeClass ? (
-              <span className={`badge ${badgeClass}`} style={{ fontSize: 9, padding: '2px 6px' }}>
-                {badgeClass === 'diff-beginner'
-                  ? 'Principiante'
-                  : badgeClass === 'diff-intermediate'
-                    ? 'Intermedio'
-                    : 'Avanzado'}
-              </span>
-            ) : null}
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{desc}</p>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{desc}</p>
         </div>
-        <ChevronRight size={16} color="var(--text-muted)" className="shrink-0" aria-hidden />
+
+        <div
+          style={{
+            padding: '10px 12px',
+            borderRadius: 10,
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-subtle)',
+            marginBottom: 12,
+          }}
+        >
+          <p className="fp-cal-label" style={{ marginBottom: 6 }}>
+            Estructura típica
+          </p>
+          <div className="fp-progress-track" style={{ height: 6, marginBottom: 6 }}>
+            <div className="fp-progress-fill" style={{ width: '72%', background: accent }} />
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{previewLabel}</p>
+        </div>
+
+        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', flex: 1 }}>
+          {features.map((f) => (
+            <li
+              key={f}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                fontSize: 12,
+                color: 'var(--text-secondary)',
+                marginBottom: 6,
+              }}
+            >
+              <Check size={14} color="var(--brand)" style={{ flexShrink: 0, marginTop: 1 }} />
+              {f}
+            </li>
+          ))}
+        </ul>
+
+        <span
+          className={primary ? 'fp-btn fp-btn-primary' : 'fp-btn fp-btn-secondary'}
+          style={{
+            width: '100%',
+            justifyContent: 'center',
+            gap: 6,
+            pointerEvents: 'none',
+          }}
+        >
+          {cta}
+          <ChevronRight size={14} />
+        </span>
       </div>
     </Link>
   );
 }
 
-function keepPara(to: string, paraMi: boolean): string {
-  if (!paraMi) return to;
-  return `${to}${to.includes('?') ? '&' : '?'}para=mi`;
-}
-
 export const RoutineChooserPage = () => {
   const [searchParams] = useSearchParams();
-  const paraMi = searchParams.get('para') === 'mi';
+  if (searchParams.get('para') === 'mi') return <SelfTrainingRedirect />;
 
   return (
-  <div>
-    <section style={{ paddingBottom: 14 }}>
-      <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-        <ClipboardList size={10} style={{ marginRight: 3 }} />
-        {paraMi ? 'Tu entrenamiento' : 'Biblioteca'}
-      </span>
-      <h1
-        className="font-sora"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          letterSpacing: '-.02em',
-          color: 'var(--text-primary)',
-          marginTop: 8,
-          marginBottom: 4,
-        }}
-      >
-        {paraMi ? 'Crear mi rutina' : 'Crear rutina'}
-      </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-        {paraMi
-          ? 'Esta rutina será tu plan activo. Luego la ejecutas en la app de cliente.'
-          : 'Elige plantilla o nivel de formulario. Después defines las semanas del plan (1–8).'}
-      </p>
-    </section>
+    <div>
+      <RoutineCreationMethodTabs />
 
-    <ChooserCard
-      to={keepPara(PRESET_CARD.to, paraMi)}
-      title={PRESET_CARD.title}
-      desc={PRESET_CARD.desc}
-      badge={PRESET_CARD.badge}
-      accent={PRESET_CARD.accent}
-      bg={PRESET_CARD.bg}
-      icon={LayoutTemplate}
-      borderAccent
-    />
+      <RoutineCreationChrome
+        crumbs={[
+          { label: 'Rutinas', to: lib.rutinas },
+          { label: 'Nueva rutina' },
+        ]}
+        title="Crear nueva rutina"
+        subtitle="Selecciona el método que mejor se adapte a tu flujo: plantilla validada, constructor en tres fases o asistente con IA."
+        badges={
+          <>
+            <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
+              <ClipboardList size={10} style={{ marginRight: 3 }} />
+              Biblioteca
+            </span>
+            <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
+              Constructor listo
+            </span>
+          </>
+        }
+        aside={
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
+            {ROUTINE_PRESETS.length}+ plantillas · ExerciseDB
+          </span>
+        }
+      />
 
-    <p className="fp-cal-label" style={{ marginTop: 16, marginBottom: 8 }}>
-      O crea desde cero
-    </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {METHODS.map((m, i) => (
+          <MethodCard key={m.to} {...m} animationDelay={`${i * 50}ms`} />
+        ))}
+      </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      {LEVELS.map(({ to, title, desc, badgeClass, accent, bg }, i) => (
-        <ChooserCard
-          key={to}
-          to={keepPara(to, paraMi)}
-          title={title}
-          desc={desc}
-          badgeClass={badgeClass}
-          accent={accent}
-          bg={bg}
-          icon={ClipboardList}
-          animationDelay={`${i * 40}ms`}
-        />
-      ))}
+      <RoutineRecentDraftsTable />
     </div>
-  </div>
   );
 };

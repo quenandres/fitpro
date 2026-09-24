@@ -273,13 +273,14 @@ export function buildCalendarEvents(
     if (!fechasSemana.has(cita.fecha)) continue;
     const cliente = usuarios.find((u) => u.id === cita.cliente_id);
     const rutina = rutinaNombre(rutinas, cita.rutina_id);
+    const clienteNombre = cliente?.nombre ?? 'Cliente';
     events.push({
       id: `cita-${cita.id}`,
       kind: 'cita',
-      title: cita.tipo === 'medidas'
-        ? `Medidas · ${cliente?.nombre ?? 'Cliente'}`
-        : (rutina ?? cliente?.nombre ?? 'Cita'),
-      subtitle: cliente?.nombre ?? 'Cliente',
+      title: clienteNombre,
+      subtitle: cita.tipo === 'medidas'
+        ? 'Control de medidas'
+        : (rutina ?? 'Entrenamiento'),
       fecha: cita.fecha,
       startMinutes: parseTimeToMinutes(cita.hora_inicio),
       durationMin: cita.duracion_min,
@@ -300,8 +301,8 @@ export function buildCalendarEvents(
     events.push({
       id: `sesion-${sesion.id}`,
       kind: 'entreno',
-      title: sesion.rutina_nombre,
-      subtitle: cliente.nombre,
+      title: cliente.nombre,
+      subtitle: sesion.rutina_nombre,
       fecha: sesion.fecha,
       startMinutes: 6 * 60,
       durationMin: sesion.duracion_min,
@@ -412,8 +413,9 @@ export function summarizeEventsForDay(
   const rutinas: string[] = [];
 
   for (const event of dayEvents) {
-    if (event.title && !rutinas.includes(event.title)) {
-      rutinas.push(event.title);
+    const label = [event.title, event.subtitle].filter(Boolean).join(' · ');
+    if (label && !rutinas.includes(label)) {
+      rutinas.push(label);
     }
   }
 

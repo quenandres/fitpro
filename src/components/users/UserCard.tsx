@@ -1,4 +1,6 @@
 import type { Usuario } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { isSelfTrainingUser } from '../../utils/selfTrainingClient';
 import { getUltimaSesion } from '../../store/useSesionesStore';
 import {
   formatPesoKg,
@@ -15,6 +17,8 @@ interface Props {
 }
 
 export function UserCard({ user, onClick }: Props) {
+  const { user: authUser } = useAuth();
+  const esYo = isSelfTrainingUser(user, authUser?.id);
   const sesion = getUltimaSesion(user.id);
   const ultima = formatUltimoEntrenamiento(sesion);
   const tone = recencyToneFromSesion(sesion);
@@ -27,7 +31,14 @@ export function UserCard({ user, onClick }: Props) {
       <div className="fp-user-card-top">
         <span className="fp-user-id">{initialsOf(user.nombre)}</span>
         <div className="min-w-0 flex-1">
-          <p className="fp-user-card-name truncate">{user.nombre}</p>
+          <div className="flex items-center gap-2 min-w-0">
+            <p className="fp-user-card-name truncate">{user.nombre}</p>
+            {esYo ? (
+              <span className="badge badge-brand shrink-0" style={{ fontSize: 9, padding: '2px 6px' }}>
+                Tú
+              </span>
+            ) : null}
+          </div>
           <p className="fp-user-card-plan truncate">{user.plan.nombre}</p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { getFieldError } from '../../../utils/routineFormValidators';
 import { PresetBanner } from './PresetBanner';
 
 import { ROUTES } from '../../../routes/paths';
+import { RoutineCreationChrome } from './RoutineCreationChrome';
 
 const LEVEL_META: Record<
   RoutineFormLevel,
@@ -53,43 +54,41 @@ export const RoutineFormShell = ({
   footer,
 }: Props) => {
   const meta = LEVEL_META[level];
-  const backLabel = 'Volver a elegir nivel';
+  const backLabel = 'Volver a métodos de creación';
   const nombreError = getFieldError(errors, 'nombre');
 
   return (
     <div>
       <PageBackRow to={meta.backTo} label={backLabel} className="animate-slide-up" />
 
-      <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
-        <span
-          className="badge"
-          style={{
-            fontSize: 11,
-            padding: '3px 9px',
-            background: `${meta.accent}22`,
-            color: meta.accent,
-            border: `1px solid ${meta.accent}44`,
-          }}
-        >
-          {meta.badge}
-        </span>
-        <h1
-          className="font-sora"
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: '-.02em',
-            color: 'var(--text-primary)',
-            marginTop: 8,
-            marginBottom: 4,
-          }}
-        >
-          {isEdit ? `Editar: ${meta.title.toLowerCase()}` : meta.title}
-        </h1>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-          Ejercicios desde ExerciseDB. Revisa el resumen antes de guardar.
-        </p>
-      </section>
+      <RoutineCreationChrome
+        crumbs={[
+          { label: 'Rutinas', to: ROUTES.library.rutinas },
+          { label: 'Nueva rutina', to: ROUTES.library.rutinasNueva },
+          { label: 'Constructor manual' },
+        ]}
+        title={isEdit ? `Editar rutina (${meta.badge.toLowerCase()})` : 'Constructor de rutina paso a paso'}
+        subtitle="Tres fases: estructura semanal, ejercicios y cargas. Los ejercicios se resuelven con ExerciseDB."
+        badges={
+          <>
+            <span
+              className="badge"
+              style={{
+                fontSize: 11,
+                padding: '3px 9px',
+                background: `${meta.accent}22`,
+                color: meta.accent,
+                border: `1px solid ${meta.accent}44`,
+              }}
+            >
+              Modo constructor · {meta.badge}
+            </span>
+            <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
+              Listo para editar
+            </span>
+          </>
+        }
+      />
 
       {presetName && <PresetBanner presetName={presetName} />}
       {matchInfo && matchInfo.matched < matchInfo.total && (

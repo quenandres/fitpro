@@ -4,6 +4,7 @@ import { AppShell } from '../components/layout/AppShell';
 import { useAuth } from '../context/AuthContext';
 import { usePlatformRole } from '../hooks/usePlatformRole';
 import { ROLES_DASHBOARD, ROLE_LABEL, type RolDashboard } from '../types/adminDashboard';
+import { useSelfTrainingNavigate } from '../hooks/useSelfTrainingNavigate';
 import { ROUTES } from '../routes/paths';
 
 const ROLE_DESC: Record<RolDashboard, string> = {
@@ -19,6 +20,7 @@ const ROLE_DESC: Record<RolDashboard, string> = {
  */
 export const ProfilePage = () => {
   const navigate = useNavigate();
+  const { goToSelfTraining, isPending: selfTrainingPending } = useSelfTrainingNavigate();
   const { user, logout } = useAuth();
   const { rol, rolReal, rolOverride, setRolOverride } = usePlatformRole();
 
@@ -78,21 +80,22 @@ export const ProfilePage = () => {
             <Dumbbell size={14} style={{ color: 'var(--brand)', marginTop: 2 }} />
             <div className="min-w-0">
               <p className="font-sora text-sm" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                Tu entrenamiento
+                Tu plan de entrenamiento
               </p>
               <p className="text-[11px]" style={{ color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 2 }}>
-                Crea una rutina para ti. Queda como tu plan activo y la puedes
-                ejecutar en la app de cliente.
+                Configura sesiones, frecuencia y progresión igual que para un cliente.
+                Lo ejecutas en la app de cliente.
               </p>
             </div>
           </div>
           <button
             type="button"
             className="fp-btn fp-btn-primary w-full"
-            onClick={() => navigate(ROUTES.library.miRutinaNueva)}
+            onClick={() => void goToSelfTraining()}
+            disabled={selfTrainingPending}
           >
             <Dumbbell size={15} style={{ marginRight: 6 }} />
-            Crearme una rutina
+            {selfTrainingPending ? 'Abriendo…' : 'Configurar mi plan'}
           </button>
         </section>
 

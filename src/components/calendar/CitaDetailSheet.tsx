@@ -40,7 +40,12 @@ export function CitaDetailSheet({ event, usuarios, rutinas, onClose }: CitaDetai
     <Sheet open ariaLabel="Detalle del evento" onClose={onClose}>
       <div className="fp-cal-detail">
         <div className="fp-cal-detail-header">
-          <h2 className="font-sora">{event.kind === 'cita' ? event.title : event.title}</h2>
+          <div className="min-w-0">
+            <h2 className="font-sora">{event.title}</h2>
+            {event.subtitle ? (
+              <p className="fp-cal-detail-workout">{event.subtitle}</p>
+            ) : null}
+          </div>
           <button type="button" className="fp-cal-detail-close" onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>

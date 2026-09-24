@@ -1,13 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
 import { ActivityHeatmap } from '../tracking/ActivityHeatmap';
 import { RecentSessionsList } from '../tracking/RecentSessionsList';
 import { TrackingPeriodNav } from '../tracking/TrackingPeriodNav';
 import { TrackingStats } from '../tracking/TrackingStats';
-import { RegistrarSesionSheet } from '../tracking/RegistrarSesionSheet';
-import { DemoBadge } from '../common/DemoBadge';
 import { useSesionesStore } from '../../store/useSesionesStore';
-import { useUsuariosStore } from '../../store/useUsuariosStore';
 import { useDataStore } from '../../store/useDataStore';
 import {
   TRACKING_PERIOD_LABELS,
@@ -22,12 +18,11 @@ interface Props {
 
 export function UserProgressPanel({ usuarioId }: Props) {
   const { rutinas, ejercicios } = useDataStore();
-  const usuarios = useUsuariosStore((s) => s.usuarios);
   const allSesiones = useSesionesStore((s) => s.sesiones);
   const [period, setPeriod] = useState<TrackingPeriod>('semana');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [showMuscleMap, setShowMuscleMap] = useState(false);
-  const [showRegistrar, setShowRegistrar] = useState(false);
+  const hydrated = useSesionesStore((s) => s.hydrated);
 
   const periodRange = useMemo(
     () => getPeriodRange(period, anchorDate),
@@ -57,19 +52,19 @@ export function UserProgressPanel({ usuarioId }: Props) {
 
   const statsPeriodLabel = TRACKING_PERIOD_LABELS[period].toLowerCase();
 
+  if (!hydrated) {
+    return (
+      <div
+        className="flex min-h-[200px] items-center justify-center"
+        style={{ color: 'var(--text-muted)', fontSize: 13 }}
+      >
+        <div className="auth-spinner-lg" aria-label="Cargando progreso" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 min-w-0 animate-slide-up">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <DemoBadge label="Demo · mock" />
-        <button
-          type="button"
-          className="fp-btn fp-btn-secondary text-sm"
-          onClick={() => setShowRegistrar(true)}
-        >
-          <Plus size={14} />
-          Registrar sesión
-        </button>
-      </div>
       <TrackingStats sesiones={sesionesPeriodo} periodLabel={statsPeriodLabel} />
 
       <div className="fp-card min-w-0" style={{ padding: 16, borderRadius: 16 }}>
@@ -117,7 +112,7 @@ export function UserProgressPanel({ usuarioId }: Props) {
               </span>
             </span>
             <span className="text-[10px] text-muted leading-snug block">
-              Mapa desde ejercicios ejecutados (series reales). Mock local hasta backend.
+              Mapa desde ejercicios ejecutados en la PWA (series reales del servidor).
             </span>
           </span>
         </label>
@@ -142,12 +137,6 @@ export function UserProgressPanel({ usuarioId }: Props) {
         <RecentSessionsList sesiones={sesionesPeriodo} />
       </div>
 
-      <RegistrarSesionSheet
-        open={showRegistrar}
-        onClose={() => setShowRegistrar(false)}
-        usuarios={usuarios}
-        defaultUsuarioId={usuarioId}
-      />
     </div>
   );
 }

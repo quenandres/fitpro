@@ -1,21 +1,16 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Activity, Plus, Users } from 'lucide-react';
+import { Activity, Users } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
-import { DemoBadge } from '../components/common/DemoBadge';
 import { PageBackRow } from '../components/common/PageBackButton';
 import { AppShell } from '../components/layout/AppShell';
 import { ClienteSelector } from '../components/tracking/ClienteSelector';
-import { RegistrarSesionSheet } from '../components/tracking/RegistrarSesionSheet';
 import { TrackingStats } from '../components/tracking/TrackingStats';
 import { ActivityHeatmap } from '../components/tracking/ActivityHeatmap';
 import { RecentSessionsList } from '../components/tracking/RecentSessionsList';
 import { TrackingPeriodNav } from '../components/tracking/TrackingPeriodNav';
-import { useClientHistorial } from '../lib/gateway/hooks';
-import { useClientesSync } from '../hooks/useClientesSync';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 import { useSesionesStore } from '../store/useSesionesStore';
-import { mapGatewayHistorial } from '../utils/historialGatewayAdapter';
 import {
   TRACKING_PERIOD_LABELS,
   fechaLocalISO,
@@ -30,10 +25,10 @@ import { ROUTES } from '../routes/paths';
 export function TrackingPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  useClientesSync();
   const usuarios = useUsuariosStore((s) => s.usuarios);
+  const gatewaySynced = useUsuariosStore((s) => s.gatewaySynced);
   const allSesiones = useSesionesStore((s) => s.sesiones);
-  const [showRegistrar, setShowRegistrar] = useState(false);
+  const hydrated = useSesionesStore((s) => s.hydrated);
 
   const period: TrackingPeriod = parsePeriodParam(params.get('period')) ?? 'semana';
   const anchorDate = useMemo(() => {
@@ -63,17 +58,9 @@ export function TrackingPage() {
     [usuarios, usuarioId],
   );
 
-  const historialQuery = useClientHistorial(usuario?.client_uuid);
-  const gatewaySesiones = useMemo(() => {
-    if (!usuario?.client_uuid || !historialQuery.data) return [];
-    return mapGatewayHistorial(historialQuery.data as Parameters<typeof mapGatewayHistorial>[0], usuario.id);
-  }, [historialQuery.data, usuario]);
-
-  const sesionesFuente = usuario?.client_uuid ? gatewaySesiones : allSesiones;
-
   const sesionesPeriodo = useMemo(() => {
     if (usuarioId == null) return [];
-    return sesionesFuente
+    return allSesiones
       .filter(
         (s) =>
           s.usuario_id === usuarioId &&
@@ -81,14 +68,14 @@ export function TrackingPage() {
           s.fecha <= periodRange.hasta,
       )
       .sort((a, b) => b.fecha.localeCompare(a.fecha));
-  }, [sesionesFuente, usuarioId, periodRange.desde, periodRange.hasta]);
+  }, [allSesiones, usuarioId, periodRange.desde, periodRange.hasta]);
 
   const sesionesAll = useMemo(() => {
     if (usuarioId == null) return [];
-    return sesionesFuente
+    return allSesiones
       .filter((s) => s.usuario_id === usuarioId)
       .sort((a, b) => b.fecha.localeCompare(a.fecha));
-  }, [sesionesFuente, usuarioId]);
+  }, [allSesiones, usuarioId]);
 
   const updateParams = useCallback(
     (next: { usuario?: number; period?: TrackingPeriod; fecha?: Date }) => {
@@ -119,13 +106,26 @@ export function TrackingPage() {
 
   const statsPeriodLabel = TRACKING_PERIOD_LABELS[period].toLowerCase();
 
+  if (!gatewaySynced || !hydrated) {
+    return (
+      <AppShell width="wide">
+        <div
+          className="flex min-h-[40vh] items-center justify-center"
+          style={{ color: 'var(--text-muted)', fontSize: 13 }}
+        >
+          <div className="auth-spinner-lg" aria-label="Cargando historial" />
+        </div>
+      </AppShell>
+    );
+  }
+
   if (usuarios.length === 0) {
     return (
       <AppShell width="wide">
         <EmptyState
           icon={Users}
           title="Sin clientes disponibles"
-          description="Agrega clientes desde Usuarios para ver su historial de entrenamientos."
+          description="Invita clientes desde Usuarios para ver el historial que registran en la app."
           action={
             <button type="button" className="fp-btn fp-btn-primary" onClick={() => navigate(ROUTES.usuarios)}>
               Ir a usuarios
@@ -147,13 +147,6 @@ export function TrackingPage() {
               <Activity size={10} style={{ marginRight: 3 }} />
               Seguimiento
             </span>
-            {usuario?.client_uuid ? (
-              <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
-                Gateway
-              </span>
-            ) : (
-              <DemoBadge label="Demo · mock" />
-            )}
           </div>
 
           <h1
@@ -163,18 +156,8 @@ export function TrackingPage() {
             Seguimiento de entrenamientos
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-            {usuario?.client_uuid
-              ? 'Historial con series reales desde el servidor (PWA + fallback entrenador).'
-              : 'Historial mock local — vincula un cliente real para leer el gateway.'}
+            Sesiones completadas en la PWA del cliente, con peso y repeticiones por serie.
           </p>
-          <button
-            type="button"
-            className="fp-btn fp-btn-primary mt-3"
-            onClick={() => setShowRegistrar(true)}
-          >
-            <Plus size={16} />
-            Registrar sesión
-          </button>
         </section>
 
         <div className="fp-card mb-4" style={{ padding: 16, borderRadius: 16 }}>
@@ -225,18 +208,15 @@ export function TrackingPage() {
             >
               Sesiones recientes
             </h2>
+            {sesionesAll.length === 0 && usuario?.client_uuid ? (
+              <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
+                Este cliente todavía no completó una sesión en la app.
+              </p>
+            ) : null}
             <RecentSessionsList sesiones={sesionesPeriodo} />
           </div>
         </div>
       </div>
-
-      <RegistrarSesionSheet
-        open={showRegistrar}
-        onClose={() => setShowRegistrar(false)}
-        usuarios={usuarios}
-        defaultUsuarioId={usuarioId}
-        onSaved={(id) => navigate(ROUTES.trackingSesion(id))}
-      />
     </AppShell>
   );
 }

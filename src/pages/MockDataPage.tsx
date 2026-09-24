@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { DemoBadge } from '../components/common/DemoBadge';
 import { AppShell } from '../components/layout/AppShell';
 import { resetComunidadesDemoState } from '../demo/comunidades-demo';
-import { isMockMode, setMockMode } from '../lib/mock-mode';
+import { isMockMode, MOCK_MODE_STORAGE_KEY, setMockMode } from '../lib/mock-mode';
 import { ROUTES } from '../routes/paths';
 
 export function MockDataPage() {
@@ -26,8 +26,8 @@ export function MockDataPage() {
           <DemoBadge label="Inversores" />
         </div>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.5 }}>
-          Activa datos de ejemplo en toda la app del entrenador. No se envían cambios al servidor.
-          La preferencia se guarda en este navegador (misma clave que la PWA cliente).
+          Activa datos de ejemplo en toda la app del entrenador. No hace falta login: entras como
+          Laura Méndez. No se envían cambios al servidor. Misma clave que la PWA cliente.
         </p>
         <label
           className="flex min-h-11 cursor-pointer items-center justify-between gap-4"
@@ -52,14 +52,27 @@ export function MockDataPage() {
           />
         </label>
         {enabled ? (
-          <Link to={ROUTES.home} className="fp-btn fp-btn-primary" style={{ width: '100%' }}>
-            Ir al inicio
-          </Link>
+          <div className="flex flex-col gap-2">
+            <Link to={ROUTES.home} className="fp-btn fp-btn-primary" style={{ width: '100%' }}>
+              Ir al inicio
+            </Link>
+            <Link
+              to={`${ROUTES.usuario(1)}?tab=medidas&semana=4`}
+              className="fp-btn fp-btn-secondary"
+              style={{ width: '100%' }}
+            >
+              Medidas demo — Carlos (semana 4)
+            </Link>
+          </div>
         ) : (
           <Link to={ROUTES.login} className="fp-btn fp-btn-secondary" style={{ width: '100%' }}>
             Ir a iniciar sesión
           </Link>
         )}
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 16, lineHeight: 1.5 }}>
+          Manual: <code>{MOCK_MODE_STORAGE_KEY}</code> = <code>1</code> en localStorage y recarga.
+          Borrar la clave para datos reales.
+        </p>
       </div>
     </AppShell>
   );

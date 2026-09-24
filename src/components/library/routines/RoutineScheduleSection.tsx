@@ -3,6 +3,7 @@ import type { RoutineCreateMode, Rutina } from '../../../types';
 import { RoutineCreateModeTabs } from './RoutineCreateModeTabs';
 import { RoutineTemplatePicker } from './RoutineTemplatePicker';
 import { RoutineWeekDayNav } from './RoutineWeekDayNav';
+import { RoutineMicrocyclePlanner } from './RoutineMicrocyclePlanner';
 
 interface ScheduleHookSlice {
   form: { semanas: number };
@@ -12,6 +13,7 @@ interface ScheduleHookSlice {
   setSemanaActiva: (semana: number) => void;
   diaIndex: number;
   setDiaActivo: (index: number) => void;
+  setDiaNombre?: (index: number, nombre: string) => void;
   templateApplied: boolean;
   modeSwitchNotice: string | null;
   activeSemanaPlan?: import('../../../types').RoutineFormSemana;
@@ -26,9 +28,10 @@ interface Props {
   accent: string;
   schedule: ScheduleHookSlice;
   children: ReactNode;
+  studioLayout?: boolean;
 }
 
-export const RoutineScheduleSection = ({ accent, schedule, children }: Props) => {
+export const RoutineScheduleSection = ({ accent, schedule, children, studioLayout }: Props) => {
   const {
     form,
     createMode,
@@ -37,6 +40,7 @@ export const RoutineScheduleSection = ({ accent, schedule, children }: Props) =>
     setSemanaActiva,
     diaIndex,
     setDiaActivo,
+    setDiaNombre,
     templateApplied,
     modeSwitchNotice,
     activeSemanaPlan,
@@ -81,7 +85,19 @@ export const RoutineScheduleSection = ({ accent, schedule, children }: Props) =>
             onDiaChange={setDiaActivo}
             onApplyToAll={applyToAllWeeks}
             onCopyWeekFrom={copyWeekFrom}
+            hideDayPills={studioLayout}
           />
+          {studioLayout ? (
+            <RoutineMicrocyclePlanner
+              accent={accent}
+              semanaActiva={semanaActiva}
+              totalSemanas={form.semanas}
+              diaIndex={diaIndex}
+              activeSemanaPlan={activeSemanaPlan}
+              onDiaChange={setDiaActivo}
+              onSessionNameChange={setDiaNombre}
+            />
+          ) : null}
           {children}
         </>
       ) : null}

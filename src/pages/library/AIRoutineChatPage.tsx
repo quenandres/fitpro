@@ -4,6 +4,7 @@ import {
   CalendarDays,
   LoaderCircle,
   PencilLine,
+  Plus,
   RefreshCw,
   Save,
   Send,
@@ -14,17 +15,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAiRoutineChat } from '../../hooks/useAiRoutineChat';
 import { useDataStore } from '../../store/useDataStore';
 import { draftToRutinaPayload } from '../../utils/resolveExercisesAgainstApi';
-import { routineEditPath } from '../../utils/inferRoutineFormLevel';
+import { routineFormPath } from '../../utils/inferRoutineFormLevel';
 import { ExerciseDetailModal } from '../../components/exercise/ExerciseDetailModal';
-import type { ResolvedExercise } from '../../types';
-
-const TOOLBAR_CARD_STYLE = {
-  padding: 14,
-  marginBottom: 18,
-  display: 'flex',
-  flexDirection: 'column' as const,
-  gap: 12,
-};
+import type { ResolvedExercise, RoutineFormLevel } from '../../types';
+import { RoutineCreationMethodTabs } from '../../components/library/routines/RoutineCreationMethodTabs';
+import { RoutineCreationLayout } from '../../components/library/routines/RoutineCreationLayout';
+import { AIRoutineAssistantPanel } from '../../components/library/routines/AIRoutineAssistantPanel';
+import {
+  AI_PROMPT_TEMPLATES,
+  AI_SYNTHESIS_MODES,
+  PROMPT_MODIFIER_CHIPS,
+} from '../../data/routineBuilderMock';
+import { RoutineCreationChrome } from '../../components/library/routines/RoutineCreationChrome';
+import { ROUTES } from '../../routes/paths';
 
 const ExerciseRow = ({
   exercise,
@@ -33,10 +36,7 @@ const ExerciseRow = ({
   exercise: ResolvedExercise;
   onPreview: (id: string) => void;
 }) => (
-  <article
-    className="fp-card relative overflow-hidden"
-    style={{ padding: '10px 10px 10px 13px' }}
-  >
+  <article className="fp-card relative overflow-hidden" style={{ padding: '10px 10px 10px 13px' }}>
     <div className="fp-accent-bar" style={{ background: 'var(--accent-blue)' }} aria-hidden />
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div
@@ -60,10 +60,7 @@ const ExerciseRow = ({
         ) : null}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p
-          className="font-sora truncate"
-          style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}
-        >
+        <p className="font-sora truncate" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
           {exercise.nombre}
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -106,7 +103,6 @@ const ExerciseRow = ({
 export const AIRoutineChatPage = () => {
   const navigate = useNavigate();
   const addRutina = useDataStore((s) => s.addRutina);
-  const rutinas = useDataStore((s) => s.rutinas);
   const {
     messages,
     prefs,
@@ -123,12 +119,26 @@ export const AIRoutineChatPage = () => {
 
   const [savedRoutineId, setSavedRoutineId] = useState<number | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [showPrefs, setShowPrefs] = useState(false);
+  const [precisionLevel, setPrecisionLevel] = useState<RoutineFormLevel>('intermedia');
+  const [mesocycleWeeks, setMesocycleWeeks] = useState(8);
+  const [synthesisId, setSynthesisId] = useState<string>(AI_SYNTHESIS_MODES[0].id);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  const synthesisPrefix =
+    AI_SYNTHESIS_MODES.find((m) => m.id === synthesisId)?.prefix ?? '';
+
+  const handleSend = () => {
+    const composed = `${synthesisPrefix}${input}`.trim();
+    void sendMessage(composed);
+  };
+
+  const appendChip = (text: string) => {
+    setInput((prev) => `${prev}${prev.trim() ? ' ' : ''}${text}`.trim());
+  };
 
   const handleSave = () => {
     if (!activeDraft) return;
@@ -136,204 +146,132 @@ export const AIRoutineChatPage = () => {
     setSavedRoutineId(id);
   };
 
+  const visibleChips = PROMPT_MODIFIER_CHIPS.filter(
+    (c) => !('levels' in c) || c.levels.includes(precisionLevel),
+  );
+
   const canSend = input.trim().length >= 10 && !loading;
 
-  return (
-    <div>
-      <section style={{ paddingBottom: 14 }}>
-        <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-          <Sparkles size={10} style={{ marginRight: 3 }} />
-          Biblioteca
-        </span>
-        <h1
-          className="font-sora"
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: '-.02em',
-            color: 'var(--text-primary)',
-            marginTop: 8,
-            marginBottom: 4,
-          }}
-        >
-          Rutina IA
-        </h1>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-          Elige un cliente y describe el objetivo. La IA valida cada ejercicio contra el catálogo
-          Supabase vía gym-gateway.
-        </p>
-      </section>
-
-      <div className="fp-card" style={TOOLBAR_CARD_STYLE}>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
+  const main = (
+    <>
+      <RoutineCreationChrome
+        crumbs={[
+          { label: 'Rutinas', to: ROUTES.library.rutinas },
+          { label: 'Nueva rutina', to: ROUTES.library.rutinasNueva },
+          { label: 'Asistente IA' },
+        ]}
+        title="Generar rutina con IA"
+        subtitle="Describe objetivos, nivel, equipo y restricciones. El asistente propone un borrador para validar contra el catálogo."
+        badges={
+          <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
+            <Sparkles size={10} style={{ marginRight: 3 }} />
+            Activo
+          </span>
+        }
+        aside={
           <button
             type="button"
-            onClick={() => setShowPrefs((v) => !v)}
-            className="fp-btn fp-btn-secondary"
+            className="fp-btn fp-btn-ghost"
             style={{ gap: 6, fontSize: 12 }}
-          >
-            Preferencias
-            <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
-              {showPrefs ? 'Ocultar' : 'Mostrar'}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="fp-btn fp-btn-ghost sm:ml-auto"
-            style={{ gap: 6, fontSize: 12, marginLeft: 'auto' }}
             onClick={resetChat}
           >
             <RefreshCw size={14} />
             Nuevo chat
           </button>
+        }
+      />
+
+      <div className="fp-card mb-4" style={{ padding: 14 }}>
+        <label className="fp-cal-label" htmlFor="ia-prompt">
+          Instrucción y objetivos
+        </label>
+        <textarea
+          id="ia-prompt"
+          className="fp-input mt-2 w-full"
+          rows={4}
+          value={input}
+          placeholder="Ej: Atleta intermedio, hipertrofia de torso, 4 días, 45 min, cuidado lumbar…"
+          onChange={(e) => setInput(e.target.value)}
+          style={{ resize: 'vertical', fontSize: 13 }}
+          disabled={loading}
+        />
+
+        <p className="fp-cal-label mt-3 mb-2">Modificadores rápidos</p>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {visibleChips.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              className="fp-btn fp-btn-secondary"
+              style={{ fontSize: 11, padding: '5px 10px', gap: 4 }}
+              onClick={() => appendChip(chip.text)}
+            >
+              <Plus size={12} />
+              {chip.label}
+            </button>
+          ))}
         </div>
 
-        {showPrefs ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: 10,
-            }}
-          >
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label className="fp-cal-label" htmlFor="ia-cliente">
-                Cliente
-              </label>
-              <select
-                id="ia-cliente"
-                className="fp-input mt-2 w-full"
-                value={prefs.clienteId ?? ''}
-                onChange={(e) => {
-                  const id = e.target.value ? Number(e.target.value) : null;
-                  const user = id != null ? usuarios.find((u) => u.id === id) : undefined;
-                  setPrefs((p) => ({
-                    ...p,
-                    clienteId: id,
-                    edad: user?.edad ?? '',
-                    nivel: user?.nivel?.toString() ?? p.nivel,
-                  }));
+        <p className="fp-cal-label mb-2">Modo de síntesis</p>
+        <div className="grid gap-2 mb-3">
+          {AI_SYNTHESIS_MODES.map((mode) => {
+            const active = synthesisId === mode.id;
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setSynthesisId(mode.id)}
+                style={{
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  borderRadius: 11,
+                  cursor: 'pointer',
+                  border: `1px solid ${active ? 'var(--accent-blue)' : 'var(--border)'}`,
+                  background: active ? 'var(--accent-blue-dim)' : 'var(--bg-elevated)',
                 }}
               >
-                <option value="">Sin cliente (solo prefs manuales)</option>
-                {usuarios.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nombre}
-                    {u.peso_kg ? ` · ${u.peso_kg} kg` : ''}
-                  </option>
-                ))}
-              </select>
-              {selectedCliente ? (
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-                  {selectedCliente.objetivo}
-                  {selectedCliente.dias_entrenar
-                    ? ` · ${selectedCliente.dias_entrenar} días/semana`
-                    : ''}
-                </p>
-              ) : null}
-            </div>
-            <div>
-              <label className="fp-cal-label" htmlFor="ia-edad">
-                Edad
-              </label>
-              <input
-                id="ia-edad"
-                type="number"
-                className="fp-input mt-2 w-full"
-                min={10}
-                max={100}
-                placeholder={selectedCliente?.edad?.toString() ?? 'Opcional'}
-                value={prefs.edad}
-                onChange={(e) =>
-                  setPrefs((p) => ({
-                    ...p,
-                    edad: e.target.value === '' ? '' : Number(e.target.value) || '',
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="fp-cal-label" htmlFor="ia-nivel">
-                Nivel
-              </label>
-              <select
-                id="ia-nivel"
-                className="fp-input mt-2 w-full"
-                value={prefs.nivel}
-                onChange={(e) => setPrefs((p) => ({ ...p, nivel: e.target.value }))}
-              >
-                <option value="">Automático</option>
-                <option value="Principiante">Principiante</option>
-                <option value="Intermedio">Intermedio</option>
-                <option value="Avanzado">Avanzado</option>
-              </select>
-            </div>
-            <div>
-              <label className="fp-cal-label" htmlFor="ia-duracion">
-                Duración (min)
-              </label>
-              <input
-                id="ia-duracion"
-                type="number"
-                className="fp-input mt-2 w-full"
-                min={5}
-                max={120}
-                value={prefs.duracion_min}
-                onChange={(e) =>
-                  setPrefs((p) => ({
-                    ...p,
-                    duracion_min: Number(e.target.value) || 45,
-                  }))
-                }
-              />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label className="fp-cal-label" htmlFor="ia-equipo">
-                Equipamiento
-              </label>
-              <input
-                id="ia-equipo"
-                className="fp-input mt-2 w-full"
-                placeholder="Opcional"
-                value={prefs.equipamiento}
-                onChange={(e) => setPrefs((p) => ({ ...p, equipamiento: e.target.value }))}
-              />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label className="fp-cal-label" htmlFor="ia-limitaciones">
-                Limitaciones o lesiones
-              </label>
-              <input
-                id="ia-limitaciones"
-                className="fp-input mt-2 w-full"
-                placeholder="Opcional"
-                value={prefs.limitaciones}
-                onChange={(e) => setPrefs((p) => ({ ...p, limitaciones: e.target.value }))}
-              />
-            </div>
-          </div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{mode.title}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{mode.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="fp-cal-label mb-2">Plantillas de prompt</p>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {AI_PROMPT_TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className="fp-btn fp-btn-ghost"
+              style={{ fontSize: 11, padding: '5px 10px' }}
+              onClick={() => setInput(t.text)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="fp-btn fp-btn-primary w-full"
+          style={{ justifyContent: 'center', gap: 7 }}
+          disabled={!canSend}
+          onClick={handleSend}
+        >
+          {loading ? <LoaderCircle size={16} className="animate-spin" /> : <Send size={16} />}
+          Generar rutina
+        </button>
+        {input.trim().length > 0 && input.trim().length < 10 ? (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+            Escribe al menos 10 caracteres.
+          </p>
         ) : null}
       </div>
 
-      <article
-        className="fp-card relative overflow-hidden"
-        style={{ padding: 16, marginBottom: 18, minHeight: 280 }}
-      >
+      <article className="fp-card relative overflow-hidden" style={{ padding: 16, marginBottom: 18, minHeight: 200 }}>
         <div className="fp-accent-bar" style={{ background: 'var(--accent-blue)' }} aria-hidden />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingLeft: 3 }}>
-          {messages.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              Cuéntame el objetivo, días por semana y equipo disponible para proponer la rutina.
-            </p>
-          ) : null}
-
           {messages.map((msg) => {
             const isUser = msg.role === 'user';
             return (
@@ -384,33 +322,14 @@ export const AIRoutineChatPage = () => {
                       FitPro IA
                     </div>
                   ) : null}
-                  <p
-                    style={{
-                      fontSize: 13,
-                      lineHeight: 1.5,
-                      color: 'var(--text-primary)',
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
+                  <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
                     {msg.content}
                   </p>
 
                   {msg.draft ? (
                     <div style={{ marginTop: 12 }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: 8,
-                          marginBottom: 8,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <p
-                          className="font-sora"
-                          style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}
-                        >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <p className="font-sora" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
                           {msg.draft.rutina.nombre}
                         </p>
                         <span className="badge badge-blue">{msg.draft.rutina.dificultad}</span>
@@ -418,26 +337,13 @@ export const AIRoutineChatPage = () => {
                       <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
                         {msg.draft.rutina.descripcion}
                       </p>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          color: 'var(--text-secondary)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          marginBottom: 10,
-                        }}
-                      >
+                      <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
                         <CalendarDays size={12} />
                         {msg.draft.dias_entrenamiento.join(' · ')}
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {msg.draft.exercises.map((ex, i) => (
-                          <ExerciseRow
-                            key={`${ex.nombre}-${i}`}
-                            exercise={ex}
-                            onPreview={setPreviewId}
-                          />
+                          <ExerciseRow key={`${ex.nombre}-${i}`} exercise={ex} onPreview={setPreviewId} />
                         ))}
                       </div>
                     </div>
@@ -467,7 +373,7 @@ export const AIRoutineChatPage = () => {
             <strong style={{ color: 'var(--text-primary)' }}>{activeDraft.rutina.nombre}</strong>
             {' · '}
             {activeDraft.exercises.filter((e) => e.matchStatus === 'matched').length}/
-            {activeDraft.exercises.length} con ExerciseDB
+            {activeDraft.exercises.length} con catálogo
           </p>
           <button
             type="button"
@@ -479,71 +385,42 @@ export const AIRoutineChatPage = () => {
             <Save size={14} />
             Guardar rutina
           </button>
-          {savedRoutineId !== null ? (() => {
-            const saved = rutinas.find((r) => r.id === savedRoutineId);
-            if (!saved) return null;
-            return (
-              <button
-                type="button"
-                className="fp-btn fp-btn-secondary w-full"
-                style={{ justifyContent: 'center', gap: 7 }}
-                onClick={() => navigate(routineEditPath(saved))}
-              >
-                <PencilLine size={14} />
-                Editar rutina
-              </button>
-            );
-          })() : null}
+          {savedRoutineId !== null ? (
+            <button
+              type="button"
+              className="fp-btn fp-btn-secondary w-full"
+              style={{ justifyContent: 'center', gap: 7 }}
+              onClick={() => navigate(routineFormPath(precisionLevel, savedRoutineId))}
+            >
+              <PencilLine size={14} />
+              Editar en constructor ({precisionLevel})
+            </button>
+          ) : null}
         </article>
       ) : null}
 
-      <div className="fp-card sticky bottom-[72px] md:bottom-4 z-10" style={{ padding: 14 }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-          <textarea
-            className="fp-input"
-            rows={2}
-            value={input}
-            placeholder="Ej: hipertrofia tren inferior, 4 días, 45 min, cuidando rodillas…"
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                void sendMessage();
-              }
-            }}
-            style={{ resize: 'none', flex: 1, minHeight: 52, fontSize: 13 }}
-            disabled={loading}
-            aria-label="Mensaje para generar rutina"
-          />
-          <button
-            type="button"
-            className="fp-btn fp-btn-primary"
-            style={{
-              width: 44,
-              height: 44,
-              padding: 0,
-              flexShrink: 0,
-              opacity: canSend ? 1 : 0.5,
-            }}
-            disabled={!canSend}
-            onClick={() => void sendMessage()}
-            aria-label="Enviar"
-          >
-            {loading ? (
-              <LoaderCircle size={16} className="animate-spin" />
-            ) : (
-              <Send size={16} />
-            )}
-          </button>
-        </div>
-        {input.trim().length > 0 && input.trim().length < 10 ? (
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-            Escribe al menos 10 caracteres para generar.
-          </p>
-        ) : null}
-      </div>
-
       <ExerciseDetailModal exerciseId={previewId} onClose={() => setPreviewId(null)} />
+    </>
+  );
+
+  return (
+    <div>
+      <RoutineCreationMethodTabs />
+      <RoutineCreationLayout
+        main={main}
+        sidebar={
+          <AIRoutineAssistantPanel
+            precisionLevel={precisionLevel}
+            onPrecisionChange={setPrecisionLevel}
+            prefs={prefs}
+            setPrefs={setPrefs}
+            usuarios={usuarios}
+            selectedCliente={selectedCliente}
+            mesocycleWeeks={mesocycleWeeks}
+            onMesocycleWeeksChange={setMesocycleWeeks}
+          />
+        }
+      />
     </div>
   );
 };

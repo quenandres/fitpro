@@ -71,11 +71,15 @@ export function CalendarEventCard({
           <p className={compact ? 'fp-cal-event-card-title' : 'fp-cal-timeline-card-title'}>
             {event.title}
           </p>
+          {event.subtitle ? (
+            <p className={compact ? 'fp-cal-event-card-workout' : 'fp-cal-timeline-card-workout'}>
+              {event.subtitle}
+            </p>
+          ) : null}
           <p className={compact ? 'fp-cal-event-card-meta' : 'fp-cal-timeline-card-meta'}>
             {showTimeRange
               ? formatMinutesRange(event.startMinutes, event.durationMin)
               : formatDurationShort(event.durationMin)}
-            {event.kind === 'cita' || compact ? ` · ${event.subtitle}` : ''}
           </p>
         </div>
         {!compact && onMenuClick ? (
