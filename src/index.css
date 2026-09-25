@@ -1062,6 +1062,105 @@ textarea.fp-input {
   min-width: 0;
 }
 
+/* Ficha compacta de atleta asignado (parámetros del bloque) */
+.fp-atleta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+.fp-atleta-card-kicker {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.fp-atleta-card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.fp-atleta-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-overlay);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fp-atleta-card-name {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fp-atleta-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  min-width: 0;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-secondary);
+}
+.fp-atleta-card-meta--line {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.fp-atleta-card-meta--line > span:not(.fp-atleta-card-protocolo) {
+  flex-shrink: 0;
+}
+.fp-atleta-card-protocolo {
+  color: var(--text-primary);
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fp-atleta-card-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.fp-atleta-card-edit:hover {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
+.fp-atleta-card-edit:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 .fp-user-file {
   position: relative;
   overflow: hidden;
@@ -3738,6 +3837,10 @@ textarea.fp-input {
 
 .fp-tracking-range-cell--muscles .anatomy-mini-viewport {
   min-height: 88px;
+}
+
+.fp-routine-card-muscle-mini .anatomy-mini-viewport {
+  min-height: 0;
 }
 
 .anatomy-mini-layers {

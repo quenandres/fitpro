@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useRef, type Dispatch, type SetStateAction } from 'react';
 import type { ChatPrefs } from '../../../lib/ai/chatHelpers';
 import type { RoutineFormLevel } from '../../../types';
 import { RoutineBlockParamsPanel } from './RoutineBlockParamsPanel';
@@ -29,9 +29,28 @@ export const AIRoutineAssistantPanel = ({
   selectedCliente,
   mesocycleWeeks,
   onMesocycleWeeksChange,
-}: Props) => (
+}: Props) => {
+  const clienteSelectRef = useRef<HTMLSelectElement>(null);
+  const elegido = prefs.clienteId != null ? usuarios.find((u) => u.id === prefs.clienteId) : undefined;
+  const detalle = [elegido?.objetivo, elegido?.nivel].filter(Boolean).join(' / ');
+
+  return (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-    <RoutineBlockParamsPanel level={precisionLevel} blockWeeks={mesocycleWeeks} showProgressionChart={false} />
+    <RoutineBlockParamsPanel
+      level={precisionLevel}
+      blockWeeks={mesocycleWeeks}
+      showProgressionChart={false}
+      atleta={
+        elegido
+          ? {
+              nombre: elegido.nombre,
+              detalle,
+              pesoKg: elegido.peso_kg,
+            }
+          : null
+      }
+      onCambiarAtleta={() => clienteSelectRef.current?.focus()}
+    />
 
     <div className="fp-card" style={{ padding: 14 }}>
       <p className="fp-cal-label" style={{ marginBottom: 8 }}>
@@ -93,6 +112,7 @@ export const AIRoutineAssistantPanel = ({
       </label>
       <select
         id="ia-panel-cliente"
+        ref={clienteSelectRef}
         className="fp-input mt-1 mb-3 w-full"
         value={prefs.clienteId ?? ''}
         onChange={(e) => {
@@ -167,3 +187,4 @@ export const AIRoutineAssistantPanel = ({
     </div>
   </div>
 );
+};

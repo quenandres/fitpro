@@ -1,4 +1,5 @@
-import { UserRound } from 'lucide-react';
+import type { AtletaAsignado } from '../../users/AtletaAsignadoCard';
+import { AtletaAsignadoCard } from '../../users/AtletaAsignadoCard';
 import { useNavigate } from 'react-router-dom';
 import type { RoutineFormData, RoutineFormLevel } from '../../../types';
 import { LEVEL_ROUTES } from '../../../hooks/useRoutineFormWithPreset';
@@ -20,6 +21,8 @@ interface Props {
   onSaveDraft?: () => void;
   isSaving?: boolean;
   showProgressionChart?: boolean;
+  atleta?: AtletaAsignado | null;
+  onCambiarAtleta?: () => void;
 }
 
 export const RoutineBlockParamsPanel = ({
@@ -31,6 +34,8 @@ export const RoutineBlockParamsPanel = ({
   onSaveDraft,
   isSaving,
   showProgressionChart = true,
+  atleta = null,
+  onCambiarAtleta,
 }: Props) => {
   const navigate = useNavigate();
   const semanas = blockWeeks ?? form?.semanas ?? 8;
@@ -97,34 +102,8 @@ export const RoutineBlockParamsPanel = ({
         </div>
       </div>
 
-      <div
-        className="fp-card"
-        style={{
-          padding: 12,
-          marginBottom: 12,
-          background: 'var(--bg-elevated)',
-          boxShadow: 'none',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'var(--bg-overlay)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <UserRound size={18} color="var(--text-muted)" />
-          </div>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Atleta asignado</p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sin asignar · asigna en Entrenamientos</p>
-          </div>
-        </div>
+      <div style={{ marginBottom: 12 }}>
+        <AtletaAsignadoCard atleta={atleta} onCambiar={onCambiarAtleta} />
       </div>
 
       <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', fontSize: 12, color: 'var(--text-secondary)' }}>
