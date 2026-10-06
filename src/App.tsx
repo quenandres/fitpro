@@ -91,14 +91,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  return isAuthenticated ? (
-    <>
-      <TrainerGatewaySync />
-      {children}
-    </>
-  ) : (
-    <Navigate to={ROUTES.login} replace />
-  );
+  return isAuthenticated ? <>{children}</> : <Navigate to={ROUTES.login} replace />;
 };
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
@@ -206,12 +199,19 @@ function AppRoutes() {
   );
 }
 
+function GlobalTrainingSync() {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading || !isAuthenticated) return null;
+  return <TrainerGatewaySync />;
+}
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
           <BrowserRouter>
+            <GlobalTrainingSync />
             <AppRoutes />
           </BrowserRouter>
         </ToastProvider>

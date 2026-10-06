@@ -58,8 +58,7 @@ El cliente **no** es un rol más dentro de esta SPA. Son dos frontends que compa
 |---|---|---|---|
 | **FitPro Entrenador** | SPA React — **este repo** (`fitpro`) | Entrenador (y roles de plataforma) | Biblioteca, clientes, planes, calendario, tracking |
 | **FitPro Cliente** | **PWA React** (`fitpro-clients`) | Cliente | Entreno de hoy, ejecutar sesión, historial propio |
-| **gym-gateway** | FastAPI, repo hermano | ambas apps | Auth, RBAC, proxy a Supabase, **IA de rutinas** |
-| ~~fitpro_api / gym-mcp~~ | **Absorbidos en gym-gateway** (2026-09-21/22) | — | `POST /api/ai/routine` ya no tiene sidecar |
+| **gym-gateway** | FastAPI, repo hermano | ambas apps | Auth, RBAC, proxy a Supabase, **IA de rutinas** (`POST /api/ai/routine`) |
 
 Reglas:
 
@@ -102,7 +101,7 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
 | Estado servidor | TanStack Query (cableado en entrenador, pendiente `npm install` en este entorno) |
 | Validación runtime | Zod (ya en `gateway/schemas` y `exercisedb/schemas`; falta en `importData` y formularios) |
 | Backend datos/auth | Supabase (Postgres + Auth + Storage), **solo** vía **`gym-gateway`** — ver §2 y ADR 2026-08-24 |
-| Backend IA | `gym-gateway` (`POST /api/ai/routine`, OpenRouter). `gym-mcp` / `fitpro_api` no se levantan |
+| Backend IA | `gym-gateway` (`POST /api/ai/routine`, OpenRouter) |
 | Pagos | Stripe — **después** de primera instancia |
 | Estilos | Tailwind 4 (+ tokens CSS) — **D8 resuelto**, ver §9. Misma identidad en ambas apps |
 | Observabilidad | Sentry + PostHog (a introducir antes de prod) |
@@ -155,7 +154,7 @@ Modelo comercial (cobrar por nº de clientes: Free / Pro / Gym) se retoma **desp
   verdad de rutinas.
 - **Biblioteca (`/library`) mucho más desarrollada que en abril:** hub,
   catálogos de ExerciseDB, chat IA (`/library/ia`, funcional contra
-  `fitpro_api` + DeepSeek), 3 formularios de rutina por nivel
+  `gym-gateway` + OpenRouter), 3 formularios de rutina por nivel
   (básica/intermedia/avanzada) y galería de ~20 presets. El antiguo wizard
   monolítico (`RoutinePage.tsx`, 683 líneas) **ya no existe como
   formulario** — quedó como un simple redirect legacy de 23 líneas
@@ -658,7 +657,7 @@ miembros, moderación) para retención y engagement.
 ### Fase 7 — Analytics + IA + móvil `🔴 0% (excepto IA, adelantada)`
 **Objetivo:** retención y diferenciación **después** de primera instancia.
 - **IA de generación de rutinas ya funciona end-to-end**, fuera de orden:
-  chat en `/library/ia` → `fitpro_api` + DeepSeek → ExerciseDB → guardado.
+  chat en `/library/ia` → `gym-gateway` (`POST /api/ai/routine`) → ExerciseDB → guardado.
   No bloquea el loop; no ampliar el chat como si fuera el producto.
 - Dashboards de progreso reales (volumen, PRs, adherencia) — sustituyen el
   dashboard mock de `/`.
@@ -711,7 +710,7 @@ miembros, moderación) para retención y engagement.
 
 | # | Decisión | Razón |
 |---|---|---|
-| D1 | Supabase puro al inicio; FastAPI solo cuando duela — **un solo FastAPI**: `gym-gateway` (auth, dominio, IA). `gym-mcp` / `fitpro_api` están absorbidos. El frontend nunca habla Supabase directo | Auth/roles reales sin exponer keys; IA vive en la misma puerta |
+| D1 | Supabase puro al inicio; FastAPI solo cuando duela — **un solo FastAPI**: `gym-gateway` (auth, dominio, IA). El frontend nunca habla Supabase directo | Auth/roles reales sin exponer keys; IA vive en la misma puerta |
 | D2 | TanStack Query para datos servidor | Cache, sync, optimistic updates sin `useEffect` manuales — **cableado en código, pendiente `npm install` en este entorno (ver §2/§3)** |
 | D3 | Zustand SOLO para UI efímera | Nada de datos de dominio persistidos |
 | D4 | Zod para validación runtime | Una fuente de verdad tipos + validación |
@@ -843,6 +842,44 @@ offline-first, modelo avanzado en el creador de rutinas.
 >
 > Estructura sugerida: agregar bloques con fecha y encabezado.
 
+### 2026-09-25 — Unificación del creador de rutinas y plantillas como `Rutina`
+
+Se detectaron tres flujos de creación de rutina desconectados: el constructor
+de `/library/rutinas/nueva`, un catálogo de presets de un solo día
+(`routinePresets.ts`, resuelto por nombre contra ExerciseDB) y la pestaña
+Entrenamientos del cliente, que solo mostraba el selector de 3 métodos sin
+rutina actual ni historial, y asignaba siempre a "la primera sesión
+pendiente" sin distinguir entre reemplazar o completar el plan.
+
+Cambios:
+
+- **Plantilla = `Rutina` marcada.** `data/plantillasBase.ts` reemplaza a
+  `routinePresets.ts`/`applyRoutinePreset.ts` (eliminados) con 8 plantillas
+  multi-día/multi-semana reales, en un slice nuevo `useDataStore.plantillas`
+  (separado de `rutinas`). El mismo constructor de 3 fases las crea y edita
+  vía `?modo=plantilla&plantillaId=`; "Usar plantilla" precarga el
+  constructor y crea una rutina nueva (no una plantilla).
+- **Pestaña Entrenamientos** (`UserEntrenamientosCreationPanel`): ahora
+  siempre muestra `UserCurrentRoutineCard` (rutina actual o estado vacío),
+  `UserTrainingHistorySummary` (resumen con link a la pestaña Historial,
+  que se mantiene) y el selector de 3 métodos, tenga o no rutina el
+  usuario. Se corrigió que `RoutineRecentDraftsTable` nunca se mostraba en
+  contexto de cliente y que el formulario embebido pintaba dos barras de
+  tabs.
+- **Asignar rutina reemplaza el plan activo.** `usePlanMutations.
+  reemplazarRutina(rutina, 'reiniciar' | 'retomar')` + `ReplaceRoutineSheet`
+  preguntan si el microciclo se reinicia (semana 1 desde hoy) o se retoma
+  (se mantiene la semana actual; solo cambian semanas editables). Se agrega
+  una tercera vía, "programar al terminar el bloque" (`PlanUsuario.
+  rutina_en_cola`, activación perezosa vía `useRutinaEnColaActivation`), y
+  un historial de transiciones (`useRoutineAssignmentHistoryStore`, mock sin
+  persist).
+- Los prototipos en `prototipo_rutina/*.html` se revisaron pantalla por
+  pantalla; lo aplicado cubre el chooser, el gestor de transición y el
+  historial (P1). El resto (motor de fatiga, series detalladas
+  persistidas, curva de intensidad editable, mejoras del chat IA) queda
+  pendiente, documentado como P2/P3 en el plan de esa tarea.
+
 ### 2026-09-21 — Alta de cliente sin picker propio de plantillas
 
 El alta de cliente duplicaba la asignación de plantilla: `CreatePlanWizard`
@@ -873,8 +910,7 @@ con IA» (activo por defecto), FitPro llama a gym-gateway (`VITE_GATEWAY_URL` �
 `POST /api/ai/routine`), resuelve el catálogo y envía los ejercicios en
 `POST /api/trainers/clients/invite`. Si la IA falla no se invita: se puede
 desactivar el toggle y crear el plan vacío. La plantilla se intenta guardar
-también en Biblioteca, pero eso no bloquea el alta. **`gym-mcp` ya no se
-levanta:** la IA quedó en gym-gateway.
+también en Biblioteca, pero eso no bloquea el alta. La IA corre en gym-gateway.
 
 ### 2026-09-09 — Primera instancia + PWA cliente
 
@@ -973,7 +1009,7 @@ Resumen:
   vez de `ProtectedRoute` — si no es intencional, un usuario autenticado no
   puede acceder a esas rutas (rebote a `/`). Revisar antes de seguir
   agregando features ahí.
-- `scripts/init.sql` (Postgres para `exercises` de `fitpro_api`) no equivale
+- `scripts/init.sql` (Postgres para la tabla `exercises` del servicio de IA) no equivale
   a integración de Supabase; Fase 3 sigue en 0%.
 - RBAC mencionado en el mensaje del commit `b005893` no tiene implementación
   encontrada en `src/`.
@@ -1122,7 +1158,7 @@ se documenta como trade-off consciente.
 | 2026-07-10 | Tres formularios `/library/rutina/basica|intermedia|avanzada` con campos progresivos + ExerciseDB picker; extensión `Rutina` con `tipo`, `rest_between_sets`, `notes`, `rpe`, `grupo_superset` | Crear rutinas desde Biblioteca sin perder campos capturados; puente a Fase 2.5 |
 | 2026-07-10 | Catálogo `routinePresets` (~20 plantillas: Hyrox, isométricos, pliometría…) + galería `/library/rutina/plantillas` con resolución ExerciseDB | Rutinas preestablecidas seleccionables; migrable a Supabase en Fase 3 |
 | 2026-07-10 | Admin y Biblioteca unificados: `AppShell` compartido, builder 2 pasos (editar + revisión/heatmap), `/admin/rutina` → redirect al builder; edit con `?id=` | Una sola app; mismo flujo crear/editar desde Admin o Biblioteca |
-| 2026-07-10 | Backend `fitpro_api` (FastAPI) + DeepSeek en `POST /api/ai/routine`; key solo servidor (`DEEPSEEK_API_KEY`); frontend en `/library/ia` sin cambios de UI | Completar flujo chat IA → rutina → ExerciseDB → guardar |
+| 2026-07-10 | IA de rutinas en `POST /api/ai/routine`; la key queda solo en el servidor; frontend en `/library/ia` sin cambios de UI | Completar flujo chat IA → rutina → ExerciseDB → guardar |
 | 2026-08-24 | **D8 resuelto:** Tailwind 4 como sistema responsive; tokens de `index.css` expuestos vía `@theme`; layout mobile-first con `AppShell` progresivo (`narrow`/`default`/`wide`); bottom nav móvil + nav desktop en `Navbar`; componente `Sheet` unificado para overlays | Eliminar deuda de estilos (inline + `tailwind.config.js` muerto); UX móvil/tablet/escritorio coherente |
 | 2026-08-27 | Pantalla `/calendario` con `@daypicker/react` v10: citas locales (`Cita` + `useCitasStore` sin persist) y overlay de días de entreno por weekday desde semana 1 del plan; acceso en navbar y dashboard | Complementar Planes (días Lun–Dom sin fecha real) con calendario de fechas; tipo `Cita` alineado a futura tabla Supabase `appointments` |
 | 2026-08-24 | **Auth real vía `gym-gateway`** (backend FastAPI hermano, no vía cliente Supabase directo en el frontend): `AuthContext` llama a `src/lib/gateway/`, que hace `fetch` contra `gym-gateway`, el cual valida contra Supabase Auth (JWT ES256 + JWKS) y expone `/api/auth/*`. Tokens de sesión reales persistidos en `localStorage` (`fitpro-session`) con refresh automático | Reemplaza el mock (`localStorage.setItem('fitpro-auth','true')`) documentado desde abril 2026. Decisión arquitectónica implícita (no discutida explícitamente antes de implementarse): Supabase se habla solo desde el gateway, nunca directo desde el frontend — mantiene `src/lib/supabase.ts` comentado a propósito, no como deuda pendiente |
@@ -1137,8 +1173,9 @@ se documenta como trade-off consciente.
 | 2026-09-09 | **Primera instancia = cerrar el loop** (crear rutina → invitar cliente → ejecutar en PWA → entrenador ve el log). Comunidades, billing, dashboards de plataforma y nativo quedan fuera hasta entonces. El modelo avanzado de rutinas no es gate del MVP de ejecución (sí del diseño de schema). | El repo tenía mucha superficie y el producto no existía: clientes seed, player sin persist, tracking mock. Ver §1 y §12 |
 | 2026-09-09 | **D11 — App cliente = PWA React independiente** (repo hermano, aún no creado), mismo `gym-gateway` y misma identidad (`DESIGN.md`). Esta SPA no crece un “modo cliente”. Primera instancia de la PWA: instalable, online, escribe `sessions`/`session_sets`. Offline-first profundo = Fase 7 | El cliente necesita una superficie de ejecución en el teléfono; meterla en el cockpit del entrenador mezcla UX y retrasa las dos apps |
 | 2026-09-09 | **Modelo mínimo de entrenamiento en mock local:** `ejercicio_id` en plantillas de rutina/plan; sesiones ejecutadas con `SerieEjecutada` (peso/reps); `useSesionesStore` con persist; registro manual del entrenador. Sin Supabase — contrato alineado a `sessions`/`session_sets` para Fase 4 | Cerrar el loop del entrenador (prescribir → registrar → ver log) sin esperar PWA ni gateway; evitar rediseño al cablear backend |
-| 2026-09-21 | **IA de rutinas integrada en gym-gateway** (`POST /api/ai/routine`, OpenRouter + catálogo Supabase directo). FitPro deja `VITE_API_URL`/gym-mcp para producto; un solo origen (`VITE_GATEWAY_URL`). `gym-mcp` congelado como sidecar MCP opcional | CORS, un proceso menos, mismo JWT/RBAC; alinea D1 (FastAPI solo cuando duele — aquí el gateway ya es la puerta) |
-| 2026-09-22 | **`gym-mcp` absorbido del todo en gym-gateway.** No hay repo ni servicio sidecar. Stack de producto: gateway + FitPro + PWA. El loop de sesión (iniciar / series / completar) escribe `training.sessions` + `session_sets` | Evitar un cuarto proceso y un workspace fantasma; una sola puerta al backend |
+| 2026-09-21 | **IA de rutinas en gym-gateway** (`POST /api/ai/routine`, OpenRouter + catálogo Supabase directo). FitPro usa un solo origen (`VITE_GATEWAY_URL`) | CORS, mismo JWT/RBAC; alinea D1 (FastAPI solo cuando duele — aquí el gateway ya es la puerta) |
+| 2026-09-22 | Stack de producto: gym-gateway + FitPro + PWA. El loop de sesión (iniciar / series / completar) escribe `training.sessions` + `session_sets` | Una sola puerta al backend |
+| 2026-09-25 | **Plantillas de biblioteca son `Rutina` completas** (campo `plantilla` con categoría/tags/nivel), no un catálogo aparte de un solo día; se crean y editan con el mismo constructor de 3 fases. Asignar una rutina desde Entrenamientos **reemplaza** el plan activo (reiniciar/retomar/programar), nunca solo la siguiente sesión pendiente | Un solo flujo de creación en vez de tres; evita que plantilla y rutina real diverjan en estructura; refleja que en la práctica un cliente tiene una rutina vigente, no sesiones sueltas |
 | 2026-09-23 | **Plan personal ≠ formulario de biblioteca.** `?para=mi` y “Configurar mi plan” abren el editor de plan por sesiones (`UserPlanWorkspace` + `createPlan`), no intermedia/básica/avanzada con `assign_to_self`. Las plantillas siguen en Biblioteca | Misma UX que prescribir a un cliente; evita dos modelos (días de plantilla vs sesiones de plan) para “entrenar yo” |
 
 ---

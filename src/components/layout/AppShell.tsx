@@ -27,7 +27,7 @@ export const AppShell = ({
       className={`${SHELL_WIDTH_CLASS[width]} mx-auto ${SHELL_MAIN_PADDING_X} ${SHELL_MAIN_PADDING_TOP} ${hideBottomNav ? SHELL_MAIN_PADDING_BOTTOM_COMPACT : SHELL_MAIN_PADDING_BOTTOM}`}
     >
       {subNav && (
-        <div style={{ paddingTop: 12, marginBottom: subNavGap }}>
+        <div className="pt-6" style={{ marginBottom: subNavGap }}>
           {subNav}
         </div>
       )}

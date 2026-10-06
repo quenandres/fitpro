@@ -2,6 +2,7 @@ import type {
   ClientLink,
   GatewayPlanTree,
   InviteClientResult,
+  TrainerClientsPageResult,
 } from '../lib/gateway/training.service';
 import type { GatewayHistorialRow } from '../lib/gateway/schemas/training';
 
@@ -39,8 +40,20 @@ export async function demoInviteClient(body: {
   };
 }
 
-export async function demoListTrainerClients(): Promise<{ clients: ClientLink[] }> {
-  return { clients: [] };
+export async function demoListTrainerClients(_options?: {
+  page?: number;
+  limit?: number;
+}): Promise<TrainerClientsPageResult> {
+  return {
+    clients: [],
+    count: 0,
+    pagination: {
+      page: 1,
+      size: 18,
+      total_records: 0,
+      total_pages: 1,
+    },
+  };
 }
 
 export async function demoLinkClient(clientId: string): Promise<ClientLink> {

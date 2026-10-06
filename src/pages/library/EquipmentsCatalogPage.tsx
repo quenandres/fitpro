@@ -1,8 +1,8 @@
-import { useEquipments } from '../../lib/exercisedb';
+import { useGatewayEquipments } from '../../lib/gateway/exercise-catalog-hooks';
 import { ReferenceCatalogPage } from './ReferenceCatalogPage';
 
 export const EquipmentsCatalogPage = () => {
-  const { data = [], isLoading, isError, error, refetch } = useEquipments();
+  const { data = [], isLoading, isError, error, refetch } = useGatewayEquipments();
 
   return (
     <ReferenceCatalogPage

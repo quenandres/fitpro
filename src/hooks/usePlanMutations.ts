@@ -28,7 +28,12 @@ import {
   sesionesForDisplay,
 } from '../utils/planScheduleUtils';
 import type { SesionPersonalizadaPayload } from '../utils/sesionPlanUtils';
-import { getSemanasEditables } from '../utils/planWeekUtils';
+import { isSesionConfigured } from '../utils/sesionPlanUtils';
+import { getSemanaActual, getSemanasEditables } from '../utils/planWeekUtils';
+import { buildProgramacionFromRutina, rutinaFrecuenciaSemanal } from '../utils/applyRutinaToPlan';
+import { useRoutineAssignmentHistoryStore } from '../store/useRoutineAssignmentHistoryStore';
+import { MAX_RUTINA_SEMANAS } from '../utils/routineScheduleUtils';
+import { fechaLocalISO } from '../utils/trackingUtils';
 
 export type { SesionRef };
 
@@ -40,6 +45,8 @@ const findSesion = (user: Usuario, ref: SesionRef): SesionPlan | undefined =>
     ?.sesiones[ref.sesionIndex];
 
 export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateFn) => {
+  const registrarReemplazo = useRoutineAssignmentHistoryStore((s) => s.registrarReemplazo);
+
   const saveSesionPersonalizada = useCallback(
     (ref: SesionRef, payload: SesionPersonalizadaPayload) => {
       if (!selectedUser) return;
@@ -338,6 +345,88 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     [selectedUser],
   );
 
+  const reemplazarRutina = useCallback(
+    (rutina: Rutina, modo: 'reiniciar' | 'retomar') => {
+      if (!selectedUser) return;
+      const plan = selectedUser.plan;
+
+      if (plan.programacion_semanal.some((s) => s.sesiones.some((ses) => isSesionConfigured(ses)))) {
+        registrarReemplazo({
+          usuarioId: selectedUser.id,
+          rutinaId: plan.rutinas_asignadas[0]?.rutina_id ?? 0,
+          rutinaNombre: plan.nombre || 'Bloque anterior',
+          fechaInicio: plan.fecha_inicio ?? fechaLocalISO(new Date()),
+          fechaFin: fechaLocalISO(new Date()),
+          semanasCompletadas: getSemanaActual(plan) - 1,
+          modo,
+        });
+      }
+
+      const frecuencia = rutinaFrecuenciaSemanal(rutina) || plan.dias_entrenar_semana;
+      const semanasNuevas = Math.min(MAX_RUTINA_SEMANAS, Math.max(rutina.semanas ?? 4, 4));
+
+      if (modo === 'reiniciar') {
+        const programacionBase = expandPlanSemanas(
+          plan.programacion_semanal.map((s) => ({ ...s, sesiones: resizeSesiones(s.sesiones, frecuencia, plan.modo) })),
+          semanasNuevas,
+          'clone_last',
+          frecuencia,
+          plan.modo,
+        );
+        const todasLasSemanas = programacionBase.map((s) => s.semana);
+        onUpdate({
+          ...selectedUser,
+          dias_entrenar: frecuencia,
+          plan: {
+            ...plan,
+            nombre: rutina.nombre,
+            semanas: semanasNuevas,
+            dias_entrenar_semana: frecuencia,
+            fecha_inicio: fechaLocalISO(new Date()),
+            rutinas_asignadas: [{ rutina_id: rutina.id, nombre_rutina: rutina.nombre, frecuencia: `${frecuencia}x/semana` }],
+            rutina_en_cola: undefined,
+            programacion_semanal: buildProgramacionFromRutina(rutina, programacionBase, todasLasSemanas),
+          },
+        });
+        return;
+      }
+
+      // retomar: se mantiene fecha_inicio y semana actual; solo se tocan semanas editables desde hoy en adelante.
+      const editables = getSemanasEditables(selectedUser.id, plan);
+      const semanaActual = getSemanaActual(plan);
+      const weeksToApply = editables.filter((s) => s >= semanaActual);
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...plan,
+          rutinas_asignadas: [{ rutina_id: rutina.id, nombre_rutina: rutina.nombre, frecuencia: `${frecuencia}x/semana` }],
+          rutina_en_cola: undefined,
+          programacion_semanal: buildProgramacionFromRutina(rutina, plan.programacion_semanal, weeksToApply),
+        },
+      });
+    },
+    [selectedUser, onUpdate, registrarReemplazo],
+  );
+
+  const programarRutinaEnCola = useCallback(
+    (rutina: Rutina, activarEn: string) => {
+      if (!selectedUser) return;
+      onUpdate({
+        ...selectedUser,
+        plan: {
+          ...selectedUser.plan,
+          rutina_en_cola: { rutina_id: rutina.id, rutina_nombre: rutina.nombre, activar_en: activarEn, modo: 'reiniciar' },
+        },
+      });
+    },
+    [selectedUser, onUpdate],
+  );
+
+  const cancelarRutinaEnCola = useCallback(() => {
+    if (!selectedUser) return;
+    onUpdate({ ...selectedUser, plan: { ...selectedUser.plan, rutina_en_cola: undefined } });
+  }, [selectedUser, onUpdate]);
+
   const replacePlan = useCallback(
     (plan: PlanUsuario) => {
       if (!selectedUser) return;
@@ -362,6 +451,9 @@ export const usePlanMutations = (selectedUser: Usuario | null, onUpdate: UpdateF
     saveSesionPersonalizada,
     toggleSesionEntreno,
     selectRutinaForSesion,
+    reemplazarRutina,
+    programarRutinaEnCola,
+    cancelarRutinaEnCola,
     selectRutinaForSesionReplicada,
     addEjercicio,
     addEjercicioReplicado,

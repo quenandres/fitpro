@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { FitProCalendar } from './FitProCalendar';
-import { clienteIniciales } from './calendarUtils';
+import { clienteIniciales, startOfLocalMonth } from './calendarUtils';
 import type { CuotaSemanalCliente } from './calendarUtils';
 import type { Usuario } from '../../types';
 
@@ -29,6 +29,16 @@ export function CalendarSidebarBody({
   onShowAllClients,
 }: CalendarSidebarBodyProps) {
   const [search, setSearch] = useState('');
+  const [displayMonth, setDisplayMonth] = useState(() => startOfLocalMonth(selected));
+  const selectedMonthKey = `${selected.getFullYear()}-${selected.getMonth()}`;
+  const prevSelectedMonthKey = useRef(selectedMonthKey);
+
+  useEffect(() => {
+    if (prevSelectedMonthKey.current === selectedMonthKey) return;
+    prevSelectedMonthKey.current = selectedMonthKey;
+    setDisplayMonth(startOfLocalMonth(selected));
+  }, [selected, selectedMonthKey]);
+
   const allVisible = visibleClientIds.length === 0;
 
   const cuotaById = useMemo(
@@ -54,7 +64,8 @@ export function CalendarSidebarBody({
         onSelect={(date) => date && onSelectDate(date)}
         loggedSessionDates={loggedSessionDates}
         citaDates={citaDates}
-        month={selected}
+        month={displayMonth}
+        onMonthChange={setDisplayMonth}
       />
 
       <section className="fp-cal-sidebar-section">

@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link2, Plus, Sparkles, Trash2, X } from 'lucide-react';
 import type { RoutineFormExercise } from '../../../types';
 import {
+  applyProgressiveRpe,
   appendMockSetRow,
   buildMockSetRows,
   reindexMockRows,
   rowsToExercisePatch,
+  stripRowIndex,
+  totalTutSeconds,
   type MockSetRow,
   type MockSetRowType,
 } from '../../../data/routineBuilderMock';
@@ -23,106 +26,94 @@ interface Props {
   ejercicios: RoutineFormExercise[];
   restBetweenSetsSec: number;
   onUpdateExercise: (key: string, patch: Partial<RoutineFormExercise>) => void;
+  onCreateSuperset?: (keys: string[]) => void;
+  onRemoveSuperset?: (groupId: string) => void;
 }
 
 function exerciseKey(ej: RoutineFormExercise): string {
   return ej._key ?? `${ej.ejercicio_id}-${ej.nombre}`;
 }
 
+function formatMinSec(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = Math.round(totalSeconds % 60);
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+function getRows(ej: RoutineFormExercise, restBetweenSetsSec: number): MockSetRow[] {
+  if (ej.series_detalle && ej.series_detalle.length === ej.series) {
+    return ej.series_detalle.map((s, i) => ({ ...s, index: i + 1 }));
+  }
+  return buildMockSetRows(ej.series, ej.valor, ej.rpe, restBetweenSetsSec);
+}
+
 export const RoutineLoadPhasePanel = ({
   ejercicios,
   restBetweenSetsSec,
   onUpdateExercise,
+  onCreateSuperset,
+  onRemoveSuperset,
 }: Props) => {
-  const [rowsByKey, setRowsByKey] = useState<Record<string, MockSetRow[]>>({});
+  const [selectedForSuperset, setSelectedForSuperset] = useState<string[]>([]);
 
-  const syncFromParent = useMemo(() => {
-    const map: Record<string, { series: number; valor: number; rpe?: number }> = {};
-    for (const ej of ejercicios) {
-      map[exerciseKey(ej)] = { series: ej.series, valor: ej.valor, rpe: ej.rpe };
-    }
-    return map;
-  }, [ejercicios]);
-
+  // Semilla: cualquier ejercicio sin `series_detalle` calibrado recibe una tabla generada,
+  // así el dato queda persistido en el form (no solo en memoria de este panel).
   useEffect(() => {
-    setRowsByKey((prev) => {
-      const next = { ...prev };
-      for (const ej of ejercicios) {
-        const key = exerciseKey(ej);
-        const snap = syncFromParent[key];
-        const existing = prev[key];
-        if (!snap) continue;
-        if (!existing || existing.length !== snap.series) {
-          next[key] = buildMockSetRows(snap.series, snap.valor, snap.rpe, restBetweenSetsSec);
-        }
+    for (const ej of ejercicios) {
+      if (!ej.series_detalle || ej.series_detalle.length !== ej.series) {
+        const rows = buildMockSetRows(ej.series, ej.valor, ej.rpe, restBetweenSetsSec);
+        onUpdateExercise(exerciseKey(ej), { series_detalle: rows.map(stripRowIndex) });
       }
-      for (const k of Object.keys(next)) {
-        if (!syncFromParent[k]) delete next[k];
-      }
-      return next;
+    }
+    // Solo cuando cambia el conjunto de ejercicios o sus series/valor — no en cada patch de fila.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ejercicios.map((e) => `${exerciseKey(e)}:${e.series}:${e.valor}`).join('|')]);
+
+  const commitRows = (ej: RoutineFormExercise, rows: MockSetRow[]) => {
+    onUpdateExercise(exerciseKey(ej), {
+      series_detalle: rows.map(stripRowIndex),
+      ...rowsToExercisePatch(rows),
     });
-  }, [ejercicios, restBetweenSetsSec, syncFromParent]);
+  };
 
-  const pushToParent = useCallback(
-    (ej: RoutineFormExercise, rows: MockSetRow[]) => {
-      const key = exerciseKey(ej);
-      const patch = rowsToExercisePatch(rows);
-      onUpdateExercise(key, patch);
-    },
-    [onUpdateExercise],
-  );
+  const updateRow = (ej: RoutineFormExercise, rowIndex: number, patch: Partial<MockSetRow>) => {
+    const rows = getRows(ej, restBetweenSetsSec);
+    commitRows(ej, rows.map((r) => (r.index === rowIndex ? { ...r, ...patch } : r)));
+  };
 
-  const updateRow = useCallback(
-    (ej: RoutineFormExercise, rowIndex: number, patch: Partial<MockSetRow>) => {
-      const key = exerciseKey(ej);
-      setRowsByKey((prev) => {
-        const rows = prev[key] ?? buildMockSetRows(ej.series, ej.valor, ej.rpe, restBetweenSetsSec);
-        const updated = reindexMockRows(
-          rows.map((r) => (r.index === rowIndex ? { ...r, ...patch } : r)),
-        );
-        pushToParent(ej, updated);
-        return { ...prev, [key]: updated };
-      });
-    },
-    [pushToParent, restBetweenSetsSec],
-  );
+  const addRow = (ej: RoutineFormExercise) => {
+    const rows = getRows(ej, restBetweenSetsSec);
+    commitRows(ej, appendMockSetRow(rows, restBetweenSetsSec));
+  };
 
-  const addRow = useCallback(
-    (ej: RoutineFormExercise) => {
-      const key = exerciseKey(ej);
-      setRowsByKey((prev) => {
-        const rows = prev[key] ?? buildMockSetRows(ej.series, ej.valor, ej.rpe, restBetweenSetsSec);
-        const updated = appendMockSetRow(rows, restBetweenSetsSec);
-        pushToParent(ej, updated);
-        return { ...prev, [key]: updated };
-      });
-    },
-    [pushToParent, restBetweenSetsSec],
-  );
+  const removeRow = (ej: RoutineFormExercise, rowIndex: number) => {
+    const rows = getRows(ej, restBetweenSetsSec);
+    if (rows.length <= 1) return;
+    commitRows(ej, reindexMockRows(rows.filter((r) => r.index !== rowIndex)));
+  };
 
-  const removeRow = useCallback(
-    (ej: RoutineFormExercise, rowIndex: number) => {
-      const key = exerciseKey(ej);
-      setRowsByKey((prev) => {
-        const rows = prev[key] ?? [];
-        if (rows.length <= 1) return prev;
-        const updated = reindexMockRows(rows.filter((r) => r.index !== rowIndex));
-        pushToParent(ej, updated);
-        return { ...prev, [key]: updated };
-      });
-    },
-    [pushToParent],
-  );
+  const applyRpeRamp = (ej: RoutineFormExercise) => {
+    commitRows(ej, applyProgressiveRpe(getRows(ej, restBetweenSetsSec)));
+  };
+
+  const toggleSupersetSelection = (key: string) => {
+    setSelectedForSuperset((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
+
+  const linkSuperset = () => {
+    if (selectedForSuperset.length >= 2) {
+      onCreateSuperset?.(selectedForSuperset);
+      setSelectedForSuperset([]);
+    }
+  };
 
   const totalSeries = ejercicios.reduce((acc, e) => acc + e.series, 0);
-  const tonnage = ejercicios.reduce((acc, ej) => {
-    const key = exerciseKey(ej);
-    const rows = rowsByKey[key] ?? [];
-    return (
-      acc +
-      rows.reduce((s, r) => s + r.cargaKg * r.reps, 0)
-    );
-  }, 0);
+  const allRows = useMemo(
+    () => ejercicios.map((ej) => getRows(ej, restBetweenSetsSec)),
+    [ejercicios, restBetweenSetsSec],
+  );
+  const tonnage = allRows.reduce((acc, rows) => acc + rows.reduce((s, r) => s + r.cargaKg * r.reps, 0), 0);
+  const tutSeconds = allRows.reduce((acc, rows) => acc + totalTutSeconds(rows), 0);
   const estMin = Math.max(30, Math.round(totalSeries * 2.8));
 
   if (ejercicios.length === 0) {
@@ -139,8 +130,8 @@ export const RoutineLoadPhasePanel = ({
         {[
           { label: 'Series sesión', value: String(totalSeries) },
           { label: 'Tonelaje est.', value: `${Math.round(tonnage).toLocaleString('es')} kg` },
+          { label: 'TUT acum.', value: formatMinSec(tutSeconds) },
           { label: 'Duración est.', value: `~${estMin} min` },
-          { label: 'Modo', value: 'Editable' },
         ].map((m) => (
           <div
             key={m.label}
@@ -160,21 +151,76 @@ export const RoutineLoadPhasePanel = ({
         (lo que se guarda en biblioteca).
       </p>
 
+      {onCreateSuperset && selectedForSuperset.length >= 2 ? (
+        <button
+          type="button"
+          className="fp-btn fp-btn-secondary"
+          style={{ fontSize: 12, gap: 6, alignSelf: 'flex-start' }}
+          onClick={linkSuperset}
+        >
+          <Link2 size={13} /> Vincular {selectedForSuperset.length} ejercicios como superserie
+        </button>
+      ) : null}
+
       {ejercicios.map((ej, idx) => {
         const key = exerciseKey(ej);
-        const rows =
-          rowsByKey[key] ?? buildMockSetRows(ej.series, ej.valor, ej.rpe, restBetweenSetsSec);
+        const rows = allRows[idx];
         const exTonnage = rows.reduce((s, r) => s + r.cargaKg * r.reps, 0);
+        const inSuperset = Boolean(ej.grupo_superset);
+        const supersetSelected = selectedForSuperset.includes(key);
 
         return (
-          <div key={key} className="fp-card" style={{ padding: 12 }}>
+          <div
+            key={key}
+            className="fp-card"
+            style={{
+              padding: 12,
+              borderColor: inSuperset ? 'rgba(163,113,247,.35)' : undefined,
+              background: inSuperset ? 'rgba(163,113,247,.06)' : undefined,
+            }}
+          >
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
               <p className="font-sora" style={{ fontSize: 14, fontWeight: 600 }}>
                 {String(idx + 1).padStart(2, '0')} {ej.nombre}
               </p>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                Tonelaje: {Math.round(exTonnage).toLocaleString('es')} kg
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  Tonelaje: {Math.round(exTonnage).toLocaleString('es')} kg
+                </span>
+                {onCreateSuperset || onRemoveSuperset ? (
+                  inSuperset ? (
+                    <button
+                      type="button"
+                      className="badge"
+                      style={{
+                        fontSize: 9,
+                        padding: '2px 6px',
+                        cursor: 'pointer',
+                        border: '1px solid rgba(163,113,247,.35)',
+                        background: 'rgba(163,113,247,.14)',
+                        color: 'var(--accent-purple)',
+                      }}
+                      onClick={() => ej.grupo_superset && onRemoveSuperset?.(ej.grupo_superset)}
+                    >
+                      <Link2 size={10} style={{ marginRight: 3 }} />
+                      Superserie <X size={10} style={{ marginLeft: 3 }} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="fp-btn fp-btn-ghost"
+                      style={{
+                        fontSize: 10,
+                        padding: '3px 8px',
+                        color: supersetSelected ? 'var(--accent-purple)' : 'var(--text-muted)',
+                      }}
+                      onClick={() => toggleSupersetSelection(key)}
+                    >
+                      {supersetSelected ? '✓ Seleccionado' : 'Vincular a superserie'}
+                    </button>
+                  )
+                ) : null}
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, minWidth: 520 }}>
@@ -290,14 +336,25 @@ export const RoutineLoadPhasePanel = ({
                 </tbody>
               </table>
             </div>
-            <button
-              type="button"
-              className="fp-btn fp-btn-secondary mt-2"
-              style={{ fontSize: 11, gap: 4, padding: '6px 10px' }}
-              onClick={() => addRow(ej)}
-            >
-              <Plus size={14} /> Añadir serie
-            </button>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <button
+                type="button"
+                className="fp-btn fp-btn-secondary"
+                style={{ fontSize: 11, gap: 4, padding: '6px 10px' }}
+                onClick={() => addRow(ej)}
+              >
+                <Plus size={14} /> Añadir serie
+              </button>
+              <button
+                type="button"
+                className="fp-btn fp-btn-ghost"
+                style={{ fontSize: 11, gap: 4, padding: '6px 10px' }}
+                onClick={() => applyRpeRamp(ej)}
+                title="Rampa de RPE desde calentamiento hasta el top set"
+              >
+                <Sparkles size={14} /> Aplicar RPE progresivo
+              </button>
+            </div>
           </div>
         );
       })}

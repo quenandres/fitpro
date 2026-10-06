@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { RoutineFormData, RoutineFormLevel } from '../../../types';
+import type { ClientRoutineCreationEmbed } from '../../../utils/routineCreationEmbed';
 import { RoutineCreationLayout } from './RoutineCreationLayout';
 import { RoutineCreationMethodTabs } from './RoutineCreationMethodTabs';
 import { RoutineBlockParamsPanel } from './RoutineBlockParamsPanel';
@@ -12,6 +13,8 @@ interface Props {
   isSaving?: boolean;
   onSaveDraft?: () => void;
   builder: ReactNode;
+  /** Cuando el formulario se embebe (pestaña Entrenamientos del cliente), usa las tabs en modo in-place. */
+  embed?: ClientRoutineCreationEmbed;
 }
 
 export const RoutineFormPageLayout = ({
@@ -22,9 +25,15 @@ export const RoutineFormPageLayout = ({
   isSaving,
   onSaveDraft,
   builder,
+  embed,
 }: Props) => (
   <>
-    <RoutineCreationMethodTabs />
+    <RoutineCreationMethodTabs
+      mode={embed ? 'embedded' : 'route'}
+      creationContext={embed?.creationContext ?? null}
+      embeddedActiveTab={embed?.activeTab}
+      inPlace={embed ? { activeTab: embed.activeTab, onTabChange: embed.onTabChange } : undefined}
+    />
     <RoutineCreationLayout
       main={builder}
       sidebar={

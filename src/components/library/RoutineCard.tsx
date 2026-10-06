@@ -1,9 +1,13 @@
+import { useMemo } from 'react';
 import { Pencil, Trash2, Clock, Target, Layers } from 'lucide-react';
-import type { Rutina } from '../../types';
+import type { Ejercicio, Rutina } from '../../types';
 import { countDiasEntreno } from '../../utils/routineScheduleUtils';
+import { aggregateRoutineMuscles } from '../../utils/routineMuscles';
+import { AnatomyMuscleHeatmapMini } from '../anatomy/AnatomyMuscleHeatmapMini';
 
 interface Props {
   rutina: Rutina;
+  ejercicios: Ejercicio[];
   onEdit: () => void;
   onDelete: (id: number) => void;
 }
@@ -30,7 +34,7 @@ function getDiff(dif: string) {
   return                               { cls: 'diff-beginner',     dots: 1 };
 }
 
-export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
+export const RoutineCard = ({ rutina, ejercicios, onEdit, onDelete }: Props) => {
   const cat   = getCat(rutina.categoria);
   const diff  = getDiff(rutina.dificultad);
   const total = rutina.ejercicios.reduce((a, e) => a + e.series, 0);
@@ -39,6 +43,11 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
   const diasEntreno = rutina.programacion_semanal?.[0]
     ? countDiasEntreno(rutina.programacion_semanal[0])
     : (rutina.ejercicios.length > 0 ? 1 : 0);
+  const muscleCounts = useMemo(
+    () => aggregateRoutineMuscles(rutina.ejercicios, ejercicios),
+    [rutina.ejercicios, ejercicios],
+  );
+  const hasMuscleData = Object.keys(muscleCounts).length > 0;
 
   return (
     <article className="fp-card fp-card-hover relative overflow-hidden">
@@ -47,9 +56,28 @@ export const RoutineCard = ({ rutina, onEdit, onDelete }: Props) => {
 
         {/* Row 1 */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 11, background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-            {cat.emoji}
-          </div>
+          {hasMuscleData ? (
+            <div
+              className="fp-routine-card-muscle-mini"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 11,
+                background: 'var(--bg-overlay)',
+                flexShrink: 0,
+                overflow: 'hidden',
+              }}
+            >
+              <AnatomyMuscleHeatmapMini
+                counts={muscleCounts}
+                ariaLabel={`Músculos entrenados en ${rutina.nombre}`}
+              />
+            </div>
+          ) : (
+            <div style={{ width: 42, height: 42, borderRadius: 11, background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+              {cat.emoji}
+            </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="flex flex-wrap items-center gap-1.5 mb-0.5 min-w-0">
               <span style={{ fontSize: 10, fontWeight: 600, color: cat.accent, textTransform: 'uppercase' as const, letterSpacing: '.05em' }}>

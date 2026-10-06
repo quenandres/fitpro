@@ -45,3 +45,16 @@ export function getSemanasEditables(userId: number, plan: PlanUsuario): number[]
 export function countSemanasEditables(userId: number, plan: PlanUsuario): number {
   return getSemanasEditables(userId, plan).length;
 }
+
+/** Semana actual del plan (1-indexed) según `fecha_inicio`; sin fecha, cae a la última semana con datos. */
+export function getSemanaActual(plan: PlanUsuario): number {
+  if (!plan.fecha_inicio) {
+    return Math.max(1, Math.min(plan.semanas, plan.programacion_semanal.length));
+  }
+  const start = new Date(`${plan.fecha_inicio}T12:00:00`);
+  const today = new Date();
+  const diffDays = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const semana = Math.floor(diffDays / 7) + 1;
+  return Math.max(1, Math.min(plan.semanas, semana));
+}
+

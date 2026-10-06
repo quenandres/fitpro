@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Eye, Plus, Trash2, Link2, Unlink, Dumbbell, GripVertical, Clock } from 'lucide-react';
 import {
   ExercisePickerOverlay,
@@ -9,6 +9,8 @@ import { getFieldError } from '../../../utils/routineFormValidators';
 import type { ValidationError } from '../../../utils/validators';
 import { ExercisePreviewModal } from './ExercisePreviewModal';
 import { EmptyState } from '../../common/EmptyState';
+import { aggregateRoutineMuscles } from '../../../utils/routineMuscles';
+import { AnatomyMuscleHeatmapMini } from '../../anatomy/AnatomyMuscleHeatmapMini';
 
 interface Props {
   level: RoutineFormLevel;
@@ -50,6 +52,9 @@ export const ExerciseListEditor = ({
   const ejerciciosError = getFieldError(errors, 'ejercicios');
   const exerciseKey = (ej: RoutineFormExercise) => ej._key ?? ej.nombre;
 
+  const muscleCounts = useMemo(() => aggregateRoutineMuscles(ejercicios, []), [ejercicios]);
+  const hasMuscleData = studio && Object.keys(muscleCounts).length > 0;
+
   const toggleSupersetSelect = (key: string) => {
     setSelectedForSuperset((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
@@ -83,6 +88,20 @@ export const ExerciseListEditor = ({
           <Plus size={14} /> Añadir
         </button>
       </div>
+
+      {hasMuscleData ? (
+        <div
+          className="fp-card fp-routine-card-muscle-mini flex items-center gap-3"
+          style={{ padding: 10, borderRadius: 11, marginBottom: 10 }}
+        >
+          <div style={{ width: 60, height: 60, borderRadius: 10, background: 'var(--bg-overlay)', overflow: 'hidden', flexShrink: 0 }}>
+            <AnatomyMuscleHeatmapMini counts={muscleCounts} ariaLabel="Músculos entrenados en este día" />
+          </div>
+          <p className="text-[11px] text-muted leading-relaxed">
+            Se actualiza en vivo con cada ejercicio que agregues o quites de este día.
+          </p>
+        </div>
+      ) : null}
 
       {showSuperset && selectedForSuperset.length >= 2 && (
         <button

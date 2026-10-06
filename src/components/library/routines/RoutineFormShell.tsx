@@ -41,6 +41,10 @@ interface Props {
   isEdit?: boolean;
   hideActions?: boolean;
   footer?: ReactNode;
+  backTo?: string;
+  backOnClick?: () => void;
+  contextBadge?: ReactNode;
+  isPlantillaMode?: boolean;
 }
 
 export const RoutineFormShell = ({
@@ -52,6 +56,10 @@ export const RoutineFormShell = ({
   isEdit,
   hideActions,
   footer,
+  backTo,
+  backOnClick,
+  contextBadge,
+  isPlantillaMode,
 }: Props) => {
   const meta = LEVEL_META[level];
   const backLabel = 'Volver a métodos de creación';
@@ -59,15 +67,35 @@ export const RoutineFormShell = ({
 
   return (
     <div>
-      <PageBackRow to={meta.backTo} label={backLabel} className="animate-slide-up" />
+      <PageBackRow
+        {...(backOnClick ? { onClick: backOnClick } : { to: backTo ?? meta.backTo })}
+        label={backLabel}
+        className="animate-slide-up"
+      />
 
       <RoutineCreationChrome
-        crumbs={[
-          { label: 'Rutinas', to: ROUTES.library.rutinas },
-          { label: 'Nueva rutina', to: ROUTES.library.rutinasNueva },
-          { label: 'Constructor manual' },
-        ]}
-        title={isEdit ? `Editar rutina (${meta.badge.toLowerCase()})` : 'Constructor de rutina paso a paso'}
+        crumbs={
+          isPlantillaMode
+            ? [
+                { label: 'Rutinas', to: ROUTES.library.rutinas },
+                { label: 'Plantillas', to: ROUTES.library.rutinasPlantillas },
+                { label: isEdit ? 'Editar plantilla' : 'Nueva plantilla' },
+              ]
+            : [
+                { label: 'Rutinas', to: ROUTES.library.rutinas },
+                { label: 'Nueva rutina', to: ROUTES.library.rutinasNueva },
+                { label: 'Constructor manual' },
+              ]
+        }
+        title={
+          isPlantillaMode
+            ? isEdit
+              ? 'Editar plantilla'
+              : 'Nueva plantilla'
+            : isEdit
+              ? `Editar rutina (${meta.badge.toLowerCase()})`
+              : 'Constructor de rutina paso a paso'
+        }
         subtitle="Tres fases: estructura semanal, ejercicios y cargas. Los ejercicios se resuelven con ExerciseDB."
         badges={
           <>
@@ -81,11 +109,12 @@ export const RoutineFormShell = ({
                 border: `1px solid ${meta.accent}44`,
               }}
             >
-              Modo constructor · {meta.badge}
+              {isPlantillaMode ? 'Modo plantilla' : 'Modo constructor'} · {meta.badge}
             </span>
             <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
               Listo para editar
             </span>
+            {contextBadge}
           </>
         }
       />

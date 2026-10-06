@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, FileText, ListChecks, Save, Settings2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { RoutineFormData, RoutineFormLevel } from '../../../types';
+import type { RoutineEstado, RoutineFormData, RoutineFormLevel } from '../../../types';
 import type { ValidationError } from '../../../utils/validators';
 import { RoutineReviewStep } from './RoutineReviewStep';
 import { RoutinePhaseMetrics } from './RoutinePhaseMetrics';
@@ -29,6 +29,8 @@ interface Props {
   onValidatePhase2: () => boolean;
   onMusclesResolved?: (updates: Array<{ key: string; musculos_anatomia: string[] }>) => void;
   semanaActiva?: number;
+  estado?: RoutineEstado;
+  onEstadoChange?: (estado: RoutineEstado) => void;
   phase1: ReactNode;
   phase2: ReactNode;
   phase3: ReactNode;
@@ -50,6 +52,8 @@ export const RoutineBuilderShell = ({
   onValidatePhase2,
   onMusclesResolved,
   semanaActiva = 1,
+  estado = 'borrador',
+  onEstadoChange,
   phase1,
   phase2,
   phase3,
@@ -245,6 +249,33 @@ export const RoutineBuilderShell = ({
 
         {step === 3 ? (
           <>
+            {onEstadoChange ? (
+              <div className="flex items-center justify-center gap-1.5 p-0.5 rounded-[10px]" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                {(['borrador', 'publicada'] as RoutineEstado[]).map((opt) => {
+                  const active = estado === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => onEstadoChange(opt)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 0',
+                        borderRadius: 8,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: active ? 'var(--bg-card)' : 'transparent',
+                        color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+                      }}
+                    >
+                      {opt === 'borrador' ? 'Borrador' : 'Publicada'}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
             <button
               type="button"
               className="fp-btn fp-btn-secondary"
@@ -260,7 +291,14 @@ export const RoutineBuilderShell = ({
               onClick={() => void onSave()}
               disabled={isSaving}
             >
-              <Save size={14} /> {isSaving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear rutina'}
+              <Save size={14} />{' '}
+              {isSaving
+                ? 'Guardando…'
+                : isEdit
+                  ? 'Guardar cambios'
+                  : estado === 'publicada'
+                    ? 'Publicar rutina'
+                    : 'Crear rutina'}
             </button>
             {saveError ? (
               <p role="alert" style={{ fontSize: 12, color: 'var(--accent-red)', textAlign: 'center', margin: 0 }}>

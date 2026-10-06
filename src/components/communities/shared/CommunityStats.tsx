@@ -15,12 +15,12 @@ export function CommunityStats({ comunidad, className = '' }: CommunityStatsProp
   ];
 
   return (
-    <div className={`flex items-center gap-4 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
       {items.map(({ icon: Icon, value, label }) => (
-        <div key={label} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-          <Icon size={13} />
+        <div key={label} className="flex items-center gap-1 min-w-0 text-[11px] font-medium sm:text-xs" style={{ color: 'var(--text-secondary)' }}>
+          <Icon size={12} className="shrink-0" />
           <span style={{ color: 'var(--text-primary)' }}>{value}</span>
-          {label}
+          <span className="truncate">{label}</span>
         </div>
       ))}
     </div>

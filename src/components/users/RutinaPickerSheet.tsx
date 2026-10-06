@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Copy, Search, X } from 'lucide-react';
+import { Copy, Plus, Search, X } from 'lucide-react';
 import type { Rutina } from '../../types';
 import { Sheet } from '../common/Sheet';
 
@@ -11,6 +11,7 @@ interface Props {
   semana: number;
   onClose: () => void;
   onSelect: (rutina: Rutina, replicar: boolean) => void;
+  onCreateNew?: () => void;
 }
 
 export function RutinaPickerSheet({
@@ -21,6 +22,7 @@ export function RutinaPickerSheet({
   semana,
   onClose,
   onSelect,
+  onCreateNew,
 }: Props) {
   const [pending, setPending] = useState<Rutina | null>(null);
   const [query, setQuery] = useState('');
@@ -123,26 +125,49 @@ export function RutinaPickerSheet({
           </div>
         ) : (
           <>
-            <div className="fp-input-group mb-4">
-              <Search size={16} className="text-muted shrink-0" aria-hidden />
-              <input
-                type="search"
-                className="fp-input border-0 bg-transparent shadow-none"
-                placeholder="Buscar por nombre, categoría o dificultad…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                aria-label="Buscar rutinas"
-              />
+            <div className="flex items-center gap-2 mb-4">
+              <div className="fp-input-group flex-1">
+                <Search size={16} className="text-muted shrink-0" aria-hidden />
+                <input
+                  type="search"
+                  className="fp-input border-0 bg-transparent shadow-none"
+                  placeholder="Buscar por nombre, categoría o dificultad…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-label="Buscar rutinas"
+                />
+              </div>
+              {onCreateNew ? (
+                <button
+                  type="button"
+                  className="fp-btn fp-btn-secondary shrink-0 gap-1.5 text-xs"
+                  onClick={onCreateNew}
+                >
+                  <Plus size={14} />
+                  <span className="hidden sm:inline">Crear rutina nueva</span>
+                  <span className="sm:hidden">Crear</span>
+                </button>
+              ) : null}
             </div>
 
             {filtered.length === 0 ? (
               <div className="text-center py-10">
                 <p className="text-sm font-semibold text-primary mb-1">Sin resultados</p>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-muted mb-4">
                   {query.trim()
                     ? 'Prueba otro término o crea una rutina personalizada para este cliente.'
-                    : 'No hay rutinas en tu biblioteca. Crea una en Biblioteca → Rutinas.'}
+                    : 'No hay rutinas en tu biblioteca todavía.'}
                 </p>
+                {onCreateNew ? (
+                  <button
+                    type="button"
+                    className="fp-btn fp-btn-primary gap-1.5 text-xs"
+                    onClick={onCreateNew}
+                  >
+                    <Plus size={14} />
+                    Crear rutina nueva
+                  </button>
+                ) : null}
               </div>
             ) : (
               <div className="flex flex-col gap-2">

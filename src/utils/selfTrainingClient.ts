@@ -1,6 +1,11 @@
 import type { ClientLink } from '../lib/gateway/training.service';
-import { linkClient, listTrainerClients } from '../lib/gateway/training.service';
-import { mapClientLinksToUsuarios } from '../lib/gateway/hooks';
+import {
+  linkClient,
+  listTrainerClients,
+  TRAINER_CLIENTS_PAGE_SIZE,
+} from '../lib/gateway/training.service';
+import { mapClientLinksToUsuarios, trainerKeys } from '../lib/gateway/hooks';
+import { queryClient } from '../lib/queryClient';
 import { isMockMode } from '../lib/mock-mode';
 import type { Usuario } from '../types';
 
@@ -45,13 +50,17 @@ export async function resolveSelfTrainingUsuarioId(
   if (self) return self.id;
 
   await linkClient(authUserId);
-  const { clients } = await listTrainerClients();
+  const { clients } = await queryClient.fetchQuery({
+    queryKey: trainerKeys.clients(1, TRAINER_CLIENTS_PAGE_SIZE),
+    queryFn: () => listTrainerClients({ page: 1, limit: TRAINER_CLIENTS_PAGE_SIZE }),
+    staleTime: 30_000,
+  });
   store.syncFromGateway(clients);
 
   self = findSelfUsuario(store.getUsuarios(), authUserId);
   if (self) return self.id;
 
-  const mapped = mapClientLinksToUsuarios(clients);
+  const mapped = mapClientLinksToUsuarios(clients, store.getUsuarios());
   const fromMapped = mapped.find((u) => u.client_uuid === authUserId);
   if (fromMapped) return fromMapped.id;
 

@@ -42,7 +42,7 @@ ve el log. Detalle en `CONTEXT.md §1`.
 | Estado servidor | TanStack Query **declarado y cableado en código** (`src/main.tsx`, `src/lib/exercisedb/hooks.ts`) pero **no instalado** en `node_modules` — el build falla hoy por esto | TanStack Query funcionando |
 | Validación runtime | Zod ya instalado y en uso real (`src/lib/gateway/schemas/*`, `src/lib/exercisedb/schemas.ts`) | Extender a `importData` y formularios |
 | Backend auth/datos | **`gym-gateway`** (FastAPI, repo hermano) — proxy real hacia **Supabase Auth + PostgREST**, JWT ES256 vía JWKS, RBAC server-side (`require_role`/`require_admin`) | Mismo, con migraciones SQL versionadas |
-| Backend IA | **gym-gateway** — OpenRouter en `POST /api/ai/routine` (`gym-mcp` / `fitpro_api` absorbidos; no hay sidecar) | — |
+| Backend IA | **gym-gateway** — OpenRouter en `POST /api/ai/routine` | — |
 | Supabase en el frontend | Cliente **comentado** en `src/lib/supabase.ts` — el frontend nunca habla con Supabase directo, todo pasa por `gym-gateway` | Mantener así (gateway como única puerta) |
 | Estilos | Tailwind 4 + tokens CSS (`@theme` en `index.css`) — **D8 resuelto** 2026-08-24 | Migración oportunista del inline restante |
 | Pagos | UI mock de billing en Biblioteca — **fuera de primera instancia** | Stripe, después del loop |
@@ -115,7 +115,7 @@ fitpro/
 gym-gateway/                 # Único backend — FastAPI, proxy Supabase + IA
 ├── app/routes/auth.py       # signup/login/refresh/logout/user vía Supabase Auth
 ├── app/routes/sesiones.py   # iniciar / series / completar (training.sessions)
-├── app/routes/ai.py         # POST /api/ai/routine (antes gym-mcp / fitpro_api)
+├── app/routes/ai.py         # POST /api/ai/routine
 ├── app/routes/proxy.py      # Proxy genérico a PostgREST
 ├── app/core/auth.py         # Validación JWT ES256 contra JWKS de Supabase
 ├── app/core/deps.py         # require_role / require_admin (RBAC real, server-side)
@@ -123,9 +123,6 @@ gym-gateway/                 # Único backend — FastAPI, proxy Supabase + IA
 
 fitpro-clients/              # PWA cliente (D11) — mismo gym-gateway
 └── player escribe training.sessions / session_sets
-
-`gym-mcp` y `fitpro_api` **ya no existen como repos/servicios**. Su código de IA
-quedó en `gym-gateway/app/services/ai/` y `app/routes/ai.py`.
 ```
 
 **Módulo Comunidades** (`components/communities/`, `pages/communities/`):

@@ -21,6 +21,14 @@ export type GatewayPlanExercise = {
   peso_objetivo_kg?: number | null;
 };
 
+/** Listado de clientes: solo metadatos para cards. */
+export type GatewayPlanSummary = {
+  id: string;
+  nombre: string;
+  semana_actual: number;
+  dias_entrenar_semana: number;
+};
+
 export type GatewayPlanTree = {
   id: string;
   nombre: string;
@@ -40,8 +48,23 @@ export type ClientLink = {
   client_id: string;
   status: string;
   profile?: { id: string; full_name: string; role: string };
-  plan?: GatewayPlanTree | null;
+  plan?: GatewayPlanSummary | GatewayPlanTree | null;
 };
+
+export type TrainerClientsPagination = {
+  page: number;
+  size: number;
+  total_records: number;
+  total_pages: number;
+};
+
+export type TrainerClientsPageResult = {
+  clients: ClientLink[];
+  count: number;
+  pagination: TrainerClientsPagination;
+};
+
+export const TRAINER_CLIENTS_PAGE_SIZE = 18;
 
 export type InviteClientResult = {
   client_id: string;
@@ -54,9 +77,18 @@ export type InviteClientResult = {
   invite_url?: string;
 };
 
-export async function listTrainerClients(): Promise<{ clients: ClientLink[] }> {
-  if (isMockMode()) return demoListTrainerClients();
-  return gatewayFetch('/api/trainers/clients');
+export async function listTrainerClients(options?: {
+  page?: number;
+  limit?: number;
+}): Promise<TrainerClientsPageResult> {
+  if (isMockMode()) return demoListTrainerClients(options);
+  const page = options?.page ?? 1;
+  const limit = options?.limit ?? TRAINER_CLIENTS_PAGE_SIZE;
+  const qs = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  return gatewayFetch(`/api/trainers/clients?${qs.toString()}`);
 }
 
 export async function inviteClient(body: {
@@ -125,13 +157,39 @@ export async function createPlan(body: {
   });
 }
 
+export async function fetchTrainerClientPlan(clientId: string): Promise<GatewayPlanTree> {
+  if (isMockMode()) {
+    return {
+      id: 'demo-plan',
+      nombre: 'Plan activo',
+      semana_actual: 1,
+      semanas: [],
+    };
+  }
+  return gatewayFetch(`/api/trainers/clients/${encodeURIComponent(clientId)}/plan`);
+}
+
+const historialInflight = new Map<string, Promise<GatewayHistorialRow[]>>();
+
 export async function fetchClientHistorial(
   clientId: string,
   limit = 200,
 ): Promise<GatewayHistorialRow[]> {
   if (isMockMode()) return demoFetchClientHistorial(clientId);
-  const data = await gatewayFetch<unknown>(
-    `/api/trainers/clients/${encodeURIComponent(clientId)}/historial?limit=${limit}`,
-  );
-  return z.array(gatewayHistorialRowSchema).parse(data);
+
+  const inflightKey = `${clientId}:${limit}`;
+  const existing = historialInflight.get(inflightKey);
+  if (existing) return existing;
+
+  const request = (async () => {
+    const data = await gatewayFetch<unknown>(
+      `/api/trainers/clients/${encodeURIComponent(clientId)}/historial?limit=${limit}`,
+    );
+    return z.array(gatewayHistorialRowSchema).parse(data);
+  })().finally(() => {
+    historialInflight.delete(inflightKey);
+  });
+
+  historialInflight.set(inflightKey, request);
+  return request;
 }

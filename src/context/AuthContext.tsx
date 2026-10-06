@@ -2,11 +2,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   clearSession,
   extractSessionTokens,
@@ -23,6 +22,7 @@ import {
   type StoredSession,
 } from '../lib/gateway';
 import { GatewayError } from '../lib/gateway/errors';
+import { authUserQueryKey, comunidadesKeys, trainerKeys } from '../lib/gateway/hooks';
 import { clearRoleOverride } from '../store/useRoleOverrideStore';
 import { DEMO_TRAINER_USER, isMockMode } from '../lib/mock-mode';
 
@@ -49,95 +49,85 @@ const toAuthUser = (user: GatewayUser, fallbackEmail?: string): AuthUser => ({
   role: user.role ?? undefined,
 });
 
-const persistAndResolveUser = async (
-  session: StoredSession,
-  fallbackEmail?: string,
-): Promise<AuthUser> => {
+async function resolveSessionUser(session: StoredSession, fallbackEmail?: string): Promise<AuthUser> {
   saveSession(session);
   const user = await getCurrentUser(session.accessToken);
   return toAuthUser(user, fallbackEmail);
-};
+}
+
+async function restoreAuthUser(): Promise<AuthUser | null> {
+  if (isMockMode()) {
+    return {
+      id: DEMO_TRAINER_USER.id,
+      email: DEMO_TRAINER_USER.email,
+      role: DEMO_TRAINER_USER.role,
+    };
+  }
+
+  const stored = loadSession();
+  if (!stored) {
+    clearSession();
+    return null;
+  }
+
+  try {
+    let session = stored;
+    if (isExpired(session)) {
+      const tokens = await refreshRequest(session.refreshToken);
+      session = sessionFromTokens(tokens);
+    }
+    return await resolveSessionUser(session);
+  } catch (error) {
+    const status = error instanceof GatewayError ? error.status : undefined;
+    if (status === 401) {
+      try {
+        const storedAgain = loadSession();
+        if (storedAgain) {
+          const tokens = await refreshRequest(storedAgain.refreshToken);
+          const session = sessionFromTokens(tokens);
+          return await resolveSessionUser(session);
+        }
+      } catch {
+        // fall through
+      }
+    }
+    clearSession();
+    return null;
+  }
+}
+
+function clearAuthQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.removeQueries({ queryKey: authUserQueryKey });
+  queryClient.removeQueries({ queryKey: trainerKeys.all });
+  queryClient.removeQueries({ queryKey: comunidadesKeys.all });
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const applySession = useCallback(async (session: StoredSession, fallbackEmail?: string) => {
-    const nextUser = await persistAndResolveUser(session, fallbackEmail);
-    setUser(nextUser);
-    return nextUser;
-  }, []);
+  const userQuery = useQuery({
+    queryKey: authUserQueryKey,
+    queryFn: restoreAuthUser,
+    staleTime: 60_000,
+    retry: false,
+  });
 
-  const resetAuth = useCallback(() => {
-    clearSession();
-    clearRoleOverride();
-    setUser(null);
-  }, []);
+  const user = userQuery.data ?? null;
+  const loading = userQuery.isPending && !userQuery.isFetched;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const bootstrap = async () => {
-      if (isMockMode()) {
-        if (!cancelled) {
-          setUser({
-            id: DEMO_TRAINER_USER.id,
-            email: DEMO_TRAINER_USER.email,
-            role: DEMO_TRAINER_USER.role,
-          });
-          setLoading(false);
-        }
-        return;
-      }
-      const stored = loadSession();
-      if (!stored) {
-        clearSession();
-        if (!cancelled) setLoading(false);
-        return;
-      }
-
-      try {
-        let session = stored;
-        if (isExpired(session)) {
-          const tokens = await refreshRequest(session.refreshToken);
-          session = sessionFromTokens(tokens);
-        }
-
-        const nextUser = await persistAndResolveUser(session);
-        if (!cancelled) setUser(nextUser);
-      } catch (error) {
-        const status = error instanceof GatewayError ? error.status : undefined;
-        if (status === 401) {
-          try {
-            const storedAgain = loadSession();
-            if (storedAgain) {
-              const tokens = await refreshRequest(storedAgain.refreshToken);
-              const session = sessionFromTokens(tokens);
-              const nextUser = await persistAndResolveUser(session);
-              if (!cancelled) setUser(nextUser);
-              return;
-            }
-          } catch {
-            // fall through to reset
-          }
-        }
-        clearSession();
-        if (!cancelled) setUser(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void bootstrap();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const applySession = useCallback(
+    async (session: StoredSession, fallbackEmail?: string) => {
+      const nextUser = await resolveSessionUser(session, fallbackEmail);
+      queryClient.setQueryData(authUserQueryKey, nextUser);
+      return nextUser;
+    },
+    [queryClient],
+  );
 
   const login = useCallback(
     async (email: string, password: string) => {
       if (isMockMode()) {
-        setUser({
+        queryClient.setQueryData(authUserQueryKey, {
           id: DEMO_TRAINER_USER.id,
           email: DEMO_TRAINER_USER.email,
           role: DEMO_TRAINER_USER.role,
@@ -147,13 +137,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const tokens = await loginRequest(email, password);
       await applySession(sessionFromTokens(tokens), email);
     },
-    [applySession],
+    [applySession, queryClient],
   );
 
   const signup = useCallback(
     async (email: string, password: string) => {
       if (isMockMode()) {
-        setUser({
+        queryClient.setQueryData(authUserQueryKey, {
           id: DEMO_TRAINER_USER.id,
           email: DEMO_TRAINER_USER.email,
           role: DEMO_TRAINER_USER.role,
@@ -170,13 +160,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await applySession(sessionFromTokens(tokens), email);
       return { needsEmailConfirmation: false };
     },
-    [applySession],
+    [applySession, queryClient],
   );
 
   const logout = useCallback(async () => {
     if (isMockMode()) {
       clearSession();
-      setUser({
+      clearRoleOverride();
+      queryClient.setQueryData(authUserQueryKey, {
         id: DEMO_TRAINER_USER.id,
         email: DEMO_TRAINER_USER.email,
         role: DEMO_TRAINER_USER.role,
@@ -187,8 +178,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (stored) {
       await logoutRequest(stored.accessToken);
     }
-    resetAuth();
-  }, [resetAuth]);
+    clearSession();
+    clearRoleOverride();
+    clearAuthQueries(queryClient);
+  }, [queryClient]);
 
   const value = useMemo<AuthContextType>(
     () => ({

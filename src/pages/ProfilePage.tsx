@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Check, Dumbbell, LogOut, Shield, User } from 'lucide-react';
+import { Check, Dumbbell, LogOut, Shield } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { useAuth } from '../context/AuthContext';
 import { usePlatformRole } from '../hooks/usePlatformRole';
@@ -33,13 +33,9 @@ export const ProfilePage = () => {
     <AppShell width="default">
       <div className="min-w-0" style={{ paddingTop: 20, paddingBottom: 24 }}>
         <section className="animate-slide-up" style={{ marginBottom: 16 }}>
-          <span className="badge badge-brand" style={{ fontSize: 11, padding: '3px 9px' }}>
-            <User size={10} style={{ marginRight: 3 }} />
-            Mi perfil
-          </span>
           <h1
             className="font-sora text-[22px] sm:text-2xl"
-            style={{ fontWeight: 700, lineHeight: 1.2, letterSpacing: '-.02em', color: 'var(--text-primary)', marginTop: 10 }}
+            style={{ fontWeight: 700, lineHeight: 1.2, letterSpacing: '-.02em', color: 'var(--text-primary)' }}
           >
             Cuenta y rol
           </h1>

@@ -102,7 +102,7 @@ export const DashboardBriefing = () => {
   const visiblePulse = pulse.filter((s) => s.value > 0);
 
   return (
-    <section className="fp-admin-briefing animate-slide-up" aria-labelledby="dashboard-briefing-title">
+    <section className="fp-admin-briefing animate-slide-up my-6" aria-labelledby="dashboard-briefing-title">
       <div className="fp-admin-briefing-meta">
         <span className="fp-admin-briefing-date">{formatBriefingDate(now)}</span>
         <span className="badge badge-brand">{ROLE_LABEL[rol]}</span>

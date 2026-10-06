@@ -12,6 +12,8 @@ import {
   type PickedExercise,
 } from '../exercise/ExercisePickerOverlay';
 import type { SesionPersonalizadaPayload } from '../../utils/sesionPlanUtils';
+import { aggregateRoutineMuscles } from '../../utils/routineMuscles';
+import { AnatomyMuscleHeatmapMini } from '../anatomy/AnatomyMuscleHeatmapMini';
 
 export type SesionDraft = SesionPersonalizadaPayload;
 
@@ -51,6 +53,12 @@ export function SesionEditorContent({
     () => draft.ejercicios.map((_, i) => buildEjId(semana, sesionIndex, i)),
     [draft.ejercicios, semana, sesionIndex],
   );
+
+  const muscleCounts = useMemo(
+    () => aggregateRoutineMuscles(draft.ejercicios, ejercicios),
+    [draft.ejercicios, ejercicios],
+  );
+  const hasMuscleData = Object.keys(muscleCounts).length > 0;
 
   const updateDraft = (partial: Partial<SesionDraft>) => {
     onDraftChange({ ...draft, ...partial });
@@ -126,6 +134,20 @@ export function SesionEditorContent({
           </button>
         ) : null}
       </div>
+
+      {hasMuscleData ? (
+        <div
+          className="fp-card fp-routine-card-muscle-mini mb-4 flex items-center gap-3"
+          style={{ padding: 10, borderRadius: 11 }}
+        >
+          <div style={{ width: 56, height: 56, borderRadius: 10, background: 'var(--bg-overlay)', overflow: 'hidden', flexShrink: 0 }}>
+            <AnatomyMuscleHeatmapMini counts={muscleCounts} ariaLabel="Músculos entrenados en esta sesión" />
+          </div>
+          <p className="text-[11px] text-muted leading-relaxed">
+            Se actualiza a medida que agregas o quitas ejercicios de esta sesión.
+          </p>
+        </div>
+      ) : null}
 
       {showEjercicioPicker ? (
         <ExercisePickerOverlay

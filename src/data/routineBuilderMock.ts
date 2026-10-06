@@ -1,4 +1,4 @@
-import type { RoutineFormLevel } from '../types';
+import type { RoutineFormLevel, SerieDetalle, SerieDetalleTipo } from '../types';
 
 export const PROMPT_MODIFIER_CHIPS = [
   { id: 'lesion', label: 'Lesión / restricción articular', text: 'Tener en cuenta lesión o restricción articular: ' },
@@ -54,17 +54,43 @@ export const PRESET_GOAL_CHIPS = [
   { id: 'calistenia', label: 'Calistenia', match: ['calistenia', 'funcional', 'movilidad'] },
 ] as const;
 
-export type MockSetRowType = 'calentamiento' | 'efectiva' | 'top' | 'backoff';
+export type MockSetRowType = SerieDetalleTipo;
 
-export interface MockSetRow {
+/** Fila de la tabla de cargas (fase 03) — `SerieDetalle` + posición para reordenar en UI. */
+export interface MockSetRow extends SerieDetalle {
   index: number;
-  tipo: MockSetRowType;
-  cargaKg: number;
-  reps: number;
-  rpe?: number;
-  rir?: number;
-  tempo: string;
-  descansoSec: number;
+}
+
+export function stripRowIndex(row: MockSetRow): SerieDetalle {
+  return { tipo: row.tipo, cargaKg: row.cargaKg, reps: row.reps, rpe: row.rpe, rir: row.rir, tempo: row.tempo, descansoSec: row.descansoSec };
+}
+
+/** Rampa de RPE de calentamiento a top set — "Aplicar RPE progresivo a todas las series". */
+export function applyProgressiveRpe(rows: MockSetRow[]): MockSetRow[] {
+  const working = rows.filter((r) => r.tipo !== 'calentamiento');
+  if (working.length === 0) return rows;
+  const start = 7;
+  const end = 9;
+  let workingIdx = 0;
+  return rows.map((r) => {
+    if (r.tipo === 'calentamiento') return { ...r, rpe: 6 };
+    const t = working.length > 1 ? workingIdx / (working.length - 1) : 1;
+    workingIdx += 1;
+    const rpe = Math.round((start + (end - start) * t) * 2) / 2;
+    return { ...r, rpe, rir: Math.max(0, Math.round((10 - rpe) * 2) / 2) };
+  });
+}
+
+/** Segundos por repetición desde un tempo "exc-pausa-conc-pausa" (ej. "3-0-1-0"); 0 si no parsea. */
+function tempoSecondsPerRep(tempo: string): number {
+  const parts = tempo.split('-').map((p) => Number(p.trim()));
+  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return 0;
+  return parts.reduce((a, b) => a + b, 0);
+}
+
+/** TUT (time under tension) total de un conjunto de filas, en segundos. */
+export function totalTutSeconds(rows: readonly MockSetRow[]): number {
+  return rows.reduce((acc, r) => acc + r.reps * tempoSecondsPerRep(r.tempo), 0);
 }
 
 /** Filas de vista previa por serie — no se persisten; reflejan series/valor/rpe del ejercicio. */

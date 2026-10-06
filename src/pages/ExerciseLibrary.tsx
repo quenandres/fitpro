@@ -2,13 +2,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, X, BookOpen, SlidersHorizontal, Loader2 } from 'lucide-react';
 import {
-  useBodyParts,
-  useEquipments,
-  useExerciseTypes,
-  useMuscles,
-} from '../lib/exercisedb';
-import type { ReferenceItem } from '../lib/exercisedb';
-import { useExerciseBrowse } from '../hooks/useExerciseBrowse';
+  useGatewayBodyParts,
+  useGatewayEquipments,
+  useGatewayExerciseCatalogBrowse,
+  useGatewayMuscleGroups,
+  useGatewayTargetMuscles,
+} from '../lib/gateway/exercise-catalog-hooks';
+import type { CatalogReferenceItem } from '../lib/gateway/exercises.service';
 import { ExerciseCard } from '../components/exercise/ExerciseCard';
 import { ExerciseDetailModal } from '../components/exercise/ExerciseDetailModal';
 import { SkeletonCard } from '../components/common/Skeleton';
@@ -30,10 +30,10 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
   const exerciseType = searchParams.get('exerciseType') ?? '';
   const muscle = searchParams.get('muscle') ?? '';
 
-  const { data: exerciseTypes = [] } = useExerciseTypes();
-  const { data: bodyParts = [] } = useBodyParts();
-  const { data: equipments = [] } = useEquipments();
-  const { data: muscles = [] } = useMuscles();
+  const { data: muscleGroups = [] } = useGatewayMuscleGroups();
+  const { data: bodyParts = [] } = useGatewayBodyParts();
+  const { data: equipments = [] } = useGatewayEquipments();
+  const { data: muscles = [] } = useGatewayTargetMuscles();
 
   const setFilter = useCallback(
     (key: FilterKey, value: string) => {
@@ -70,7 +70,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
     totalCount,
     listQuery,
     refetch,
-  } = useExerciseBrowse(search, {
+  } = useGatewayExerciseCatalogBrowse(search, {
     exerciseType,
     bodyPart,
     equipment: equip,
@@ -95,12 +95,12 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
     label: string;
     key: FilterKey;
     val: string;
-    opts: ReferenceItem[];
+    opts: CatalogReferenceItem[];
   }> = [
     { label: 'Parte del cuerpo', key: 'bodyPart', val: bodyPart, opts: bodyParts },
     { label: 'Equipo', key: 'equipment', val: equip, opts: equipments },
-    { label: 'Tipo', key: 'exerciseType', val: exerciseType, opts: exerciseTypes },
-    { label: 'Músculo', key: 'muscle', val: muscle, opts: muscles },
+    { label: 'Grupo muscular', key: 'exerciseType', val: exerciseType, opts: muscleGroups },
+    { label: 'Músculo objetivo', key: 'muscle', val: muscle, opts: muscles },
   ];
 
   return (
@@ -129,7 +129,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
           {isLoading
             ? 'Cargando ejercicios…'
-            : `${totalCount} ejercicios${hasFilters ? ' (filtrados)' : ' disponibles'}`}
+            : `${totalCount} ejercicios${hasFilters || isSearching ? ' (filtrados)' : ' disponibles'}`}
         </p>
       </section>
       )}
@@ -190,7 +190,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
           className="animate-slide-up delay-150 scrollbar-hide flex gap-1.5 overflow-x-auto"
           style={{ paddingBottom: 4, marginBottom: 12 }}
         >
-          {exerciseTypes.map((type: ReferenceItem) => {
+          {muscleGroups.map((type) => {
             const active = exerciseType === type.name;
             return (
               <button
@@ -246,7 +246,7 @@ export const ExerciseLibrary = ({ embedded = false }: { embedded?: boolean }) =>
                   onChange={(e) => setFilter(key, e.target.value)}
                 >
                   <option value="">Todos</option>
-                  {opts.map((o: ReferenceItem) => (
+                  {opts.map((o) => (
                     <option key={o.name} value={o.name}>
                       {o.name}
                     </option>

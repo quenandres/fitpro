@@ -4,7 +4,12 @@ import { useDataStore } from '../../../store/useDataStore';
 import { rutinaToDraftRow } from '../../../utils/routineDraftSummary';
 import { ROUTES } from '../../../routes/paths';
 
-export const RoutineRecentDraftsTable = () => {
+interface Props {
+  onAssignDraft?: (rutinaId: number) => void;
+  assignLabel?: string;
+}
+
+export const RoutineRecentDraftsTable = ({ onAssignDraft, assignLabel = 'Asignar aquí' }: Props) => {
   const rutinas = useDataStore((s) => s.rutinas);
 
   const rows = useMemo(
@@ -54,13 +59,25 @@ export const RoutineRecentDraftsTable = () => {
                 <td style={{ padding: '10px 8px', color: 'var(--text-secondary)' }}>{row.volumenLabel}</td>
                 <td style={{ padding: '10px 8px', color: 'var(--text-muted)' }}>{row.modificadoLabel}</td>
                 <td style={{ padding: '10px 12px' }}>
-                  <Link
-                    to={row.editPath}
-                    className="fp-btn fp-btn-ghost"
-                    style={{ fontSize: 11, padding: '4px 10px', textDecoration: 'none' }}
-                  >
-                    Reanudar
-                  </Link>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    <Link
+                      to={row.editPath}
+                      className="fp-btn fp-btn-ghost"
+                      style={{ fontSize: 11, padding: '4px 10px', textDecoration: 'none' }}
+                    >
+                      Reanudar
+                    </Link>
+                    {onAssignDraft ? (
+                      <button
+                        type="button"
+                        className="fp-btn fp-btn-secondary"
+                        style={{ fontSize: 11, padding: '4px 10px' }}
+                        onClick={() => onAssignDraft(row.id)}
+                      >
+                        {assignLabel}
+                      </button>
+                    ) : null}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,5 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useInView } from 'motion/react';
 import type { ExerciseListItem, ExerciseSearchItem } from '../../lib/exercisedb';
+import { useExercisePreviewUrl } from '../../lib/gateway/exercise-catalog-hooks';
+import { CATALOG_IMAGE_PLACEHOLDER } from '../../lib/gateway/exerciseCatalogAdapter';
 
 interface Props {
   item: ExerciseListItem | ExerciseSearchItem;
@@ -19,6 +23,86 @@ function getTags(item: ExerciseListItem | ExerciseSearchItem): string[] {
   return [];
 }
 
+function ExerciseThumbnail({
+  exerciseId,
+  fallbackImageUrl,
+  name,
+}: {
+  exerciseId: string;
+  fallbackImageUrl: string;
+  name: string;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(rootRef, {
+    once: true,
+    margin: '120px 0px',
+  });
+
+  const hasInlinePreview = fallbackImageUrl !== CATALOG_IMAGE_PLACEHOLDER;
+  const shouldLoadMedia = isInView || hasInlinePreview;
+
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  const { videoUrl, posterUrl, fallbackStill, isLoadingPreview, waitsForViewport } =
+    useExercisePreviewUrl(exerciseId, fallbackImageUrl, { loadMedia: shouldLoadMedia });
+
+  useEffect(() => {
+    setVideoFailed(false);
+  }, [videoUrl]);
+
+  const showVideo = Boolean(videoUrl) && !videoFailed;
+
+  return (
+    <div
+      ref={rootRef}
+      className="shrink-0 overflow-hidden"
+      style={{
+        width: 72,
+        height: 72,
+        borderRadius: 10,
+        background: LIBRARY_BG,
+        border: '1px solid rgba(88,166,255,.2)',
+      }}
+    >
+      {waitsForViewport || isLoadingPreview ? (
+        <div
+          className={`size-full ${isLoadingPreview ? 'animate-pulse' : ''}`}
+          style={{ background: 'var(--bg-overlay)' }}
+          aria-hidden
+        />
+      ) : showVideo ? (
+        <video
+          key={videoUrl}
+          src={videoUrl}
+          poster={posterUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          onError={() => setVideoFailed(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      ) : (
+        <img
+          src={fallbackStill}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={(event) => {
+            const img = event.currentTarget;
+            if (img.src !== CATALOG_IMAGE_PLACEHOLDER) {
+              img.src = CATALOG_IMAGE_PLACEHOLDER;
+            }
+          }}
+        />
+      )}
+      <span className="sr-only">{name}</span>
+    </div>
+  );
+}
+
 export const ExerciseCard = ({ item, onClick }: Props) => {
   const tags = getTags(item);
   const exerciseType = 'exerciseType' in item ? item.exerciseType : undefined;
@@ -32,23 +116,11 @@ export const ExerciseCard = ({ item, onClick }: Props) => {
 
       <div style={{ padding: '10px 12px 10px 15px' }}>
         <div className="flex items-center gap-2.5">
-          <div
-            className="shrink-0 overflow-hidden"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 10,
-              background: LIBRARY_BG,
-              border: '1px solid rgba(88,166,255,.2)',
-            }}
-          >
-            <img
-              src={item.imageUrl}
-              alt=""
-              loading="lazy"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
+          <ExerciseThumbnail
+            exerciseId={item.exerciseId}
+            fallbackImageUrl={item.imageUrl}
+            name={item.name}
+          />
 
           <div className="flex-1 min-w-0">
             {exerciseType && (

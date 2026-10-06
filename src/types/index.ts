@@ -1,5 +1,18 @@
 export type RoutineTipo = 'estandar' | 'emom' | 'amrap' | 'fortime' | 'circuit';
 
+export type SerieDetalleTipo = 'calentamiento' | 'efectiva' | 'top' | 'backoff';
+
+/** Una serie individual calibrada en la fase de cargas (rutina avanzada) — no agregada. */
+export interface SerieDetalle {
+  tipo: SerieDetalleTipo;
+  cargaKg: number;
+  reps: number;
+  rpe?: number;
+  rir?: number;
+  tempo: string;
+  descansoSec: number;
+}
+
 export interface EjercicioRutina {
   /** FK al catálogo local mock (`useDataStore.ejercicios`) */
   ejercicio_id: number;
@@ -17,6 +30,8 @@ export interface EjercicioRutina {
   grupo_superset?: string;
   /** Músculos canónicos para heatmap (ExerciseDB o locales) */
   musculos_anatomia?: string[];
+  /** Calibración serie a serie (fase 03, rutina avanzada) — `series`/`valor`/`rpe` siguen siendo el resumen */
+  series_detalle?: SerieDetalle[];
 }
 
 export interface DiaRutina {
@@ -29,6 +44,28 @@ export interface SemanaRutina {
   semana: number;
   dias: DiaRutina[];
 }
+
+export type PlantillaCategoria =
+  | 'hyrox'
+  | 'isometrico'
+  | 'pliometria'
+  | 'fuerza'
+  | 'cardio'
+  | 'hiit'
+  | 'movilidad'
+  | 'funcional'
+  | 'hipertrofia';
+
+export interface PlantillaMeta {
+  categoria: PlantillaCategoria;
+  tags: string[];
+  nivel: RoutineFormLevel;
+  destacada?: boolean;
+  usos?: number;
+}
+
+export type RoutineEstado = 'borrador' | 'publicada';
+export type RoutineOrigen = 'paso' | 'plantilla' | 'ia';
 
 export interface Rutina {
   id: number;
@@ -44,6 +81,13 @@ export interface Rutina {
   tipo?: RoutineTipo;
   rest_between_sets?: number;
   notes?: string;
+  /** Presente cuando la rutina es una plantilla reutilizable de biblioteca */
+  plantilla?: PlantillaMeta;
+  estado?: RoutineEstado;
+  origen?: RoutineOrigen;
+  /** id de la plantilla desde la que se creó, si aplica */
+  plantilla_origen_id?: number;
+  updated_at?: string;
 }
 
 export type RoutineFormLevel = 'basica' | 'intermedia' | 'avanzada';
@@ -77,6 +121,7 @@ export interface RoutineFormData {
   programacion_semanal: RoutineFormSemana[];
   rest_between_sets: number;
   notes: string;
+  estado: RoutineEstado;
 }
 
 export interface Ejercicio {
@@ -124,6 +169,7 @@ export interface EjercicioPersonalizado {
   rpe?: number;
   musculos_anatomia?: string[];
   regla_progresion?: ReglaProgresion;
+  series_detalle?: SerieDetalle[];
   /** @deprecated usar valor — solo migración JSON legacy */
   reps?: number;
 }
@@ -172,6 +218,13 @@ export interface PlanUsuario {
   rutinas_asignadas: RutinaAsignada[];
   ejercicios_personalizados: EjercicioPersonalizado[];
   programacion_semanal: SemanaPlan[];
+  /** Rutina programada para activarse automáticamente al terminar el bloque actual */
+  rutina_en_cola?: {
+    rutina_id: number;
+    rutina_nombre: string;
+    activar_en: string;
+    modo: 'reiniciar';
+  };
 }
 
 export type NivelUsuario = 'Principiante' | 'Intermedio' | 'Avanzado';

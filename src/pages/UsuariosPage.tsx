@@ -7,16 +7,28 @@ import { EmptyState } from '../components/common/EmptyState';
 import { useDataStore } from '../store/useDataStore';
 import { useUsuariosStore } from '../store/useUsuariosStore';
 import { getUltimaSesion } from '../store/useSesionesStore';
-import type { Usuario } from '../types';
+import type { Rutina, Usuario } from '../types';
 import { CreatePlanWizard } from '../components/userPlans/CreatePlanWizard';
+import { ListPagination } from '../components/common/ListPagination';
 import { useClientesSync } from '../hooks/useClientesSync';
+import {
+  mapClientLinksToUsuarios,
+  planTreeToPlanUsuario,
+  trainerKeys,
+  useTrainerClientPlan,
+  usuarioTienePlanDetallado,
+} from '../lib/gateway/hooks';
+import { clampFrecuencia } from '../utils/planScheduleUtils';
+import { TRAINER_CLIENTS_PAGE_SIZE, type TrainerClientsPageResult } from '../lib/gateway/training.service';
 import { usePlanMutations } from '../hooks/usePlanMutations';
+import { useRutinaEnColaActivation } from '../hooks/useRutinaEnColaActivation';
 import { UserProgressPanel } from '../components/users/UserProgressPanel';
 import { UserDetailHeader } from '../components/users/UserDetailHeader';
 import type { UserDetailTab } from '../components/users/UserDetailTabSwitcher';
 import { UserCard } from '../components/users/UserCard';
 import { UserMedidasPanel } from '../components/users/UserMedidasPanel';
-import { UserPlanWorkspace } from '../components/users/UserPlanWorkspace';
+import { UserEntrenamientosCreationPanel } from '../components/users/UserEntrenamientosCreationPanel';
+import { UserRoutineHistoryPanel } from '../components/users/UserRoutineHistoryPanel';
 import { recencyToneFromSesion } from '../utils/userSummary';
 import { ROUTES } from '../routes/paths';
 import { useToastHook } from '../components/common/Toast';
@@ -28,6 +40,7 @@ import { planUsuarioToCreatePlanBody } from '../utils/planGatewayAdapter';
 function parseDetailTab(raw: string | null): UserDetailTab {
   if (raw === 'entrenamientos') return 'entrenamientos';
   if (raw === 'medidas') return 'medidas';
+  if (raw === 'historial') return 'historial';
   return 'progreso';
 }
 
@@ -37,22 +50,20 @@ function parseSemana(raw: string | null, max: number): number {
   return Math.min(max, Math.floor(n));
 }
 
-function parseSesionIndex(raw: string | null): number | null {
-  if (raw == null || raw === '') return null;
-  const n = Number(raw);
-  if (Number.isNaN(n) || n < 1) return null;
-  return Math.floor(n) - 1;
-}
-
 export function UsuariosPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToastHook();
   const { userId: userIdParam } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  useClientesSync();
+  const [listPage, setListPage] = useState(1);
+  const { query: clientsQuery, isLoading: clientsLoading } = useClientesSync(
+    listPage,
+    TRAINER_CLIENTS_PAGE_SIZE,
+  );
   const persistTimer = useRef<number | null>(null);
-  const { rutinas, ejercicios } = useDataStore();
+  const hydratedClientPlanKeyRef = useRef<string | null>(null);
+  const { rutinas } = useDataStore();
   const usuarios = useUsuariosStore((s) => s.usuarios);
   const updateUsuario = useUsuariosStore((s) => s.updateUsuario);
   const addUsuario = useUsuariosStore((s) => s.addUsuario);
@@ -67,10 +78,53 @@ export function UsuariosPage() {
     [usuarios, selectedUser],
   );
 
+  const needsFullPlan =
+    Boolean(selectedUserLive?.client_uuid)
+    && !isMockMode()
+    && selectedUserLive != null
+    && !usuarioTienePlanDetallado(selectedUserLive);
+  const clientPlanQuery = useTrainerClientPlan(selectedUserLive?.client_uuid, needsFullPlan);
+
+  useEffect(() => {
+    hydratedClientPlanKeyRef.current = null;
+  }, [selectedUserLive?.id]);
+
+  useEffect(() => {
+    const tree = clientPlanQuery.data;
+    const userId = selectedUserLive?.id;
+    if (!tree || userId == null) return;
+
+    const hydrationKey = `${userId}:${tree.id}:${clientPlanQuery.dataUpdatedAt}`;
+    if (hydratedClientPlanKeyRef.current === hydrationKey) return;
+
+    const user = useUsuariosStore.getState().usuarios.find((u) => u.id === userId);
+    if (!user) return;
+    if (usuarioTienePlanDetallado(user)) {
+      hydratedClientPlanKeyRef.current = hydrationKey;
+      return;
+    }
+
+    const plan = planTreeToPlanUsuario(userId, tree);
+    hydratedClientPlanKeyRef.current = hydrationKey;
+    updateUsuario(userId, (current) => ({
+      ...current,
+      plan,
+      dias_entrenar: clampFrecuencia(plan.dias_entrenar_semana),
+    }));
+    setSelectedUser((current) =>
+      current?.id === userId
+        ? { ...current, plan, dias_entrenar: plan.dias_entrenar_semana }
+        : current,
+    );
+  }, [
+    clientPlanQuery.data,
+    clientPlanQuery.dataUpdatedAt,
+    selectedUserLive?.id,
+    updateUsuario,
+  ]);
+
   const maxSemanas = selectedUserLive?.plan.semanas ?? 1;
   const semana = parseSemana(searchParams.get('semana'), maxSemanas);
-  const sesionEditorIndex = parseSesionIndex(searchParams.get('sesion'));
-
   const setDetailTab = useCallback(
     (tab: UserDetailTab) => {
       setSearchParams(
@@ -78,37 +132,6 @@ export function UsuariosPage() {
           const next = new URLSearchParams(prev);
           if (tab === 'progreso') next.delete('tab');
           else next.set('tab', tab);
-          if (tab !== 'entrenamientos') next.delete('sesion');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const setSemana = useCallback(
-    (n: number) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (n <= 1) next.delete('semana');
-          else next.set('semana', String(n));
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const setSesionEditorIndex = useCallback(
-    (sesionIndex: number | null) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (sesionIndex == null) next.delete('sesion');
-          else next.set('sesion', String(sesionIndex + 1));
           return next;
         },
         { replace: true },
@@ -140,17 +163,27 @@ export function UsuariosPage() {
     navigate(ROUTES.usuario(user.id));
   };
 
+  const rosterUsers = useMemo(() => {
+    if (isMockMode()) return usuarios;
+    const clients = clientsQuery.data?.clients;
+    if (!clients) return [];
+    return mapClientLinksToUsuarios(clients, usuarios);
+  }, [clientsQuery.data?.clients, usuarios]);
+
   const filteredUsers = useMemo(() => {
-    if (!searchTerm) return usuarios;
+    if (!searchTerm) return rosterUsers;
     const term = searchTerm.toLowerCase();
-    return usuarios.filter(
+    return rosterUsers.filter(
       (u) =>
         u.nombre.toLowerCase().includes(term)
         || u.email.toLowerCase().includes(term)
         || u.objetivo.toLowerCase().includes(term)
         || u.plan.nombre.toLowerCase().includes(term),
     );
-  }, [usuarios, searchTerm]);
+  }, [rosterUsers, searchTerm]);
+
+  const pagination = clientsQuery.data?.pagination;
+  const totalRecords = pagination?.total_records ?? rosterUsers.length;
 
   const frios = useMemo(
     () => usuarios.filter((u) => recencyToneFromSesion(getUltimaSesion(u.id)) === 'cold').length,
@@ -183,27 +216,77 @@ export function UsuariosPage() {
   );
 
   const mutations = usePlanMutations(selectedUserLive, handleUpdateUser);
+  useRutinaEnColaActivation(selectedUserLive, mutations);
+
+  const rutinaCreadaProcesada = useRef<string | null>(null);
+  const [pendingLibraryRutina, setPendingLibraryRutina] = useState<Rutina | null>(null);
+  useEffect(() => {
+    const rutinaCreadaRaw = searchParams.get('rutinaCreada');
+    if (!rutinaCreadaRaw || !selectedUserLive) return;
+    if (rutinaCreadaProcesada.current === rutinaCreadaRaw) return;
+    rutinaCreadaProcesada.current = rutinaCreadaRaw;
+
+    const rutinaId = Number(rutinaCreadaRaw);
+    const rutina = rutinas.find((r) => r.id === rutinaId);
+    if (rutina) {
+      setPendingLibraryRutina(rutina);
+    } else {
+      toast.error('No se pudo asignar la rutina', 'Vuelve a intentarlo desde Entrenamientos.');
+    }
+
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('rutinaCreada');
+        next.delete('paraSesion');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [searchParams, selectedUserLive, rutinas, toast, setSearchParams]);
 
   const handleCreateUser = (newUser: Usuario) => {
     addUsuario(newUser);
     if (newUser.client_uuid) {
       const clientId = newUser.client_uuid;
-      queryClient.setQueryData<ClientLink[]>(['trainer-clients'], (current) => {
-        const row: ClientLink = {
-          id: clientId,
-          client_id: clientId,
-          status: 'active',
-          profile: {
+      queryClient.setQueryData<TrainerClientsPageResult>(
+        trainerKeys.clients(1, TRAINER_CLIENTS_PAGE_SIZE),
+        (current) => {
+          const row: ClientLink = {
             id: clientId,
-            full_name: newUser.nombre,
-            role: 'client',
-          },
-          plan: null,
-        };
-        const list = current ?? [];
-        if (list.some((item) => item.client_id === clientId)) return list;
-        return [row, ...list];
-      });
+            client_id: clientId,
+            status: 'active',
+            profile: {
+              id: clientId,
+              full_name: newUser.nombre,
+              role: 'client',
+            },
+            plan: null,
+          };
+          const base = current ?? {
+            clients: [],
+            count: 0,
+            pagination: {
+              page: 1,
+              size: TRAINER_CLIENTS_PAGE_SIZE,
+              total_records: 0,
+              total_pages: 1,
+            },
+          };
+          if (base.clients.some((item) => item.client_id === clientId)) return base;
+          const clients = [row, ...base.clients].slice(0, TRAINER_CLIENTS_PAGE_SIZE);
+          const total = base.pagination.total_records + 1;
+          return {
+            clients,
+            count: clients.length,
+            pagination: {
+              ...base.pagination,
+              total_records: total,
+              total_pages: Math.max(1, Math.ceil(total / TRAINER_CLIENTS_PAGE_SIZE)),
+            },
+          };
+        },
+      );
     }
     setShowWizard(false);
     setSelectedUser(newUser);
@@ -212,15 +295,11 @@ export function UsuariosPage() {
 
   return (
     <AppShell width="wide">
-      <div className="animate-slide-up min-w-0">
+      <div className="animate-slide-up min-w-0 my-3">
         {!selectedUser ? (
           <section style={{ paddingTop: 12, paddingBottom: 16 }}>
-            <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-              <Users size={10} style={{ marginRight: 3 }} />
-              Roster
-            </span>
             <h1
-              className="font-sora text-[22px] sm:text-2xl mt-2"
+              className="font-sora text-[22px] sm:text-2xl"
               style={{
                 fontWeight: 800,
                 lineHeight: 1.15,
@@ -231,7 +310,7 @@ export function UsuariosPage() {
               Tus clientes
             </h1>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>
-              {usuarios.length} fichas
+              {totalRecords} fichas
               {frios > 0 ? ` · ${frios} se están enfriando` : ' · todos con rastro reciente'}
             </p>
           </section>
@@ -255,21 +334,15 @@ export function UsuariosPage() {
                 <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 <input
                   type="search"
-                  placeholder="Nombre, plan u objetivo…"
+                  placeholder="Nombre cliente"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setListPage(1);
+                  }}
                   aria-label="Buscar usuarios"
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.library.ia)}
-                className="fp-btn fp-btn-secondary"
-                style={{ gap: 6, fontSize: 12 }}
-              >
-                <Sparkles size={14} />
-                Rutina IA
-              </button>
               <button
                 type="button"
                 onClick={() => setShowWizard(true)}
@@ -281,6 +354,10 @@ export function UsuariosPage() {
               </button>
             </div>
 
+            {clientsLoading && !isMockMode() ? (
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Cargando clientes…</p>
+            ) : null}
+
             <div
               style={{
                 display: 'grid',
@@ -289,9 +366,9 @@ export function UsuariosPage() {
               }}
             >
               {filteredUsers.map((user) => (
-                <UserCard key={user.id} user={user} onClick={() => handleSelectUser(user)} />
+                <UserCard key={user.client_uuid ?? user.id} user={user} onClick={() => handleSelectUser(user)} />
               ))}
-              {filteredUsers.length === 0 ? (
+              {filteredUsers.length === 0 && !clientsLoading ? (
                 <div style={{ gridColumn: '1 / -1' }}>
                   <EmptyState
                     icon={Users}
@@ -313,6 +390,17 @@ export function UsuariosPage() {
                 </div>
               ) : null}
             </div>
+
+            {pagination && !searchTerm ? (
+              <ListPagination
+                className="mt-5"
+                page={pagination.page}
+                totalPages={pagination.total_pages}
+                totalRecords={pagination.total_records}
+                pageSize={pagination.size}
+                onPageChange={setListPage}
+              />
+            ) : null}
           </div>
         ) : selectedUserLive ? (
           <div>
@@ -326,16 +414,21 @@ export function UsuariosPage() {
               <UserProgressPanel usuarioId={selectedUserLive.id} />
             ) : detailTab === 'medidas' ? (
               <UserMedidasPanel user={selectedUserLive} />
-            ) : (
-              <UserPlanWorkspace
+            ) : detailTab === 'historial' ? (
+              <UserRoutineHistoryPanel
                 user={selectedUserLive}
                 rutinas={rutinas}
-                ejercicios={ejercicios}
-                mutations={mutations}
+                onGoToEntrenamientos={() => setDetailTab('entrenamientos')}
+              />
+            ) : (
+              <UserEntrenamientosCreationPanel
+                user={selectedUserLive}
+                rutinas={rutinas}
                 semana={semana}
-                onSemanaChange={setSemana}
-                sesionEditorIndex={sesionEditorIndex}
-                onSesionEditorChange={setSesionEditorIndex}
+                mutations={mutations}
+                onGoToHistorial={() => setDetailTab('historial')}
+                pendingLibraryRutina={pendingLibraryRutina}
+                onPendingLibraryRutinaHandled={() => setPendingLibraryRutina(null)}
               />
             )}
           </div>

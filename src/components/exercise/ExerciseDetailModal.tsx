@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
-import { useExercise } from '../../lib/exercisedb';
+import { useGatewayExerciseDetailView } from '../../lib/gateway/exercise-catalog-hooks';
+import { CATALOG_IMAGE_PLACEHOLDER } from '../../lib/gateway/exerciseCatalogAdapter';
 import { Skeleton } from '../common/Skeleton';
 import { Sheet } from '../common/Sheet';
 
@@ -58,7 +59,7 @@ const TagSection = ({
 };
 
 export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
-  const { data, isLoading, isError, refetch } = useExercise(exerciseId ?? undefined);
+  const { data, isLoading, isError, refetch } = useGatewayExerciseDetailView(exerciseId);
   const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
@@ -67,7 +68,10 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
 
   if (!exerciseId) return null;
 
-  const fallbackImage = data?.imageUrls?.['720p'] ?? data?.imageUrl;
+  const poster =
+    data?.media?.imagen_url ||
+    (data?.image_url?.startsWith('http') ? data.image_url : CATALOG_IMAGE_PLACEHOLDER);
+  const videoSrc = data?.media?.gif_url || data?.gif_url;
 
   return (
     <Sheet open ariaLabel="Detalle del ejercicio" onClose={onClose}>
@@ -92,7 +96,7 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
               No se pudo cargar el ejercicio
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-              Verifica tu conexion o la configuracion de la API
+              Verifica tu conexión o inténtalo de nuevo
             </p>
             <button
               type="button"
@@ -115,11 +119,11 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
                 overflow: 'hidden',
               }}
             >
-              {!videoFailed ? (
+              {videoSrc && !videoFailed ? (
                 <video
-                  key={data.videoUrl}
-                  src={data.videoUrl}
-                  poster={data.imageUrl}
+                  key={videoSrc}
+                  src={videoSrc}
+                  poster={poster}
                   autoPlay
                   loop
                   muted
@@ -129,7 +133,7 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
                 />
               ) : (
                 <img
-                  src={fallbackImage}
+                  src={poster}
                   alt={data.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
@@ -146,7 +150,7 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
                     className="badge badge-brand"
                     style={{ marginBottom: 6, display: 'inline-flex' }}
                   >
-                    {data.exerciseType}
+                    {data.muscle_group}
                   </span>
                   <h2
                     className="font-sora"
@@ -185,139 +189,22 @@ export const ExerciseDetailModal = ({ exerciseId, onClose }: Props) => {
                       lineHeight: 1.6,
                     }}
                   >
-                    {data.overview}
+                    {data.body_part} · {data.equipment} · Objetivo: {data.target}
                   </p>
                 </div>
 
-                {data.instructions.length > 0 && (
-                  <div>
-                    <p
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '.06em',
-                        marginBottom: 7,
-                      }}
-                    >
-                      Instrucciones
-                    </p>
-                    <ol
-                      style={{
-                        margin: 0,
-                        paddingLeft: 18,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 8,
-                      }}
-                    >
-                      {data.instructions.map((step: string, index: number) => (
-                        <li
-                          key={index}
-                          style={{
-                            fontSize: 13,
-                            color: 'var(--text-secondary)',
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {step}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                <TagSection label="Musculos objetivo" tags={data.targetMuscles} />
-                <TagSection
-                  label="Musculos secundarios"
-                  tags={data.secondaryMuscles}
-                  variant="neutral"
-                />
-                <TagSection label="Partes del cuerpo" tags={data.bodyParts} />
+                <TagSection label="Músculo objetivo" tags={data.target ? [data.target] : []} />
+                <TagSection label="Parte del cuerpo" tags={data.body_part ? [data.body_part] : []} />
                 <TagSection
                   label="Equipamiento"
-                  tags={data.equipments}
+                  tags={data.equipment ? [data.equipment] : []}
                   variant="neutral"
                 />
-
-                {data.exerciseTips.length > 0 && (
-                  <div>
-                    <p
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '.06em',
-                        marginBottom: 7,
-                      }}
-                    >
-                      Consejos
-                    </p>
-                    <ul
-                      style={{
-                        margin: 0,
-                        paddingLeft: 18,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 6,
-                      }}
-                    >
-                      {data.exerciseTips.map((tip: string, index: number) => (
-                        <li
-                          key={index}
-                          style={{
-                            fontSize: 13,
-                            color: 'var(--text-secondary)',
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {tip}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {data.variations.length > 0 && (
-                  <div>
-                    <p
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '.06em',
-                        marginBottom: 7,
-                      }}
-                    >
-                      Variaciones
-                    </p>
-                    <ul
-                      style={{
-                        margin: 0,
-                        paddingLeft: 18,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 6,
-                      }}
-                    >
-                      {data.variations.map((variation: string, index: number) => (
-                        <li
-                          key={index}
-                          style={{
-                            fontSize: 13,
-                            color: 'var(--text-secondary)',
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {variation}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <TagSection
+                  label="Grupo muscular"
+                  tags={data.muscle_group ? [data.muscle_group] : []}
+                  variant="neutral"
+                />
               </div>
             </div>
           </>

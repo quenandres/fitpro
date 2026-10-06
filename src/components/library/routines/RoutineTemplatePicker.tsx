@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { LayoutTemplate, Search } from 'lucide-react';
 import { useDataStore } from '../../../store/useDataStore';
-import { ROUTINE_PRESETS } from '../../../data/routinePresets';
-import { applyRoutinePreset } from '../../../utils/applyRoutinePreset';
 import type { Rutina, RoutineFormData } from '../../../types';
 import { MAX_RUTINA_SEMANAS, MIN_RUTINA_SEMANAS } from '../../../utils/routineScheduleUtils';
+import { aggregateRoutineMuscles } from '../../../utils/routineMuscles';
+import { AnatomyMuscleHeatmapMini } from '../../anatomy/AnatomyMuscleHeatmapMini';
 
 interface Props {
   accent: string;
@@ -14,9 +14,10 @@ interface Props {
 
 export const RoutineTemplatePicker = ({ accent, excludeId, onApply }: Props) => {
   const rutinas = useDataStore((s) => s.rutinas);
+  const plantillas = useDataStore((s) => s.plantillas);
+  const ejercicios = useDataStore((s) => s.ejercicios);
   const [query, setQuery] = useState('');
   const [semanas, setSemanas] = useState(4);
-  const [loadingPresetId, setLoadingPresetId] = useState<string | null>(null);
 
   const filteredRutinas = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -27,22 +28,10 @@ export const RoutineTemplatePicker = ({ accent, excludeId, onApply }: Props) => 
     });
   }, [excludeId, query, rutinas]);
 
-  const featuredPresets = ROUTINE_PRESETS.slice(0, 6);
+  const featuredPlantillas = plantillas.slice(0, 6);
 
   const decSemanas = () => setSemanas((n) => Math.max(MIN_RUTINA_SEMANAS, n - 1));
   const incSemanas = () => setSemanas((n) => Math.min(MAX_RUTINA_SEMANAS, n + 1));
-
-  const handlePreset = async (presetId: string) => {
-    const preset = ROUTINE_PRESETS.find((p) => p.id === presetId);
-    if (!preset) return;
-    setLoadingPresetId(presetId);
-    try {
-      const { form } = await applyRoutinePreset(preset);
-      onApply(form, semanas);
-    } finally {
-      setLoadingPresetId(null);
-    }
-  };
 
   return (
     <div className="fp-card" style={{ borderRadius: 13, padding: '14px', marginBottom: 16 }}>
@@ -84,48 +73,58 @@ export const RoutineTemplatePicker = ({ accent, excludeId, onApply }: Props) => 
             No hay rutinas que coincidan.
           </p>
         ) : (
-          filteredRutinas.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              className="fp-btn fp-btn-secondary"
-              style={{
-                justifyContent: 'space-between',
-                textAlign: 'left',
-                padding: '10px 12px',
-                fontSize: 13,
-              }}
-              onClick={() => onApply(r, semanas)}
-            >
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.nombre}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                {r.semanas ?? 1} sem
-              </span>
-            </button>
-          ))
+          filteredRutinas.map((r) => {
+            const counts = aggregateRoutineMuscles(r.ejercicios, ejercicios);
+            const hasMuscles = Object.keys(counts).length > 0;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                className="fp-btn fp-btn-secondary"
+                style={{
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  fontSize: 13,
+                  gap: 8,
+                }}
+                onClick={() => onApply(r, semanas)}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                  {hasMuscles ? (
+                    <span
+                      className="fp-routine-card-muscle-mini"
+                      style={{ width: 26, height: 26, borderRadius: 7, background: 'var(--bg-overlay)', overflow: 'hidden', flexShrink: 0 }}
+                    >
+                      <AnatomyMuscleHeatmapMini counts={counts} ariaLabel={`Músculos de ${r.nombre}`} />
+                    </span>
+                  ) : null}
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {r.nombre}
+                  </span>
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+                  {r.semanas ?? 1} sem
+                </span>
+              </button>
+            );
+          })
         )}
       </div>
 
       <p className="fp-cal-label" style={{ marginBottom: 8 }}>
-        Presets rápidos
+        Plantillas rápidas
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {featuredPresets.map((p) => (
+        {featuredPlantillas.map((p) => (
           <button
             key={p.id}
             type="button"
             className="badge badge-blue"
-            style={{
-              cursor: 'pointer',
-              border: 'none',
-              fontSize: 11,
-              padding: '5px 10px',
-              opacity: loadingPresetId === p.id ? 0.6 : 1,
-            }}
-            disabled={loadingPresetId != null}
-            onClick={() => void handlePreset(p.id)}
+            style={{ cursor: 'pointer', border: 'none', fontSize: 11, padding: '5px 10px' }}
+            onClick={() => onApply(p, semanas)}
           >
-            {loadingPresetId === p.id ? '…' : p.nombre}
+            {p.nombre}
           </button>
         ))}
       </div>

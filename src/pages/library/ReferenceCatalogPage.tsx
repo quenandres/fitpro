@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Search } from 'lucide-react';
-import type { ReferenceItem } from '../../lib/exercisedb';
+import type { CatalogReferenceItem } from '../../lib/gateway/exercises.service';
 import { SkeletonCard } from '../../components/common/Skeleton';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -15,7 +15,7 @@ interface Props {
   accent: string;
   accentBg: string;
   filterKey: CatalogFilterKey;
-  items: ReferenceItem[];
+  items: CatalogReferenceItem[];
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;

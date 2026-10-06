@@ -736,8 +736,6 @@ textarea.fp-input {
 .fp-admin-briefing {
   position: relative;
   overflow: hidden;
-  margin-top: 8px;
-  margin-bottom: 18px;
   padding: 18px 16px 16px 20px;
   border-radius: 16px;
   background: var(--bg-card);
@@ -2671,6 +2669,19 @@ textarea.fp-input {
   font-size: 11px;
 }
 
+.fp-calendar-mini .rdp-month {
+  --rdp-nav_button-height: 28px;
+  --rdp-nav_button-width: 28px;
+}
+
+.fp-calendar-mini .rdp-month_caption {
+  margin-bottom: 4px;
+}
+
+.fp-calendar-mini .rdp-weekdays {
+  margin-bottom: 2px;
+}
+
 /* ─── Calendario responsive / mobile-first ───────────────── */
 .fp-cal-sidebar-desktop {
   display: none;
@@ -3277,31 +3288,87 @@ textarea.fp-input {
   border-color: var(--accent-pink);
 }
 
+.fp-com-community-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .fp-com-community-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+@media (min-width: 1024px) {
+  .fp-com-community-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
 .fp-com-community-card {
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color .15s;
+  height: 100%;
+  min-width: 0;
+  transition: border-color .15s, box-shadow .15s;
 }
 
 .fp-com-community-card:hover {
-  border-color: var(--accent-pink);
+  border-color: color-mix(in srgb, var(--accent-pink) 45%, var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.fp-com-community-card-cover-link {
+  display: block;
+  flex-shrink: 0;
 }
 
 .fp-com-community-card-cover {
-  height: 88px;
+  display: block;
   width: 100%;
+  height: 72px;
   object-fit: cover;
+}
+@media (min-width: 640px) {
+  .fp-com-community-card-cover {
+    height: 96px;
+  }
 }
 
 .fp-com-community-card-body {
+  flex: 1;
   padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .fp-com-community-card-body {
+    padding: 14px 16px 16px;
+    gap: 6px;
+  }
+}
+
+.fp-com-community-card-footer {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.fp-com-community-card-actions {
+  margin-top: 10px;
+}
+@media (min-width: 768px) {
+  .fp-com-community-card-actions {
+    margin-top: 12px;
+  }
 }
 
 /* Feed */

@@ -11,7 +11,7 @@ import {
   Sparkles,
   AlertCircle,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAiRoutineChat } from '../../hooks/useAiRoutineChat';
 import { useDataStore } from '../../store/useDataStore';
 import { draftToRutinaPayload } from '../../utils/resolveExercisesAgainstApi';
@@ -28,6 +28,12 @@ import {
 } from '../../data/routineBuilderMock';
 import { RoutineCreationChrome } from '../../components/library/routines/RoutineCreationChrome';
 import { ROUTES } from '../../routes/paths';
+import { useUsuariosStore } from '../../store/useUsuariosStore';
+import {
+  buildRoutineCreationReturnUrl,
+  parseRoutineCreationContext,
+} from '../../utils/routineCreationContext';
+import type { ClientRoutineCreationEmbed } from '../../utils/routineCreationEmbed';
 
 const ExerciseRow = ({
   exercise,
@@ -100,9 +106,18 @@ const ExerciseRow = ({
   </article>
 );
 
-export const AIRoutineChatPage = () => {
+interface AIRoutineChatProps {
+  embed?: ClientRoutineCreationEmbed;
+}
+
+export function AIRoutineChat({ embed }: AIRoutineChatProps) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const addRutina = useDataStore((s) => s.addRutina);
+  const creationCtx = embed?.creationContext ?? parseRoutineCreationContext(searchParams);
+  const clienteObjetivo = useUsuariosStore((s) =>
+    creationCtx ? s.usuarios.find((u) => u.id === creationCtx.usuarioId) : undefined,
+  );
   const {
     messages,
     prefs,
@@ -144,6 +159,10 @@ export const AIRoutineChatPage = () => {
     if (!activeDraft) return;
     const id = addRutina(draftToRutinaPayload(activeDraft));
     setSavedRoutineId(id);
+    if (creationCtx) {
+      if (embed) embed.onRoutineSaved(id);
+      else navigate(buildRoutineCreationReturnUrl(creationCtx, id));
+    }
   };
 
   const visibleChips = PROMPT_MODIFIER_CHIPS.filter(
@@ -160,13 +179,20 @@ export const AIRoutineChatPage = () => {
           { label: 'Nueva rutina', to: ROUTES.library.rutinasNueva },
           { label: 'Asistente IA' },
         ]}
-        title="Generar rutina con IA"
+        title={clienteObjetivo ? `Generar rutina con IA para ${clienteObjetivo.nombre}` : 'Generar rutina con IA'}
         subtitle="Describe objetivos, nivel, equipo y restricciones. El asistente propone un borrador para validar contra el catálogo."
         badges={
-          <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
-            <Sparkles size={10} style={{ marginRight: 3 }} />
-            Activo
-          </span>
+          <>
+            <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
+              <Sparkles size={10} style={{ marginRight: 3 }} />
+              Activo
+            </span>
+            {clienteObjetivo ? (
+              <span className="badge badge-blue" style={{ fontSize: 10, padding: '3px 8px' }}>
+                Se asignará a {clienteObjetivo.nombre}
+              </span>
+            ) : null}
+          </>
         }
         aside={
           <button
@@ -383,9 +409,9 @@ export const AIRoutineChatPage = () => {
             disabled={loading}
           >
             <Save size={14} />
-            Guardar rutina
+            {creationCtx ? `Guardar y asignar a ${clienteObjetivo?.nombre ?? 'cliente'}` : 'Guardar rutina'}
           </button>
-          {savedRoutineId !== null ? (
+          {savedRoutineId !== null && !creationCtx ? (
             <button
               type="button"
               className="fp-btn fp-btn-secondary w-full"
@@ -405,7 +431,16 @@ export const AIRoutineChatPage = () => {
 
   return (
     <div>
-      <RoutineCreationMethodTabs />
+      <RoutineCreationMethodTabs
+        mode={embed ? 'embedded' : 'route'}
+        creationContext={creationCtx}
+        embeddedActiveTab={embed?.activeTab ?? 'ia'}
+        inPlace={
+          embed
+            ? { activeTab: embed.activeTab, onTabChange: embed.onTabChange }
+            : undefined
+        }
+      />
       <RoutineCreationLayout
         main={main}
         sidebar={
@@ -424,3 +459,5 @@ export const AIRoutineChatPage = () => {
     </div>
   );
 };
+
+export const AIRoutineChatPage = () => <AIRoutineChat />;

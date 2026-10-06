@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ClientLink, GatewayPlanTree } from './training.service';
-import { fetchClientHistorial, listTrainerClients } from './training.service';
+import type { ClientLink, GatewayPlanSummary, GatewayPlanTree } from './training.service';
+import {
+  fetchClientHistorial,
+  fetchTrainerClientPlan,
+  listTrainerClients,
+  TRAINER_CLIENTS_PAGE_SIZE,
+} from './training.service';
 import { queryExercises } from './exercises.service';
 import type { PlanUsuario, Usuario } from '../../types';
 import { createEmptyPlanUsuario } from '../../utils/planGatewayAdapter';
@@ -30,6 +35,18 @@ import {
   updatePublicacion,
   type TabExplorar,
 } from './comunidades.service';
+
+export const trainerKeys = {
+  all: ['trainer'] as const,
+  clients: (page: number, limit: number) =>
+    [...trainerKeys.all, 'clients', page, limit] as const,
+  clientPlan: (clientUuid: string) =>
+    [...trainerKeys.all, 'client', clientUuid, 'plan'] as const,
+  clientHistorial: (clientUuid: string) =>
+    [...trainerKeys.all, 'client', clientUuid, 'historial'] as const,
+};
+
+export const authUserQueryKey = ['auth', 'user'] as const;
 
 export const comunidadesKeys = {
   all: ['comunidades'] as const,
@@ -250,24 +267,43 @@ export function useDeleteEvento(comunidadId: string) {
   });
 }
 
-export function useTrainerClients() {
+export function useTrainerClients(page = 1, limit = TRAINER_CLIENTS_PAGE_SIZE) {
   return useQuery({
-    queryKey: ['trainer-clients'],
-    queryFn: async () => {
-      const { clients } = await listTrainerClients();
-      return clients;
-    },
+    queryKey: trainerKeys.clients(page, limit),
+    queryFn: () => listTrainerClients({ page, limit }),
     enabled: !isMockMode(),
     staleTime: 30_000,
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function isGatewayPlanTree(
+  plan: ClientLink['plan'],
+): plan is GatewayPlanTree {
+  return plan != null && 'semanas' in plan && Array.isArray(plan.semanas);
+}
+
+export function usuarioTienePlanDetallado(usuario: Usuario): boolean {
+  return usuario.plan.programacion_semanal.some((week) =>
+    week.sesiones.some((session) => session.ejercicios_personalizados.length > 0),
+  );
+}
+
+export function useTrainerClientPlan(clientUuid: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: trainerKeys.clientPlan(clientUuid ?? ''),
+    queryFn: () => fetchTrainerClientPlan(clientUuid!),
+    enabled: Boolean(clientUuid) && enabled && !isMockMode(),
+    staleTime: 60_000,
   });
 }
 
 export function useClientHistorial(clientUuid: string | undefined) {
   return useQuery({
-    queryKey: ['client-historial', clientUuid],
+    queryKey: trainerKeys.clientHistorial(clientUuid ?? ''),
     queryFn: () => fetchClientHistorial(clientUuid!),
-    enabled: Boolean(clientUuid),
-    staleTime: 15_000,
+    enabled: Boolean(clientUuid) && !isMockMode(),
+    staleTime: 60_000,
   });
 }
 
@@ -290,11 +326,22 @@ export function useGatewayExerciseBrowse(
     enabled:
       mockMode ||
       term.length >= 2 ||
+      term.length === 0 ||
       Boolean(filters.bodyPart || filters.equipment || filters.muscle),
   });
 }
 
-function planTreeToPlanUsuario(id: number, tree: GatewayPlanTree): PlanUsuario {
+function planSummaryToPlanUsuario(id: number, summary: GatewayPlanSummary): PlanUsuario {
+  const base = createEmptyPlanUsuario(id);
+  return {
+    ...base,
+    nombre: summary.nombre || base.nombre,
+    semanas: Math.max(summary.semana_actual, 1),
+    dias_entrenar_semana: clampFrecuencia(summary.dias_entrenar_semana || base.dias_entrenar_semana),
+  };
+}
+
+export function planTreeToPlanUsuario(id: number, tree: GatewayPlanTree): PlanUsuario {
   const semanas = tree.semanas ?? [];
   const sesionesSemana = semanas[0]?.sesiones.length ?? 3;
   return {
@@ -327,21 +374,33 @@ function planTreeToPlanUsuario(id: number, tree: GatewayPlanTree): PlanUsuario {
   };
 }
 
-export function mapClientLinksToUsuarios(links: ClientLink[]): Usuario[] {
+export function mapClientLinksToUsuarios(links: ClientLink[], existing: Usuario[] = []): Usuario[] {
+  let nextId = existing.reduce((max, user) => Math.max(max, user.id), 0) + 1;
+
   return links.map((link, index) => {
-    const id = index + 1;
-    const sesiones = link.plan?.semanas?.[0]?.sesiones.length ?? 3;
+    const prev = existing.find((user) => user.client_uuid === link.client_id);
+    const id = prev?.id ?? nextId++;
+    const plan = link.plan;
+    let planUsuario: PlanUsuario;
+    let diasEntrenar = 3;
+    if (!plan) {
+      planUsuario = createEmptyPlanUsuario(id);
+    } else if (isGatewayPlanTree(plan)) {
+      planUsuario = planTreeToPlanUsuario(id, plan);
+      diasEntrenar = plan.semanas[0]?.sesiones.length ?? 3;
+    } else {
+      planUsuario = planSummaryToPlanUsuario(id, plan);
+      diasEntrenar = plan.dias_entrenar_semana;
+    }
     return {
       id,
       client_uuid: link.client_id,
-      nombre: link.profile?.full_name?.trim() || `Cliente ${index + 1}`,
+      nombre: link.profile?.full_name?.trim() || `Cliente ${prev?.id ?? index + 1}`,
       email: '',
       objetivo: 'General',
       nivel: 'Intermedio',
-      dias_entrenar: clampFrecuencia(sesiones || 3),
-      plan: link.plan?.semanas?.length
-        ? planTreeToPlanUsuario(id, link.plan)
-        : createEmptyPlanUsuario(id),
+      dias_entrenar: clampFrecuencia(diasEntrenar || 3),
+      plan: planUsuario,
     };
   });
 }

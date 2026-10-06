@@ -11,6 +11,7 @@ export const toEjercicioPersonalizado = (e: EjercicioRutina): EjercicioPersonali
     notas: '',
     rpe: e.rpe,
     musculos_anatomia: e.musculos_anatomia,
+    series_detalle: e.series_detalle,
   });
 
 export const distribuirEjercicios = (

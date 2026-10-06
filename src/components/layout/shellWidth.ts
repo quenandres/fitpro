@@ -20,14 +20,10 @@ export const SHELL_MAIN_PADDING =
 
 /** Route-aware shell width — used by LibraryLayout and any page-level shell. */
 export function resolveShellWidth(pathname: string): ShellWidth {
-  const { library: lib } = ROUTES;
-
-  if (pathname.startsWith(lib.planes) || pathname.startsWith(ROUTES.usuarios)) return 'wide';
-  if (pathname.startsWith(lib.suscripciones) || pathname.startsWith(lib.pagos)) return 'wide';
+  if (pathname.startsWith(ROUTES.usuarios)) return 'wide';
   if (pathname.startsWith(ROUTES.calendar)) return 'wide';
-  if (pathname.startsWith(lib.rutinasNueva)) return 'default';
-  if (pathname.startsWith(lib.rutinasPlantillas)) return 'default';
-  if (pathname.startsWith(lib.ia)) return 'default';
+  // Mismo ancho que navbar (`SHELL_WIDTH_CLASS.wide`) en toda Biblioteca.
+  if (isLibraryRoute(pathname)) return 'wide';
 
   return 'default';
 }

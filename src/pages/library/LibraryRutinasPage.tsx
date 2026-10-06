@@ -10,6 +10,7 @@ import { ROUTES } from '../../routes/paths';
 export const LibraryRutinasPage = () => {
   const navigate = useNavigate();
   const rutinas = useDataStore((s) => s.rutinas);
+  const ejercicios = useDataStore((s) => s.ejercicios);
   const toast = useToastHook();
   const { library: lib } = ROUTES;
 
@@ -23,10 +24,6 @@ export const LibraryRutinasPage = () => {
   return (
     <div>
         <section className="animate-slide-up" style={{ paddingBottom: 14 }}>
-          <span className="badge badge-blue" style={{ fontSize: 11, padding: '3px 9px' }}>
-            <Dumbbell size={10} style={{ marginRight: 3 }} />
-            Rutinas
-          </span>
           <h1
             className="font-sora"
             style={{
@@ -34,7 +31,6 @@ export const LibraryRutinasPage = () => {
               fontWeight: 700,
               letterSpacing: '-.02em',
               color: 'var(--text-primary)',
-              marginTop: 8,
               marginBottom: 4,
             }}
           >
@@ -73,6 +69,7 @@ export const LibraryRutinasPage = () => {
             <RoutineCard
               key={r.id}
               rutina={r}
+              ejercicios={ejercicios}
               onEdit={() => navigate(routineEditPath(r))}
               onDelete={handleDelete}
             />

@@ -1,5 +1,8 @@
 import ejerciciosData from '../data/ejercicios.json';
-import type { GatewayExercise } from '../lib/gateway/exercises.service';
+import type {
+  ExerciseQueryResult,
+  GatewayExercise,
+} from '../lib/gateway/exercises.service';
 import type {
   ExerciseDetail,
   ExerciseListItem,
@@ -94,18 +97,71 @@ export function mockExerciseDetail(exerciseId: string): ExerciseDetail {
   };
 }
 
+function parseEqFilter(raw: string | undefined): string | undefined {
+  if (!raw?.startsWith('eq.')) return undefined;
+  return raw.slice(3);
+}
+
 export function mockQueryGatewayExercises(body: {
   filters?: Record<string, string>;
   limit?: number;
-}): { data: GatewayExercise[] } {
+  page?: number;
+}): { data: GatewayExercise[]; pagination?: ExerciseQueryResult['pagination'] } {
   let rows = catalog;
   const nameFilter = body.filters?.name;
   if (nameFilter?.includes('*')) {
     const term = nameFilter.replace(/ilike\.\*/gi, '').replace(/\*/g, '').toLowerCase();
     if (term) rows = rows.filter((e) => e.nombre.toLowerCase().includes(term));
   }
+  const idEq = parseEqFilter(body.filters?.id);
+  if (idEq) {
+    const id = Number(idEq);
+    rows = rows.filter((e) => e.id === id);
+  }
+  const bodyPart = parseEqFilter(body.filters?.body_part);
+  if (bodyPart) {
+    rows = rows.filter((e) => e.grupo_muscular[0] === bodyPart);
+  }
+  const equipment = parseEqFilter(body.filters?.equipment);
+  if (equipment) {
+    rows = rows.filter((e) => (e.equipamiento[0] ?? 'Ninguno') === equipment);
+  }
+  const target = parseEqFilter(body.filters?.target);
+  if (target) {
+    rows = rows.filter((e) => e.grupo_muscular.includes(target));
+  }
+  const muscleGroup = parseEqFilter(body.filters?.muscle_group);
+  if (muscleGroup) {
+    rows = rows.filter((e) => e.categoria === muscleGroup);
+  }
   const limit = body.limit ?? 30;
-  return { data: rows.slice(0, limit).map(toGatewayExercise) };
+  const page = body.page ?? 1;
+  const start = (page - 1) * limit;
+  const slice = rows.slice(start, start + limit).map(toGatewayExercise);
+  const totalPages = Math.max(1, Math.ceil(rows.length / limit));
+  return {
+    data: slice,
+    pagination: {
+      page,
+      size: limit,
+      total_records: rows.length,
+      total_pages: totalPages,
+    },
+  };
+}
+
+export function mockCatalogReferenceItems(
+  table: 'body_parts' | 'equipment' | 'target_muscles' | 'muscle_groups',
+): ReferenceItem[] {
+  const kind =
+    table === 'body_parts'
+      ? 'bodyparts'
+      : table === 'equipment'
+        ? 'equipments'
+        : table === 'target_muscles'
+          ? 'muscles'
+          : 'types';
+  return mockReferenceItems(kind);
 }
 
 export function mockReferenceItems(kind: 'bodyparts' | 'equipments' | 'muscles' | 'types'): ReferenceItem[] {

@@ -12,18 +12,31 @@ export interface RoutinePresetLocationState {
   matchInfo?: { matched: number; total: number };
 }
 
-export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
+export const useRoutineFormWithPreset = (
+  level: RoutineFormLevel,
+  presetStateOverride?: RoutinePresetLocationState | null,
+) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const rutinas = useDataStore((s) => s.rutinas);
+  const plantillas = useDataStore((s) => s.plantillas);
 
-  const state = (location.state ?? {}) as RoutinePresetLocationState;
-  const editingId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
+  const isPlantillaMode = searchParams.get('modo') === 'plantilla';
+  const plantillaIdParam = searchParams.get('plantillaId');
+  const plantillaId = plantillaIdParam ? Number(plantillaIdParam) : null;
+  const rutinaIdParam = searchParams.get('id');
+  const rutinaId = !isPlantillaMode && rutinaIdParam ? Number(rutinaIdParam) : null;
 
-  const editingRutina = useMemo(
-    () => (editingId != null ? rutinas.find((r) => r.id === editingId) ?? null : null),
-    [editingId, rutinas],
-  );
+  const editingId = isPlantillaMode ? plantillaId : rutinaId;
+
+  const state = (presetStateOverride ?? location.state ?? {}) as RoutinePresetLocationState;
+
+  const editingRutina = useMemo(() => {
+    if (isPlantillaMode) {
+      return plantillaId != null ? plantillas.find((p) => p.id === plantillaId) ?? null : null;
+    }
+    return rutinaId != null ? rutinas.find((r) => r.id === rutinaId) ?? null : null;
+  }, [isPlantillaMode, plantillaId, plantillas, rutinaId, rutinas]);
 
   const initialForm = useMemo(
     () => state.presetForm ?? (editingRutina ? rutinaToFormData(editingRutina) : undefined),
@@ -35,10 +48,14 @@ export const useRoutineFormWithPreset = (level: RoutineFormLevel) => {
   );
 
   return {
-    ...useRoutineForm(level, initialForm, editingId, initialCreateMode),
+    ...useRoutineForm(level, initialForm, editingId, initialCreateMode, {
+      target: isPlantillaMode ? 'plantilla' : 'rutina',
+      plantillaMeta: editingRutina?.plantilla,
+    }),
     presetName: state.presetName,
     matchInfo: state.matchInfo,
     editingRutina,
+    isPlantillaMode,
   };
 };
 

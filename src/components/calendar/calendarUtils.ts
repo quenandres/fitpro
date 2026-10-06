@@ -117,6 +117,15 @@ export function parseFechaLocal(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** Medianoche local — alinea fechas con DayPicker y modifiers. */
+export function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function startOfLocalMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
 export function formatFechaLarga(date: Date): string {
   return new Intl.DateTimeFormat('es-ES', {
     weekday: 'long',

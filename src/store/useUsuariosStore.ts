@@ -80,17 +80,38 @@ export const useUsuariosStore = create<UsuariosStore>((set, get) => ({
   },
 
   syncFromGateway: (clients) => {
+    const previous = get().usuarios;
     if (clients.length === 0) {
-      set({ usuarios: [], gatewaySynced: true });
+      set({
+        usuarios: previous.some((u) => u.client_uuid) ? previous : [],
+        gatewaySynced: true,
+      });
       return;
     }
-    const mapped = mapClientLinksToUsuarios(clients);
-    const previous = get().usuarios;
-    const merged = mapped.map((client) => {
-      const existing = previous.find((u) => u.client_uuid === client.client_uuid);
-      return existing ? { ...existing, nombre: client.nombre, client_uuid: client.client_uuid } : client;
-    });
-    set({ usuarios: merged, gatewaySynced: true });
+    const mapped = mapClientLinksToUsuarios(clients, previous);
+    const byUuid = new Map(
+      previous.filter((u) => u.client_uuid).map((u) => [u.client_uuid!, u] as const),
+    );
+    for (const client of mapped) {
+      if (!client.client_uuid) continue;
+      const existing = byUuid.get(client.client_uuid);
+      const hasPlanFromGateway = client.plan.programacion_semanal.some(
+        (week) => week.sesiones.length > 0,
+      );
+      byUuid.set(
+        client.client_uuid,
+        existing
+          ? {
+              ...existing,
+              ...client,
+              id: existing.id,
+              plan: hasPlanFromGateway ? client.plan : existing.plan,
+            }
+          : client,
+      );
+    }
+    const withoutUuid = previous.filter((u) => !u.client_uuid);
+    set({ usuarios: [...withoutUuid, ...byUuid.values()], gatewaySynced: true });
   },
 
   loadDemoSeed: () => {

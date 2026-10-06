@@ -29,6 +29,9 @@ export const ROUTES = {
     /** Recursos del entrenador (persistidos en backend) */
     rutinas: '/library/rutinas',
     rutinasNueva: '/library/rutinas/nueva',
+    /** Chooser de creación, contextualizado a una sesión del plan de un cliente (auto-asigna al guardar). */
+    rutinasNuevaParaSesion: (usuarioId: number | string, semana: number, sesionIndex: number) =>
+      `/library/rutinas/nueva?paraUsuario=${usuarioId}&paraSemana=${semana}&paraSesion=${sesionIndex}`,
     /** Legacy: redirige al plan propio (`UserPlanWorkspace`) vía `?para=mi`. */
     miRutinaNueva: '/library/rutinas/nueva?para=mi',
     rutinasPlantillas: '/library/rutinas/plantillas',

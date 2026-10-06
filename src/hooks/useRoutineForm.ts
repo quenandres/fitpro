@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useDataStore } from '../store/useDataStore';
 import type {
+  PlantillaMeta,
   RoutineCreateMode,
   RoutineFormData,
   RoutineFormExercise,
@@ -73,6 +74,7 @@ export const createEmptyRoutineForm = (level: RoutineFormLevel): RoutineFormData
   rest_between_sets: BASE_BY_LEVEL[level].rest_between_sets ?? 60,
   notes: BASE_BY_LEVEL[level].notes ?? '',
   dificultad: BASE_BY_LEVEL[level].dificultad ?? 'Intermedio',
+  estado: 'borrador',
 });
 
 const getActiveEjercicios = (
@@ -100,15 +102,27 @@ const updateActiveDay = (
   ejercicios,
 });
 
+export interface RoutineFormTargetOptions {
+  target?: 'rutina' | 'plantilla';
+  plantillaMeta?: PlantillaMeta;
+}
+
 export const useRoutineForm = (
   level: RoutineFormLevel,
   initialForm?: RoutineFormData,
   editingId?: number | null,
   initialCreateMode: RoutineCreateMode = 'semana_tipo',
+  targetOptions?: RoutineFormTargetOptions,
 ) => {
   const navigate = useNavigate();
+  const target = targetOptions?.target ?? 'rutina';
   const addRutina = useDataStore((s) => s.addRutina);
   const updateRutina = useDataStore((s) => s.updateRutina);
+  const addPlantilla = useDataStore((s) => s.addPlantilla);
+  const updatePlantilla = useDataStore((s) => s.updatePlantilla);
+  const [plantillaMeta, setPlantillaMeta] = useState<PlantillaMeta>(
+    () => targetOptions?.plantillaMeta ?? { categoria: 'funcional', tags: [], nivel: level },
+  );
   const [form, setForm] = useState<RoutineFormData>(
     () => initialForm ?? createEmptyRoutineForm(level),
   );
@@ -441,8 +455,16 @@ export const useRoutineForm = (
       payload.tipo = rest.tipo;
     }
 
+    if (target === 'plantilla') {
+      payload.plantilla = { ...plantillaMeta, nivel: level };
+      payload.origen = 'plantilla';
+    } else {
+      payload.origen = payload.origen ?? 'paso';
+      payload.estado = rest.estado ?? 'borrador';
+    }
+
     return payload;
-  }, [form, level]);
+  }, [form, level, target, plantillaMeta]);
 
   const save = useCallback(async (): Promise<number | null> => {
     const validation = validateRoutineByLevel(level, form);
@@ -453,6 +475,20 @@ export const useRoutineForm = (
     const payload = toRutinaPayload();
     setIsSaving(true);
     setSaveError(null);
+
+    if (target === 'plantilla') {
+      if (editingId != null) {
+        updatePlantilla(editingId, payload);
+        setSavedId(editingId);
+        setIsSaving(false);
+        return editingId;
+      }
+      const id = addPlantilla(payload);
+      setSavedId(id);
+      setIsSaving(false);
+      return id;
+    }
+
     try {
       await persistRoutineToGateway(payload, { assignToSelf: false });
     } catch (err) {
@@ -470,7 +506,7 @@ export const useRoutineForm = (
     setSavedId(id);
     setIsSaving(false);
     return id;
-  }, [addRutina, editingId, form, level, toRutinaPayload, updateRutina]);
+  }, [addRutina, addPlantilla, editingId, form, level, target, toRutinaPayload, updatePlantilla, updateRutina]);
 
   const validateStep1 = useCallback((): boolean => {
     const stepErrors = validateRoutineByLevel(level, form);
@@ -512,6 +548,9 @@ export const useRoutineForm = (
     saveError,
     editingId: editingId ?? null,
     isEdit: editingId != null,
+    target,
+    plantillaMeta,
+    setPlantillaMeta,
     durationBreakdown,
     createMode,
     setCreateMode,

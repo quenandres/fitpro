@@ -24,6 +24,7 @@ export const rutinaToFormData = (rutina: Rutina): RoutineFormData => {
     tipo: rutina.tipo ?? 'estandar',
     rest_between_sets: rutina.rest_between_sets ?? 60,
     notes: rutina.notes ?? '',
+    estado: rutina.estado ?? 'borrador',
     semanas,
     programacion_semanal: programacion,
     ejercicios: firstDia?.ejercicios ?? [],

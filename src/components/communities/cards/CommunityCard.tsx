@@ -16,7 +16,7 @@ export function CommunityCard({ comunidad, esMiembro, onJoin }: CommunityCardPro
 
   return (
     <div className="fp-com-community-card">
-      <Link to={ROUTES.communities.home(comunidad.id)}>
+      <Link to={ROUTES.communities.home(comunidad.id)} className="fp-com-community-card-cover-link">
         <img src={comunidad.portadaUrl} alt="" className="fp-com-community-card-cover" />
       </Link>
       <div className="fp-com-community-card-body">
@@ -40,25 +40,29 @@ export function CommunityCard({ comunidad, esMiembro, onJoin }: CommunityCardPro
           {comunidad.descripcion}
         </p>
 
-        <CommunityStats comunidad={comunidad} className="mt-3" />
+        <div className="fp-com-community-card-footer">
+          <CommunityStats comunidad={comunidad} />
 
-        {esMiembro ? (
-          <Link
-            to={ROUTES.communities.home(comunidad.id)}
-            className="fp-btn fp-btn-secondary mt-3 w-full text-sm text-center"
-          >
-            Ver comunidad
-          </Link>
-        ) : onJoin ? (
-          <button
-            type="button"
-            className="fp-btn mt-3 w-full text-sm"
-            style={{ background: 'var(--accent-pink)', color: '#fff' }}
-            onClick={onJoin}
-          >
-            Unirme
-          </button>
-        ) : null}
+          <div className="fp-com-community-card-actions">
+          {esMiembro ? (
+            <Link
+              to={ROUTES.communities.home(comunidad.id)}
+              className="fp-btn fp-btn-secondary w-full text-sm text-center"
+            >
+              Ver comunidad
+            </Link>
+          ) : onJoin ? (
+            <button
+              type="button"
+              className="fp-btn w-full text-sm"
+              style={{ background: 'var(--accent-pink)', color: '#fff' }}
+              onClick={onJoin}
+            >
+              Unirme
+            </button>
+          ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );

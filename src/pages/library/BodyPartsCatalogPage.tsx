@@ -1,8 +1,8 @@
-import { useBodyParts } from '../../lib/exercisedb';
+import { useGatewayBodyParts } from '../../lib/gateway/exercise-catalog-hooks';
 import { ReferenceCatalogPage } from './ReferenceCatalogPage';
 
 export const BodyPartsCatalogPage = () => {
-  const { data = [], isLoading, isError, error, refetch } = useBodyParts();
+  const { data = [], isLoading, isError, error, refetch } = useGatewayBodyParts();
 
   return (
     <ReferenceCatalogPage

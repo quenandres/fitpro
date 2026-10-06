@@ -5,14 +5,20 @@ import rutinasData from '../data/rutinas.json';
 import ejerciciosData from '../data/ejercicios.json';
 import unidadesData from '../data/unidades.json';
 import { migrateRutinasWithExerciseIds } from '../utils/migrateExerciseIds';
+import { PLANTILLAS_BASE } from '../data/plantillasBase';
 
 interface DataStore {
   rutinas: Rutina[];
+  plantillas: Rutina[];
   ejercicios: Ejercicio[];
   unidades: Unidad[];
   addRutina: (rutina: Omit<Rutina, 'id'>) => number;
   updateRutina: (id: number, rutina: Partial<Rutina>) => void;
   deleteRutina: (id: number) => void;
+  addPlantilla: (plantilla: Omit<Rutina, 'id'>) => number;
+  updatePlantilla: (id: number, plantilla: Partial<Rutina>) => void;
+  deletePlantilla: (id: number) => void;
+  incrementPlantillaUsos: (id: number) => void;
   addEjercicio: (ejercicio: Omit<Ejercicio, 'id'>) => number;
   updateEjercicio: (id: number, ejercicio: Partial<Ejercicio>) => void;
   deleteEjercicio: (id: number) => void;
@@ -36,6 +42,7 @@ export const useDataStore = create<DataStore>()(
   persist(
     (set, get) => ({
       rutinas: seedMigration.rutinas,
+      plantillas: PLANTILLAS_BASE,
       ejercicios: seedMigration.ejercicios,
       unidades: unidadesData as Unidad[],
 
@@ -53,6 +60,30 @@ export const useDataStore = create<DataStore>()(
 
       deleteRutina: (id) => {
         set((state) => ({ rutinas: state.rutinas.filter(r => r.id !== id) }));
+      },
+
+      addPlantilla: (plantilla) => {
+        const id = getMaxId(get().plantillas.filter(p => p.id > 0)) + 1;
+        set((state) => ({ plantillas: [...state.plantillas, { ...plantilla, id, updated_at: new Date().toISOString() }] }));
+        return id;
+      },
+
+      updatePlantilla: (id, plantilla) => {
+        set((state) => ({
+          plantillas: state.plantillas.map(p => p.id === id ? { ...p, ...plantilla, updated_at: new Date().toISOString() } : p)
+        }));
+      },
+
+      deletePlantilla: (id) => {
+        set((state) => ({ plantillas: state.plantillas.filter(p => p.id !== id) }));
+      },
+
+      incrementPlantillaUsos: (id) => {
+        set((state) => ({
+          plantillas: state.plantillas.map(p =>
+            p.id === id ? { ...p, plantilla: p.plantilla ? { ...p.plantilla, usos: (p.plantilla.usos ?? 0) + 1 } : p.plantilla } : p
+          )
+        }));
       },
 
       addEjercicio: (ejercicio) => {
@@ -134,6 +165,7 @@ export const useDataStore = create<DataStore>()(
           ...current,
           ...p,
           rutinas: migrated.rutinas,
+          plantillas: p.plantillas && p.plantillas.length > 0 ? p.plantillas : current.plantillas,
           ejercicios: migrated.ejercicios,
           unidades: p.unidades ?? current.unidades,
         };

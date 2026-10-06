@@ -26,7 +26,7 @@ rama `dev`).
 | Planes de usuario | [pages/UserPlansPage.tsx](src/pages/UserPlansPage.tsx) (600 líneas) + `components/userPlans/*` (Vista Día/Semana/Mes/Total, drag&drop con `@dnd-kit`) | UI de calendario bastante avanzada, pero `useState(usuariosData)` → no persiste |
 | Admin | `pages/admin/*` (Shell, Rutinas, Catálogo, Planes, Unidades, Datos) + `AdminLayout`/`AdminSubNav` unificados | CRUD local funcional, sin roles ni gating |
 | Biblioteca (`/library`) | `pages/library/*` (Hub, catálogos ExerciseDB, chat IA, 3 formularios de rutina por nivel, galería de presets) | Nueva desde jul-2026, integrada con ExerciseDB (RapidAPI) vía `lib/exercisedb/*` + TanStack Query |
-| IA para rutinas | `hooks/useAiRoutineChat.ts`, `lib/ai/deepseek.ts`, `pages/library/AIRoutineChatPage.tsx`, backend hermano `fitpro_api` (FastAPI + DeepSeek, `POST /api/ai/routine`) | Funcional: chat → propuesta → resolución contra ExerciseDB → guardar |
+| IA para rutinas | `hooks/useAiRoutineChat.ts`, `lib/ai/deepseek.ts`, `pages/library/AIRoutineChatPage.tsx`, `gym-gateway` (`POST /api/ai/routine`) | Funcional: chat → propuesta → resolución contra ExerciseDB → guardar |
 | Anatomía | `components/anatomy/*` (Viewer, Heatmap, Recovery) | Selector anatómico y heatmap de recuperación funcionando, enlazado a ejercicios y rutinas |
 | Modelo de datos | [types/index.ts](src/types/index.ts) | Sigue siendo `EjercicioRutina{nombre,series,valor,unidad_id,...}` — **Fase 2.5 no iniciada** |
 | Tests / Observabilidad | — | Cero tests, cero Sentry/PostHog, confirmado |
@@ -38,7 +38,7 @@ rama `dev`).
 | 1 — Base del sistema | ~95% | ~95%, sin cambios | Routing, theming, layout estables |
 | 2 — CRUD local | ~70% | **~80%** (subió) | Admin + Biblioteca ahora comparten shell (`AppShell`), import/export JSON, reset a default. Pero sigue sin persistir `tipo`/`rest_between_sets`/`notes` de forma consistente en todos los flujos (ver hallazgo #2) |
 | 2.5 — Rediseño del modelo `[BLOQUEANTE]` | 0% | **0%, sin cambios** | `EjercicioRutina` sigue plano (nombre+series+valor+unidad). No existe `Bloque/BloqueItem/SerieDef`. Todo el trabajo nuevo (presets, IA, formularios por nivel) se construyó **sobre el modelo viejo**, aumentando la deuda de migración futura |
-| 3 — Supabase + Auth real | 0% | **0%, sin cambios** | `lib/supabase.ts` sigue comentado. `AuthContext` sigue mock. Lo único nuevo tipo "BD" es `scripts/init.sql` (Postgres) para la tabla `exercises` del backend `fitpro_api`, **no** para el dominio de rutinas/usuarios de la app principal — no confundir con integración real de Supabase |
+| 3 — Supabase + Auth real | 0% | **0%, sin cambios** | `lib/supabase.ts` sigue comentado. `AuthContext` sigue mock. Lo único nuevo tipo "BD" es `scripts/init.sql` (Postgres) para la tabla `exercises` del servicio de IA, **no** para el dominio de rutinas/usuarios de la app principal — no confundir con integración real de Supabase |
 | 4 — Tracking real de sesiones | ~10% | **~10%, sin cambios** | `useWorkoutStore` sigue sin persistir. Sin esto, sigue sin haber "producto" según el propio diagnóstico del proyecto |
 | 5 — Multi-tenant entrenador↔cliente | ~5% | **~5-10%** | La UI de planes de usuario avanzó mucho (vistas día/semana/mes/total, drag&drop), pero sigue sin persistencia real ni vínculo trainer↔cliente. No hay tabla `trainer_client_links` ni roles en código (a pesar de que el mensaje del último commit menciona "estructura RBAC users/roles", **no se encontró implementación de roles en `src/`**) |
 | 6 — Monetización | 0% | 0%, sin cambios | — |
@@ -64,7 +64,7 @@ rama `dev`).
    más caro será migrar a `Bloque/BloqueItem/SerieDef` en Fase 2.5.
 3. **`scripts/init.sql` es fácil de confundir con "ya integramos Supabase".**
    Es un script para una tabla `exercises` en Postgres consumida por
-   `fitpro_api` (backend de IA), no para el dominio principal de la app. No
+   el servicio de IA, no para el dominio principal de la app. No
    cambia el diagnóstico de Fase 3 en 0%.
 4. **RBAC mencionado en commit, no implementado en código.** El mensaje del
    commit `b005893` dice "estructura RBAC users/roles", pero no se encontró

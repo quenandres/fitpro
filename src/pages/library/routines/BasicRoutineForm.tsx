@@ -7,14 +7,22 @@ import { ExerciseListEditor } from '../../../components/library/routines/Exercis
 import { RoutineBuilderShell } from '../../../components/library/routines/RoutineBuilderShell';
 import { RoutineScheduleSection } from '../../../components/library/routines/RoutineScheduleSection';
 import { FormField, LEVEL_ACCENTS, RoutineFormShell } from '../../../components/library/routines/RoutineFormShell';
+import { RoutineTemplateMetaFields } from '../../../components/library/routines/RoutineTemplateMetaFields';
 import { RoutineFormPageLayout } from '../../../components/library/routines/RoutineFormPageLayout';
 import { getFieldError } from '../../../utils/routineFormValidators';
 import { ROUTES } from '../../../routes/paths';
+import { useUsuariosStore } from '../../../store/useUsuariosStore';
+import {
+  buildRoutineCreationReturnUrl,
+  forwardRoutineCreationContext,
+  parseRoutineCreationContext,
+} from '../../../utils/routineCreationContext';
+import type { RoutineFormPageProps } from '../../../utils/routineCreationEmbed';
 
-export const BasicRoutineForm = () => {
+export const BasicRoutineForm = ({ embed, presetState = null }: RoutineFormPageProps = {}) => {
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const formHook = useRoutineFormWithPreset('basica');
+  const formHook = useRoutineFormWithPreset('basica', embed ? presetState : undefined);
   const {
     form,
     errors,
@@ -37,13 +45,35 @@ export const BasicRoutineForm = () => {
     selectedExerciseIds,
     durationBreakdown,
     semanaActiva,
+    navigate,
+    isPlantillaMode,
+    plantillaMeta,
+    setPlantillaMeta,
   } = formHook;
 
   const accent = LEVEL_ACCENTS.basica;
+  const creationCtx = embed?.creationContext ?? parseRoutineCreationContext(searchParams);
+  const clienteObjetivo = useUsuariosStore((s) =>
+    creationCtx ? s.usuarios.find((u) => u.id === creationCtx.usuarioId) : undefined,
+  );
 
-  if (searchParams.get('para') === 'mi') return <SelfTrainingRedirect />;
+  if (!embed && searchParams.get('para') === 'mi') return <SelfTrainingRedirect />;
 
   const scheduleProps = { accent, schedule: formHook };
+
+  const handleSave = async () => {
+    const id = await save();
+    if (id == null) return id;
+    if (isPlantillaMode) {
+      navigate(ROUTES.library.rutinasPlantillas);
+      return id;
+    }
+    if (creationCtx) {
+      if (embed) embed.onRoutineSaved(id);
+      else navigate(buildRoutineCreationReturnUrl(creationCtx, id));
+    }
+    return id;
+  };
 
   return (
     <RoutineFormShell
@@ -52,7 +82,17 @@ export const BasicRoutineForm = () => {
       presetName={presetName}
       matchInfo={matchInfo}
       isEdit={isEdit}
+      isPlantillaMode={isPlantillaMode}
       hideActions
+      backOnClick={embed ? embed.onBackToHub : undefined}
+      backTo={embed ? undefined : forwardRoutineCreationContext(ROUTES.library.rutinasNueva, searchParams)}
+      contextBadge={
+        clienteObjetivo ? (
+          <span className="badge badge-brand" style={{ fontSize: 10, padding: '3px 8px' }}>
+            Para {clienteObjetivo.nombre}
+          </span>
+        ) : null
+      }
     >
       <RoutineFormPageLayout
         level="basica"
@@ -61,6 +101,7 @@ export const BasicRoutineForm = () => {
         presetName={presetName}
         isSaving={isSaving}
         onSaveDraft={save}
+        embed={embed}
         builder={
           <RoutineBuilderShell
             level="basica"
@@ -73,11 +114,13 @@ export const BasicRoutineForm = () => {
             isSaving={isSaving}
             saveError={saveError}
             accent={accent}
-            onSave={save}
+            onSave={handleSave}
             onValidatePhase1={validatePhase1}
             onValidatePhase2={validatePhase2}
             onMusclesResolved={mergeResolvedMuscles}
             semanaActiva={semanaActiva}
+            estado={form.estado}
+            onEstadoChange={(v) => setField('estado', v)}
             phase1={
               <>
                 <FormField label="Nombre de la rutina" required error={getFieldError(errors, 'nombre')}>
@@ -91,6 +134,14 @@ export const BasicRoutineForm = () => {
                 <RoutineScheduleSection {...scheduleProps} studioLayout>
                   {null}
                 </RoutineScheduleSection>
+                {isPlantillaMode ? (
+                  <RoutineTemplateMetaFields
+                    value={plantillaMeta}
+                    level="basica"
+                    accent={accent}
+                    onChange={setPlantillaMeta}
+                  />
+                ) : null}
               </>
             }
             phase2={

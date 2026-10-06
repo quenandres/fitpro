@@ -40,9 +40,9 @@ export function CommunitiesExplorePage() {
 
   if (demoState === 'loading') {
     return (
-      <div className="flex flex-col gap-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} height={200} className="rounded-2xl" />
+      <div className="fp-com-community-grid">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} height={220} className="rounded-2xl" />
         ))}
       </div>
     );
@@ -106,9 +106,9 @@ export function CommunitiesExplorePage() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-3 mt-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} height={200} className="rounded-2xl" />
+        <div className="fp-com-community-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} height={220} className="rounded-2xl" />
           ))}
         </div>
       ) : isError ? (
@@ -124,7 +124,7 @@ export function CommunitiesExplorePage() {
           }
         />
       ) : (
-        <div className="flex flex-col gap-3 mt-4">
+        <div className="fp-com-community-grid">
           {filtered.map((comunidad) => (
             <CommunityCard
               key={comunidad.id}
